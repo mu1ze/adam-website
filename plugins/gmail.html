@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail - ADAM Plugins</title>
+    <style>
+        :root { --primary: #00ff88; --primary-dim: #00cc6a; --bg: #0a0a0a; --bg-secondary: #111111; --text: #e0e0e0; --text-dim: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .header { background: var(--bg-secondary); padding: 40px 20px; border-bottom: 2px solid var(--primary); text-align: center; }
+        .ascii-art { font-size: 7px; line-height: 1.1; color: var(--primary); white-space: pre; margin-bottom: 15px; }
+        .nav { background: var(--bg-secondary); padding: 10px 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #333; }
+        .nav a { color: var(--primary); text-decoration: none; font-size: 14px; padding: 5px 15px; border: 1px solid var(--primary); border-radius: 4px; transition: all 0.2s; }
+        .nav a:hover { background: var(--primary); color: var(--bg); }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); }
+        .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
+        .section p { color: var(--text); margin-bottom: 10px; }
+        .code-block { background: #000; padding: 15px; border-radius: 4px; margin: 15px 0; border: 1px solid #333; font-size: 13px; color: var(--primary-dim); overflow-x: auto; white-space: pre; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { padding: 8px 0; border-bottom: 1px solid #222; }
+        .feature-list li:before { content: "> "; color: var(--primary); }
+        .status { display: inline-block; background: var(--primary); color: var(--bg); padding: 2px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        footer { text-align: center; padding: 30px; color: var(--text-dim); font-size: 12px; border-top: 1px solid #333; margin-top: 40px; }
+        .breadcrumb { color: var(--text-dim); font-size: 12px; margin-bottom: 20px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="ascii-art">
+    ┌─────────────────────────────────────────────────────────┐
+    │   ___  _  ___ _____ ___ _  _ ___ ___ ___ ___  _  _ ___  │
+    │  / __|| |/ /|_   _| __| \| |_ _/ __/ __/ __|| \| / __|│
+    │ | (___|   <   | | | _|| .` || |\__ \__ \__ \__ | .` \__ \│
+    │  \___/|_|\_\ |_| |___|_|\_|___|___|___|___/|_|\_|___/ │
+    │                      GMAIL MODULE                        │
+    └─────────────────────────────────────────────────────────┘
+        </div>
+        <h1 style="color: var(--primary); font-size: 28px;">📧 GMAIL</h1>
+        <p style="color: var(--text-dim);">Email composition, management, and automation</p>
+    </div>
+    
+    <nav class="nav">
+        <a href="../index.html">← Home</a>
+        <a href="plugins.html">Plugins</a>
+    </nav>
+    
+    <div class="container">
+        <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="plugins.html">Plugins</a> / Gmail</div>
+        
+        <div class="section">
+            <h2>// Overview</h2>
+            <p>Manage your Gmail account with natural language. ADAM can read your inbox, compose and send emails, search through messages, and help you stay on top of important communications.</p>
+            <p style="margin-top: 15px;"><span class="status">ACTIVE</span> Connected via Gmail API</p>
+        </div>
+        
+        <div class="section">
+            <h2>// Capabilities</h2>
+            <ul class="feature-list">
+                <li>List and read emails from inbox</li>
+                <li>Compose and send new emails</li>
+                <li>Reply to existing threads</li>
+                <li>Search emails by sender, subject, or content</li>
+                <li>Mark emails as read/unread</li>
+                <li>Archive and delete emails</li>
+                <li>Manage labels and filters</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>// Example Usage</h2>
+            <div class="code-block">> show my unread emails
+> send email to john@example.com about the meeting
+> reply to latest email from HR
+> search for emails from last week about "project"
+> mark this email as important
+> create label "ADAM" for automated emails</div>
+        </div>
+        
+        <div class="section">
+            <h2>// Configuration</h2>
+            <div class="code-block">Provider:   Gmail API v1
+Auth:      OAuth 2.0
+Account:   Configured via OpenClaw
+Labels:    INBOX, SENT, DRAFT, SPAM</div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>ADAM v1.0 | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p>
+    </footer>
+</body>
+</html>

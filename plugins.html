@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugins - ADAM</title>
+    <style>
+        :root { --primary: #00ff88; --primary-dim: #00cc6a; --bg: #0a0a0a; --bg-secondary: #111111; --text: #e0e0e0; --text-dim: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .header { background: var(--bg-secondary); padding: 40px 20px; border-bottom: 2px solid var(--primary); text-align: center; }
+        .header h1 { color: var(--primary); font-size: 28px; margin-bottom: 10px; }
+        .header p { color: var(--text-dim); }
+        .ascii-art { font-size: 8px; line-height: 1.1; color: var(--primary); white-space: pre; margin-bottom: 15px; }
+        .nav { background: var(--bg-secondary); padding: 10px 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #333; }
+        .nav a { color: var(--primary); text-decoration: none; font-size: 14px; padding: 5px 15px; border: 1px solid var(--primary); border-radius: 4px; transition: all 0.2s; }
+        .nav a:hover { background: var(--primary); color: var(--bg); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .back-link { display: inline-block; color: var(--primary); text-decoration: none; margin-bottom: 20px; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .plugins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .plugin-card { background: var(--bg-secondary); padding: 25px; border: 1px solid #333; border-radius: 8px; text-decoration: none; color: inherit; transition: all 0.3s; display: block; }
+        .plugin-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1); }
+        .plugin-card .icon { font-size: 32px; margin-bottom: 10px; }
+        .plugin-card h2 { color: var(--primary); font-size: 18px; margin-bottom: 8px; }
+        .plugin-card p { color: var(--text-dim); font-size: 13px; }
+        .plugin-card .status { display: inline-block; background: var(--primary); color: var(--bg); padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-top: 10px; }
+        footer { text-align: center; padding: 40px; color: var(--text-dim); font-size: 12px; border-top: 1px solid #333; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="ascii-art">
+    ╔═══════════════════════════════════════════════════════════╗
+    ║   ___  _   _ _  __ _____ _   _   _ ___ _   _           ║
+    ║  | _ )| | | | |/ // _ | \ | | | | | __| |_| |_ ___     ║
+    ║  | _ \| |_| |   < \__ | .  | |_| | |__|  _| ' \___ \   ║
+    ║  |___/ \___/|_|\_\|___|_|_|  \___/|____|\__|_||___/   ║
+    ║                     PLUGINS                            ║
+    ╚═══════════════════════════════════════════════════════════╝
+        </div>
+        <h1>⚡ PLUGINS & TOOLS</h1>
+        <p>Extend ADAM's capabilities with these integrations</p>
+    </header>
+    
+    <nav class="nav">
+        <a href="index.html">← Home</a>
+        <a href="skills.html">Skills</a>
+        <a href="plugins.html">Plugins</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="plugins-grid">
+            <a href="plugins/github.html" class="plugin-card">
+                <div class="icon">🐙</div>
+                <h2>GitHub</h2>
+                <p>Manage repositories, issues, pull requests, and CI/CD pipelines.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/obsidian.html" class="plugin-card">
+                <div class="icon">🗂️</div>
+                <h2>Obsidian</h2>
+                <p>Navigate your knowledge graph, create notes, and connect ideas.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/gmail.html" class="plugin-card">
+                <div class="icon">📧</div>
+                <h2>Gmail</h2>
+                <p>Read, send, search, and organize your emails.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/calendar.html" class="plugin-card">
+                <div class="icon">📅</div>
+                <h2>Calendar</h2>
+                <p>Schedule events, set reminders, and manage your time.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/telegram.html" class="plugin-card">
+                <div class="icon">✈️</div>
+                <h2>Telegram</h2>
+                <p>Send messages, manage groups, and receive notifications.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/notion.html" class="plugin-card">
+                <div class="icon">📓</div>
+                <h2>Notion</h2>
+                <p>Manage databases, pages, and blocks in your workspace.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/weather.html" class="plugin-card">
+                <div class="icon">🌤️</div>
+                <h2>Weather</h2>
+                <p>Real-time weather forecasts and conditions.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/spotify.html" class="plugin-card">
+                <div class="icon">🎵</div>
+                <h2>Spotify</h2>
+                <p>Control playback, search tracks, and manage playlists.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/healthcheck.html" class="plugin-card">
+                <div class="icon">🔒</div>
+                <h2>HealthCheck</h2>
+                <p>System hardening, security audits, and risk assessments.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/clawrouter.html" class="plugin-card">
+                <div class="icon">⚙️</div>
+                <h2>ClawRouter</h2>
+                <p>Smart LLM routing with cost optimization across 55+ models.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/imagegen.html" class="plugin-card">
+                <div class="icon">🎨</div>
+                <h2>Image Gen</h2>
+                <p>Generate stunning images with DALL-E, Flux, and more.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+            
+            <a href="plugins/websearch.html" class="plugin-card">
+                <div class="icon">🔍</div>
+                <h2>Web Search</h2>
+                <p>Perplexity-powered web search with fact verification.</p>
+                <span class="status">ACTIVE</span>
+            </a>
+        </div>
+    </div>
+    
+    <footer>
+        <p>ADAM v1.0 | AI Assistant | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p>
+    </footer>
+</body>
+</html>
