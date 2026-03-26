@@ -26,6 +26,40 @@
         .hero-svg .file { animation: fileFloat 2s ease-in-out infinite alternate; }
         @keyframes folderOpen { 0%, 100% { transform: rotateX(0deg); } 50% { transform: rotateX(15deg); } }
         @keyframes fileFloat { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
+        
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        
+        /* Demo Styles */
+        .demo-container { background: #000; border: 1px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .demo-btn { background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.3s; min-height: 44px; }
+        .demo-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        
+        /* File Tree */
+        .file-tree { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin: 15px 0; }
+        .file-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; margin-left: 20px; }
+        .file-item:hover { background: rgba(0, 255, 136, 0.1); }
+        .file-item.selected { background: rgba(0, 255, 136, 0.2); border: 1px solid var(--primary); }
+        .file-icon { font-size: 16px; }
+        .file-name { font-size: 14px; color: var(--text); }
+        .file-meta { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+        .folder-children { margin-left: 20px; border-left: 1px dashed var(--border); padding-left: 10px; }
+        
+        /* Action Log */
+        .action-log { background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 4px; font-size: 12px; max-height: 150px; overflow-y: auto; }
+        .log-entry { padding: 4px 0; color: var(--primary-dim); }
+        .log-entry.success { color: var(--primary); }
+        .log-entry.info { color: #00bcd4; }
+        
+        /* File Preview */
+        .file-preview { background: var(--bg-secondary); border: 1px solid var(--border); padding: 15px; border-radius: 4px; margin-top: 15px; }
+        .file-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .file-preview-title { color: var(--primary); font-size: 14px; }
+        .file-preview-content { font-size: 13px; color: var(--text-dim); white-space: pre-wrap; }
+        
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
@@ -65,19 +99,135 @@
     </div>
     <div class="container">
         <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../skills.html">Skills</a> / Files</div>
-        <div class="section"><h2>// Overview</h2><p>The Files module manages file system operations. ADAM can create, read, update, delete files and directories, and interact with Git repositories.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
-        <div class="section"><h2>// Capabilities</h2><ul class="feature-list"><li>File and directory CRUD operations</li><li>Content searching and filtering</li><li>File organization and renaming</li><li>Git repository management</li><li>Branching, committing, and merging</li><li>Remote repository synchronization</li></ul></div>
-        <div class="section"><h2>// Example Usage</h2><div class="code-block">> ls: list files in directory
+        <div class="section reveal"><h2>// Overview</h2><p>The Files module manages file system operations. ADAM can create, read, update, delete files and directories, and interact with Git repositories.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
+        <div class="section reveal reveal-delay-1"><h2>// Capabilities</h2><ul class="feature-list"><li>File and directory CRUD operations</li><li>Content searching and filtering</li><li>File organization and renaming</li><li>Git repository management</li><li>Branching, committing, and merging</li><li>Remote repository synchronization</li></ul></div>
+        <div class="section reveal reveal-delay-2"><h2>// Example Usage</h2><div class="code-block">> ls: list files in directory
 > read: file "config.json"
 > write: new content to "output.txt"
 > delete: directory "temp_files"
 > git commit: "add new feature"</div></div>
+        
+        <!-- Interactive Demo -->
+        <div class="section reveal">
+            <h2>// Live Demo: File Manager</h2>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">Click on files to preview content. Use buttons to simulate file operations.</p>
+            <div class="demo-container">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="demo-btn" onclick="createFile()">+ New File</button>
+                    <button class="demo-btn" onclick="refreshFiles()">↻ Refresh</button>
+                    <button class="demo-btn" onclick="commitChanges()">✓ Commit</button>
+                </div>
+                
+                <div class="file-tree" id="fileTree">
+                    <div class="file-item" onclick="selectFile('README.md', this)">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">README.md</span>
+                        <span class="file-meta">2.4 KB</span>
+                    </div>
+                    <div class="file-item" onclick="selectFile('config.json', this)">
+                        <span class="file-icon">⚙️</span>
+                        <span class="file-name">config.json</span>
+                        <span class="file-meta">512 B</span>
+                    </div>
+                    <div class="file-item" onclick="selectFile('index.html', this)">
+                        <span class="file-icon">🌐</span>
+                        <span class="file-name">index.html</span>
+                        <span class="file-meta">1.8 KB</span>
+                    </div>
+                    <div class="file-item" onclick="selectFile('script.js', this)">
+                        <span class="file-icon">📜</span>
+                        <span class="file-name">script.js</span>
+                        <span class="file-meta">4.2 KB</span>
+                    </div>
+                    <div class="file-item" onclick="selectFile('styles.css', this)">
+                        <span class="file-icon">🎨</span>
+                        <span class="file-name">styles.css</span>
+                        <span class="file-meta">3.1 KB</span>
+                    </div>
+                </div>
+                
+                <div class="file-preview" id="filePreview">
+                    <div class="file-preview-header">
+                        <span class="file-preview-title" id="previewTitle">Select a file to preview</span>
+                    </div>
+                    <div class="file-preview-content" id="previewContent">Click on any file to see its contents here...</div>
+                </div>
+                
+                <div class="action-log" id="actionLog">
+                    <div class="log-entry">File system initialized</div>
+                </div>
+            </div>
+        </div>
     </div>
     <footer><p>ADAM v1.0 | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p></footer>
     <script>
         function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); localStorage.setItem('theme', next); document.querySelector('.theme-toggle').textContent = next === 'light' ? '🌙' : '☀️'; }
         const savedTheme = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', savedTheme); document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+        
+        // Scroll Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // File Manager Demo
+        const fileContents = {
+            'README.md': '# My Project\n\nA sample project demonstrating file management capabilities.\n\n## Features\n- File listing\n- Content preview\n- Git operations',
+            'config.json': '{\n  "name": "my-project",\n  "version": "1.0.0",\n  "settings": {\n    "theme": "dark",\n    "debug": false\n  }\n}',
+            'index.html': '<!DOCTYPE html>\n<html>\n<head>\n  <title>My Project</title>\n  <link rel="stylesheet" href="styles.css">\n</head>\n<body>\n  <h1>Welcome</h1>\n  <script src="script.js"><\/script>\n</body>\n</html>',
+            'script.js': '// Main application script\n\ndocument.addEventListener("DOMContentLoaded", () => {\n  console.log("App initialized");\n  // Add your code here\n});',
+            'styles.css': '/* Main stylesheet */\n\nbody {\n  font-family: system-ui, sans-serif;\n  margin: 0;\n  padding: 20px;\n  background: #0a0a0a;\n  color: #e0e0e0;\n}'
+        };
+        
+        let selectedFile = null;
+        
+        function selectFile(filename, element) {
+            document.querySelectorAll('.file-item').forEach(f => f.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedFile = filename;
+            
+            document.getElementById('previewTitle').textContent = filename;
+            document.getElementById('previewContent').textContent = fileContents[filename] || 'File not found';
+            
+            addLog(`Opened ${filename}`, 'info');
+        }
+        
+        function createFile() {
+            const filename = 'new_file_' + Date.now() + '.txt';
+            const tree = document.getElementById('fileTree');
+            const newFile = document.createElement('div');
+            newFile.className = 'file-item';
+            newFile.onclick = function() { selectFile(filename, this); };
+            newFile.innerHTML = `<span class="file-icon">📄</span><span class="file-name">${filename}</span><span class="file-meta">0 B</span>`;
+            tree.appendChild(newFile);
+            addLog(`Created ${filename}`, 'success');
+        }
+        
+        function refreshFiles() {
+            addLog('Refreshing file list...', 'info');
+            setTimeout(() => addLog('File list up to date', 'success'), 300);
+        }
+        
+        function commitChanges() {
+            if (selectedFile) {
+                addLog(`Committing ${selectedFile}...`, 'info');
+                setTimeout(() => {
+                    addLog(`Changes committed: 1 file`, 'success');
+                }, 500);
+            } else {
+                addLog('No file selected to commit', 'info');
+            }
+        }
+        
+        function addLog(message, type) {
+            const log = document.getElementById('actionLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = '> ' + message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
     </script>
 </body>
 </html>

@@ -44,7 +44,33 @@
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
         .section p { color: var(--text); margin-bottom: 10px; }
-        .code-block { background: #000; padding: 15px; border-radius: 4px; margin: 15px 0; border: 1px solid var(--border); font-size: 13px; color: var(--primary-dim); overflow-x: auto; white-space: pre; }
+        .code-animation-container {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--primary-dim);
+            overflow: hidden; /* Important for revealing text */
+            white-space: pre;
+            border-left: 3px solid var(--primary);
+        }
+        .animated-code {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        .animated-code.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .animated-code span { display: block; } /* Each line is a block */
+        .animated-code .token.keyword { color: #FF5722; } /* Example styling */
+        .animated-code .token.function { color: #00BCD4; } 
+        .animated-code .token.comment { color: #757575; font-style: italic; } 
+        .animated-code .token.number { color: #FFEB3B; } 
         .feature-list { list-style: none; padding: 0; }
         .feature-list li { padding: 8px 0; border-bottom: 1px solid var(--border); transition: border-color 0.3s; }
         .feature-list li:before { content: "> "; color: var(--primary); }
@@ -112,12 +138,17 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...</div>
         </div>
         
         <div class="section">
-            <h2>// Example Usage</h2>
-            <div class="code-block">> write: Python function to parse JSON logs
-> review: check this code for security issues
-> debug: explain this error: TypeError: undefined
-> explain: how does this regex pattern work?
-> refactor: simplify this 100-line function</div>
+            <h2>// Animated Code Snippet</h2>
+            <div class="code-animation-container">
+                <pre class="animated-code">
+<span class="token keyword">def</span> <span class="token function">calculate_fibonacci</span>(n):
+    <span class="token comment"># Calculates the nth Fibonacci number recursively</span>
+    <span class="token keyword">if</span> n &lt;= <span class="token number">1</span>:
+        <span class="token keyword">return</span> n
+    <span class="token keyword">else</span>:
+        <span class="token keyword">return</span> <span class="token function">calculate_fibonacci</span>(n-1) + <span class="token function">calculate_fibonacci</span>(n-2)
+</pre>
+            </div>
         </div>
         
         <div class="section">
@@ -146,6 +177,31 @@ Best Practices: strict</div>
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+    </script>
+    <script>
+        function animateCodeTyping(element) {
+            const lines = element.querySelectorAll('span');
+            lines.forEach((line, index) => {
+                line.style.animation = `typing ${index * 0.1 + 0.5}s steps(${line.textContent.length}, end) forwards`;
+                line.style.opacity = '1';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeContainer = document.querySelector('.code-animation-container');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const animatedCode = entry.target.querySelector('.animated-code');
+                        animatedCode.classList.add('visible');
+                        animateCodeTyping(animatedCode);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(codeContainer);
+        });
     </script>
 </body>
 </html>

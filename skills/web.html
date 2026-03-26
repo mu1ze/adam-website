@@ -26,6 +26,45 @@
         .hero-svg .dot { animation: pulseDot 2s infinite ease-in-out; }
         @keyframes moveArrow { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
         @keyframes pulseDot { 0%, 100% { r: 3; opacity: 1; } 50% { r: 5; opacity: 0.7; } }
+        
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        
+        /* Demo Styles */
+        .demo-container { background: #000; border: 1px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .demo-btn { background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.3s; min-height: 44px; }
+        .demo-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .demo-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Browser Mockup */
+        .browser-mockup { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 20px 0; }
+        .browser-header { background: var(--bg); padding: 10px 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+        .browser-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .browser-dot.red { background: #ff5f57; }
+        .browser-dot.yellow { background: #ffbd2e; }
+        .browser-dot.green { background: #28ca41; }
+        .browser-url { flex: 1; background: var(--bg-secondary); padding: 6px 12px; border-radius: 4px; font-size: 12px; color: var(--text-dim); margin-left: 10px; }
+        .browser-content { padding: 20px; min-height: 200px; }
+        
+        /* Form Steps */
+        .form-steps { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .form-step { padding: 10px 20px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; text-align: center; min-width: 100px; transition: all 0.3s; }
+        .form-step.active { border-color: var(--primary); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        .form-step.completed { border-color: var(--primary); background: rgba(0, 255, 136, 0.1); }
+        .form-step-number { width: 24px; height: 24px; background: var(--primary); color: var(--bg); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 5px; }
+        .form-step.completed .form-step-number { background: var(--primary); }
+        .form-step-label { font-size: 12px; color: var(--text-dim); }
+        .form-arrow { color: var(--primary); font-size: 20px; }
+        
+        /* Log */
+        .automation-log { background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 4px; font-size: 12px; max-height: 150px; overflow-y: auto; }
+        .log-line { padding: 4px 0; color: var(--primary-dim); }
+        .log-line.success { color: var(--primary); }
+        .log-line.pending { color: var(--text-dim); }
+        
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
@@ -57,18 +96,122 @@
     </div>
     <div class="container">
         <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../skills.html">Skills</a> / Web</div>
-        <div class="section"><h2>// Overview</h2><p>The Web module automates browser interactions. ADAM can navigate websites, scrape data, fill forms, and take screenshots for web automation tasks.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
-        <div class="section"><h2>// Capabilities</h2><ul class="feature-list"><li>Automated browser control</li><li>Web scraping and data extraction</li><li>Form submission and interaction</li><li>Screenshot and visual capture</li><li>Cross-browser testing simulation</li><li>Dynamic web page interaction</li></ul></div>
-        <div class="section"><h2>// Example Usage</h2><div class="code-block">> browse: "example.com" and get page title
+        <div class="section reveal"><h2>// Overview</h2><p>The Web module automates browser interactions. ADAM can navigate websites, scrape data, fill forms, and take screenshots for web automation tasks.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
+        <div class="section reveal reveal-delay-1"><h2>// Capabilities</h2><ul class="feature-list"><li>Automated browser control</li><li>Web scraping and data extraction</li><li>Form submission and interaction</li><li>Screenshot and visual capture</li><li>Cross-browser testing simulation</li><li>Dynamic web page interaction</li></ul></div>
+        <div class="section reveal reveal-delay-2"><h2>// Example Usage</h2><div class="code-block">> browse: "example.com" and get page title
 > scrape: all product links from "example.com/products"
 > fill: form on "example.com/contact" with details
 > screenshot: "example.com/dashboard"</div></div>
+        
+        <!-- Interactive Demo -->
+        <div class="section reveal">
+            <h2>// Live Demo: Form Automation</h2>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">Watch ADAM automate a contact form step by step.</p>
+            <div class="demo-container">
+                <div class="form-steps" id="formSteps">
+                    <div class="form-step active" data-step="1">
+                        <div class="form-step-number">1</div>
+                        <div class="form-step-label">Navigate</div>
+                    </div>
+                    <div class="form-arrow">→</div>
+                    <div class="form-step" data-step="2">
+                        <div class="form-step-number">2</div>
+                        <div class="form-step-label">Fill Name</div>
+                    </div>
+                    <div class="form-arrow">→</div>
+                    <div class="form-step" data-step="3">
+                        <div class="form-step-number">3</div>
+                        <div class="form-step-label">Fill Email</div>
+                    </div>
+                    <div class="form-arrow">→</div>
+                    <div class="form-step" data-step="4">
+                        <div class="form-step-number">4</div>
+                        <div class="form-step-label">Submit</div>
+                    </div>
+                </div>
+                
+                <div class="browser-mockup">
+                    <div class="browser-header">
+                        <div class="browser-dot red"></div>
+                        <div class="browser-dot yellow"></div>
+                        <div class="browser-dot green"></div>
+                        <div class="browser-url" id="browserUrl">example.com/contact</div>
+                    </div>
+                    <div class="browser-content" id="browserContent">
+                        <p style="color: var(--text-dim);">Form will appear here...</p>
+                    </div>
+                </div>
+                
+                <button class="demo-btn" id="runAutomation" onclick="runAutomation()">▶ Run Automation</button>
+                
+                <div class="automation-log" id="automationLog">
+                    <div class="log-line pending">Waiting to start automation...</div>
+                </div>
+            </div>
+        </div>
     </div>
     <footer><p>ADAM v1.0 | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p></footer>
     <script>
         function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); localStorage.setItem('theme', next); document.querySelector('.theme-toggle').textContent = next === 'light' ? '🌙' : '☀️'; }
         const savedTheme = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', savedTheme); document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+        
+        // Scroll Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // Web Automation Demo
+        let currentStep = 0;
+        const steps = [
+            { step: 1, action: 'Navigating to example.com/contact...', url: 'example.com/contact', content: '<p style="color: var(--text-dim);">Loading page...</p>' },
+            { step: 2, action: 'Filling name field: "John Doe"', url: 'example.com/contact', content: '<div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Name</label><input type="text" value="John Doe" style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary);" readonly></div>' },
+            { step: 3, action: 'Filling email field: "john@example.com"', url: 'example.com/contact', content: '<div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Name</label><input type="text" value="John Doe" style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary);" readonly></div><div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Email</label><input type="email" value="john@example.com" style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary);" readonly></div>' },
+            { step: 4, action: 'Submitting form...', url: 'example.com/contact', content: '<div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Name</label><input type="text" value="John Doe" style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary);" readonly></div><div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Email</label><input type="email" value="john@example.com" style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary);" readonly></div><div style="margin-bottom: 15px;"><label style="display: block; margin-bottom: 5px; color: var(--text-dim);">Message</label><textarea style="width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);" rows="3">Hello, I would like to get in touch!</textarea></div><button style="background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">Submit</button>' }
+        ];
+        
+        function runAutomation() {
+            const btn = document.getElementById('runAutomation');
+            if (currentStep >= steps.length) {
+                currentStep = 0;
+                document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active', 'completed'));
+                document.getElementById('automationLog').innerHTML = '<div class="log-line pending">Waiting to start automation...</div>';
+                btn.textContent = '▶ Run Automation';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            
+            const step = steps[currentStep];
+            const log = document.getElementById('automationLog');
+            
+            // Update step indicators
+            document.querySelectorAll('.form-step').forEach((s, i) => {
+                s.classList.remove('active');
+                if (i < currentStep) s.classList.add('completed');
+                if (i === currentStep) s.classList.add('active');
+            });
+            
+            // Add log entry
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-line success';
+            logEntry.textContent = '✓ ' + step.action;
+            log.appendChild(logEntry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Update browser
+            document.getElementById('browserUrl').textContent = step.url;
+            document.getElementById('browserContent').innerHTML = step.content;
+            
+            currentStep++;
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = currentStep >= steps.length ? '↻ Restart' : '▶ Continue';
+            }, 800);
+        }
     </script>
 </body>
 </html>

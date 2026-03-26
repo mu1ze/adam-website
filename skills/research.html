@@ -42,6 +42,47 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes search { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
         
+        /* Scroll Reveal Animations */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        
+        /* Interactive Demo Styles */
+        .demo-container { background: #000; border: 1px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .demo-input-wrapper { display: flex; gap: 10px; margin-bottom: 15px; }
+        .demo-input { flex: 1; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 4px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .demo-input:focus { border-color: var(--primary); }
+        .demo-btn { background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.3s; min-height: 44px; }
+        .demo-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .demo-btn:active { transform: scale(0.98); }
+        .demo-results { border-top: 1px solid var(--border); padding-top: 15px; }
+        .demo-result { padding: 10px; border-bottom: 1px solid var(--border); animation: slideIn 0.3s ease; }
+        .demo-result:last-child { border-bottom: none; }
+        .demo-result-title { color: var(--primary); font-size: 14px; cursor: pointer; }
+        .demo-result-title:hover { text-decoration: underline; }
+        .demo-result-snippet { color: var(--text-dim); font-size: 12px; margin-top: 4px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        /* Progress Graph */
+        .graph-container { background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .graph-title { color: var(--primary); font-size: 14px; margin-bottom: 15px; }
+        .graph-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+        .graph-bar { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; transition: height 0.5s ease, background 0.3s; position: relative; cursor: pointer; min-width: 20px; }
+        .graph-bar:hover { background: #00ff88; }
+        .graph-bar::after { content: attr(data-label); position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+        .graph-bar.active { background: #00ff88; }
+        
+        /* Wireframe Flow */
+        .wireframe { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .wireframe-step { background: var(--bg-secondary); border: 1px solid var(--border); padding: 15px 20px; border-radius: 8px; text-align: center; transition: all 0.3s; min-width: 100px; }
+        .wireframe-step.active { border-color: var(--primary); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        .wireframe-step.completed { border-color: var(--primary); background: rgba(0, 255, 136, 0.1); }
+        .wireframe-step-icon { font-size: 24px; margin-bottom: 5px; }
+        .wireframe-step-label { font-size: 12px; color: var(--text-dim); }
+        .wireframe-arrow { color: var(--primary); font-size: 20px; }
+        
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
@@ -108,12 +149,71 @@
             </ul>
         </div>
         
-        <div class="section">
+        <div class="section reveal">
             <h2>// Example Usage</h2>
             <div class="code-block">> search: "latest AI developments 2026"
 > find: academic papers on neural networks
 > verify: [claim] against reliable sources
 > summarize: top 5 findings from search results</div>
+        </div>
+        
+        <!-- Interactive Demo: Search Simulation -->
+        <div class="section reveal reveal-delay-1">
+            <h2>// Live Demo: Research Search</h2>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">Try the research module! Type a query and see results appear.</p>
+            <div class="demo-container">
+                <div class="demo-input-wrapper">
+                    <input type="text" class="demo-input" id="searchInput" placeholder="Enter search query..." value="AI developments 2026">
+                    <button class="demo-btn" onclick="runSearch()">Search</button>
+                </div>
+                <div class="demo-results" id="searchResults">
+                    <div style="color: var(--text-dim); text-align: center; padding: 20px;">Results will appear here...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wireframe: Research Flow -->
+        <div class="section reveal reveal-delay-2">
+            <h2>// Research Process Flow</h2>
+            <div class="wireframe" id="researchFlow">
+                <div class="wireframe-step completed" data-step="1">
+                    <div class="wireframe-step-icon">🔍</div>
+                    <div class="wireframe-step-label">Query</div>
+                </div>
+                <div class="wireframe-arrow">→</div>
+                <div class="wireframe-step active" data-step="2">
+                    <div class="wireframe-step-icon">🌐</div>
+                    <div class="wireframe-step-label">Search</div>
+                </div>
+                <div class="wireframe-arrow">→</div>
+                <div class="wireframe-step" data-step="3">
+                    <div class="wireframe-step-icon">✓</div>
+                    <div class="wireframe-step-label">Verify</div>
+                </div>
+                <div class="wireframe-arrow">→</div>
+                <div class="wireframe-step" data-step="4">
+                    <div class="wireframe-step-icon">📝</div>
+                    <div class="wireframe-step-label">Synthesize</div>
+                </div>
+            </div>
+            <button class="demo-btn" onclick="advanceFlow()" style="margin-top: 15px;">Advance Step →</button>
+        </div>
+        
+        <!-- Progress Graph -->
+        <div class="section reveal reveal-delay-3">
+            <h2>// Research Activity</h2>
+            <div class="graph-container">
+                <div class="graph-title">Queries Processed (Last 7 Days)</div>
+                <div class="graph-bars" id="activityGraph">
+                    <div class="graph-bar active" data-height="60" data-label="Mon" style="height: 60%;"></div>
+                    <div class="graph-bar" data-height="80" data-label="Tue" style="height: 80%;"></div>
+                    <div class="graph-bar" data-height="45" data-label="Wed" style="height: 45%;"></div>
+                    <div class="graph-bar" data-height="90" data-label="Thu" style="height: 90%;"></div>
+                    <div class="graph-bar" data-height="70" data-label="Fri" style="height: 70%;"></div>
+                    <div class="graph-bar" data-height="30" data-label="Sat" style="height: 30%;"></div>
+                    <div class="graph-bar" data-height="50" data-label="Sun" style="height: 50%;"></div>
+                </div>
+            </div>
         </div>
         
         <div class="section">
@@ -142,6 +242,72 @@ Max Results: 10</div>
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+        
+        // Scroll Reveal Animation
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // Interactive Search Demo
+        const mockResults = [
+            { title: "AI Breakthrough: New Language Model Achieves Human-Level Reasoning", snippet: "Researchers announce major advancement in artificial intelligence with implications for automation..." },
+            { title: "Machine Learning Trends 2026: From Labs to Production", snippet: "Comprehensive analysis of how ML is transforming industries with focus on edge computing..." },
+            { title: "The Future of Work: AI Collaboration in the Enterprise", snippet: "Study reveals 78% of Fortune 500 companies integrating AI assistants into workflows..." },
+            { title: "Open Source AI Models: Democratizing Access to Intelligence", snippet: "New framework enables smaller teams to fine-tune powerful models for specific domains..." },
+            { title: "Ethics in AI: Navigating the Complex Landscape of 2026", snippet: "Policy makers and technologists debate frameworks for responsible AI deployment..." }
+        ];
+        
+        function runSearch() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('searchResults');
+            if (!query.trim()) {
+                resultsDiv.innerHTML = '<div style="color: var(--primary); text-align: center;">Please enter a search query...</div>';
+                return;
+            }
+            resultsDiv.innerHTML = '<div style="color: var(--primary); text-align: center; padding: 20px;">Searching...</div>';
+            setTimeout(() => {
+                let html = '';
+                mockResults.forEach((result, i) => {
+                    html += `<div class="demo-result" style="animation-delay: ${i * 0.1}s">
+                        <div class="demo-result-title">${result.title}</div>
+                        <div class="demo-result-snippet">${result.snippet}</div>
+                    </div>`;
+                });
+                resultsDiv.innerHTML = html;
+            }, 800);
+        }
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') runSearch();
+        });
+        
+        // Wireframe Flow Animation
+        let currentStep = 2;
+        function advanceFlow() {
+            const steps = document.querySelectorAll('.wireframe-step');
+            steps.forEach((step, i) => {
+                step.classList.remove('active', 'completed');
+                if (i < currentStep) step.classList.add('completed');
+                if (i === currentStep) step.classList.add('active');
+            });
+            currentStep = (currentStep + 1) % steps.length;
+        }
+        
+        // Graph Interaction
+        document.querySelectorAll('.graph-bar').forEach(bar => {
+            bar.addEventListener('click', () => {
+                document.querySelectorAll('.graph-bar').forEach(b => b.classList.remove('active'));
+                bar.classList.add('active');
+                const height = bar.style.height;
+                bar.style.transform = 'scaleY(1.1)';
+                setTimeout(() => bar.style.transform = '', 200);
+            });
+        });
     </script>
 </body>
 </html>

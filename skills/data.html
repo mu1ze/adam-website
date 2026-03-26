@@ -24,6 +24,30 @@
         .hero-svg { width: 120px; height: 120px; margin: 0 auto 20px; }
         .hero-svg .bar { animation: growBar 2s ease-in-out infinite; transform-origin: bottom; }
         @keyframes growBar { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
+        
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        
+        /* Demo Styles */
+        .demo-container { background: #000; border: 1px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .demo-input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 4px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 10px; }
+        .demo-input:focus { border-color: var(--primary); }
+        .demo-btn { background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.3s; min-height: 44px; }
+        .demo-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .demo-chart { display: flex; align-items: flex-end; gap: 15px; height: 150px; margin: 20px 0; padding: 20px; background: var(--bg-secondary); border-radius: 8px; }
+        .demo-bar { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; transition: all 0.5s ease; position: relative; cursor: pointer; }
+        .demo-bar:hover { background: #00ff88; }
+        .demo-bar::after { content: attr(data-value); position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--text-dim); }
+        .demo-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .demo-stat { background: var(--bg-secondary); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border); }
+        .demo-stat-value { font-size: 24px; color: var(--primary); font-weight: bold; }
+        .demo-stat-label { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+        @keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .count-animate { animation: countUp 0.5s ease forwards; }
+        
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
@@ -36,7 +60,7 @@
         footer { text-align: center; padding: 30px; color: var(--text-dim); font-size: 12px; border-top: 1px solid var(--border); margin-top: 40px; transition: border-color 0.3s; }
         .breadcrumb { color: var(--text-dim); font-size: 12px; margin-bottom: 20px; }
         .breadcrumb a { color: var(--primary); text-decoration: none; }
-        @media (max-width: 768px) { body { padding-bottom: 80px; } }
+        @media (max-width: 768px) { body { padding-bottom: 80px; } .demo-stats { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -57,19 +81,82 @@
     </div>
     <div class="container">
         <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../skills.html">Skills</a> / Data</div>
-        <div class="section"><h2>// Overview</h2><p>The Data module processes, analyzes, and visualizes data. ADAM can work with CSVs, JSON, databases, and APIs to extract insights, generate reports, and create charts.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
-        <div class="section"><h2>// Capabilities</h2><ul class="feature-list"><li>Parse and analyze CSV/JSON files</li><li>SQL query generation and optimization</li><li>Statistical analysis and trends</li><li>Data cleaning and transformation</li><li>Report generation from datasets</li><li>API data aggregation</li></ul></div>
-        <div class="section"><h2>// Example Usage</h2><div class="code-block">> analyze: this sales CSV and find trends
+        <div class="section reveal"><h2>// Overview</h2><p>The Data module processes, analyzes, and visualizes data. ADAM can work with CSVs, JSON, databases, and APIs to extract insights, generate reports, and create charts.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
+        <div class="section reveal reveal-delay-1"><h2>// Capabilities</h2><ul class="feature-list"><li>Parse and analyze CSV/JSON files</li><li>SQL query generation and optimization</li><li>Statistical analysis and trends</li><li>Data cleaning and transformation</li><li>Report generation from datasets</li><li>API data aggregation</li></ul></div>
+        <div class="section reveal reveal-delay-2"><h2>// Example Usage</h2><div class="code-block">> analyze: this sales CSV and find trends
 > query: get top 10 customers by revenue
 > clean: remove duplicates from this dataset
 > chart: create bar chart of monthly data
 > report: summarize key metrics from JSON</div></div>
+        
+        <!-- Interactive Demo -->
+        <div class="section reveal">
+            <h2>// Live Demo: Data Analyzer</h2>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">Click "Analyze" to process sample sales data and generate insights.</p>
+            <div class="demo-container">
+                <input type="text" class="demo-input" id="dataInput" value="Month,Sales,Users
+Jan,45000,1200
+Feb,52000,1450
+Mar,48000,1300
+Apr,61000,1680
+May,72000,1900
+Jun,68000,1750" readonly>
+                <button class="demo-btn" onclick="analyzeData()">Analyze Data</button>
+                <div id="analysisResults" style="margin-top: 20px;">
+                    <div style="color: var(--text-dim); text-align: center; padding: 20px;">Click analyze to see results...</div>
+                </div>
+            </div>
+        </div>
     </div>
     <footer><p>ADAM v1.0 | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p></footer>
     <script>
         function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); localStorage.setItem('theme', next); document.querySelector('.theme-toggle').textContent = next === 'light' ? '🌙' : '☀️'; }
         const savedTheme = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', savedTheme); document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+        
+        // Scroll Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // Data Analyzer Demo
+        function analyzeData() {
+            const resultsDiv = document.getElementById('analysisResults');
+            resultsDiv.innerHTML = '<div style="color: var(--primary); text-align: center; padding: 20px;">Analyzing...</div>';
+            
+            setTimeout(() => {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                const sales = [45000, 52000, 48000, 61000, 72000, 68000];
+                const maxSales = Math.max(...sales);
+                const avgSales = Math.round(sales.reduce((a,b) => a+b, 0) / sales.length);
+                const totalUsers = 1200 + 1450 + 1300 + 1680 + 1900 + 1750;
+                const growth = Math.round(((72000 - 45000) / 45000) * 100);
+                
+                let chartHTML = '<div class="demo-chart">';
+                months.forEach((m, i) => {
+                    const height = (sales[i] / maxSales) * 100;
+                    chartHTML += `<div class="demo-bar" style="height: ${height}%;" data-value="${m}\n$${sales[i].toLocaleString()}"></div>`;
+                });
+                chartHTML += '</div>';
+                
+                let statsHTML = '<div class="demo-stats">';
+                statsHTML += `<div class="demo-stat"><div class="demo-stat-value count-animate">$${avgSales.toLocaleString()}</div><div class="demo-stat-label">Avg Monthly Sales</div></div>`;
+                statsHTML += `<div class="demo-stat"><div class="demo-stat-value count-animate">${totalUsers.toLocaleString()}</div><div class="demo-stat-label">Total Users</div></div>`;
+                statsHTML += `<div class="demo-stat"><div class="demo-stat-value count-animate">+${growth}%</div><div class="demo-stat-label">Growth Rate</div></div>`;
+                statsHTML += '</div>';
+                
+                resultsDiv.innerHTML = chartHTML + statsHTML;
+                
+                // Add click handlers to bars
+                document.querySelectorAll('.demo-bar').forEach(bar => {
+                    bar.addEventListener('click', () => {
+                        document.querySelectorAll('.demo-bar').forEach(b => b.style.background = 'var(--primary)');
+                        bar.style.background = '#00ff88';
+                    });
+                });
+            }, 1000);
+        }
     </script>
 </body>
 </html>

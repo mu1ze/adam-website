@@ -24,6 +24,31 @@
         .hero-svg { width: 120px; height: 120px; margin: 0 auto 20px; }
         .hero-svg .check { animation: checkPop 2s ease-in-out infinite; transform-origin: center; }
         @keyframes checkPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        
+        /* Demo Styles */
+        .demo-container { background: #000; border: 1px solid var(--primary); border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .demo-input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 4px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 10px; }
+        .demo-input:focus { border-color: var(--primary); }
+        .demo-btn { background: var(--primary); color: var(--bg); border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px; transition: all 0.3s; min-height: 44px; }
+        .demo-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .task-list { list-style: none; padding: 0; margin: 15px 0; }
+        .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; transition: all 0.3s; }
+        .task-item.completed { opacity: 0.5; }
+        .task-item.completed .task-text { text-decoration: line-through; }
+        .task-checkbox { width: 20px; height: 20px; border: 2px solid var(--primary); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .task-checkbox.checked { background: var(--primary); }
+        .task-checkbox.checked::after { content: '✓'; color: var(--bg); font-size: 14px; }
+        .task-text { flex: 1; font-size: 14px; }
+        .task-agent { font-size: 12px; color: var(--primary); background: rgba(0, 255, 136, 0.1); padding: 2px 8px; border-radius: 3px; }
+        .progress-bar { height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; margin-top: 15px; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s ease; }
+        
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .section { background: var(--bg-secondary); margin: 20px 0; padding: 25px; border-radius: 8px; border-left: 3px solid var(--primary); transition: all 0.3s; }
         .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
@@ -59,19 +84,89 @@
     </div>
     <div class="container">
         <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../skills.html">Skills</a> / Delegation</div>
-        <div class="section"><h2>// Overview</h2><p>The Delegation module manages tasks, schedules, and reminders. ADAM helps you break down complex projects, track progress, and ensures nothing falls through the cracks.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
-        <div class="section"><h2>// Capabilities</h2><ul class="feature-list"><li>Create and track tasks with deadlines</li><li>Break down complex projects</li><li>Set reminders and notifications</li><li>Schedule meetings and events</li><li>Prioritize with urgency/importance matrix</li><li>Progress tracking and reporting</li></ul></div>
-        <div class="section"><h2>// Example Usage</h2><div class="code-block">> remind: meeting tomorrow at 3pm
+        <div class="section reveal"><h2>// Overview</h2><p>The Delegation module manages tasks, schedules, and reminders. ADAM helps you break down complex projects, track progress, and ensures nothing falls through the cracks.</p><p style="margin-top: 15px;"><span class="status">ACTIVE</span></p></div>
+        <div class="section reveal reveal-delay-1"><h2>// Capabilities</h2><ul class="feature-list"><li>Create and track tasks with deadlines</li><li>Break down complex projects</li><li>Set reminders and notifications</li><li>Schedule meetings and events</li><li>Prioritize with urgency/importance matrix</li><li>Progress tracking and reporting</li></ul></div>
+        <div class="section reveal reveal-delay-2"><h2>// Example Usage</h2><div class="code-block">> remind: meeting tomorrow at 3pm
 > task: break down "build website" into subtasks
 > schedule: team call for Friday 2pm
 > list: all tasks due this week
 > priority: reschedule by importance</div></div>
+        
+        <!-- Interactive Demo -->
+        <div class="section reveal">
+            <h2>// Live Demo: Task Delegator</h2>
+            <p style="color: var(--text-dim); margin-bottom: 15px;">Enter a task and ADAM will break it down and delegate to agents.</p>
+            <div class="demo-container">
+                <input type="text" class="demo-input" id="taskInput" value="Build a website landing page">
+                <button class="demo-btn" onclick="delegateTask()">Delegate Task</button>
+                <div id="delegationResults" style="margin-top: 20px;">
+                    <ul class="task-list" id="taskList">
+                        <li class="task-item">
+                            <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                            <span class="task-text">Design mockups</span>
+                            <span class="task-agent">DesignAgent</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                            <span class="task-text">Write copy</span>
+                            <span class="task-agent">ContentBot</span>
+                        </li>
+                        <li class="task-item">
+                            <div class="task-checkbox" onclick="toggleTask(this)"></div>
+                            <span class="task-text">Develop frontend</span>
+                            <span class="task-agent">CodeAgent</span>
+                        </li>
+                    </ul>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                    </div>
+                    <p style="color: var(--text-dim); font-size: 12px; margin-top: 10px;">Overall Progress: <span id="progressPercent">0</span>%</p>
+                </div>
+            </div>
+        </div>
     </div>
     <footer><p>ADAM v1.0 | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p></footer>
     <script>
         function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); localStorage.setItem('theme', next); document.querySelector('.theme-toggle').textContent = next === 'light' ? '🌙' : '☀️'; }
         const savedTheme = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', savedTheme); document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         function toggleMobileMenu() { document.getElementById('mainNav').classList.toggle('mobile-open'); }
+        
+        // Scroll Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // Task Delegation Demo
+        let completedTasks = 0;
+        const totalTasks = 3;
+        
+        function delegateTask() {
+            const taskInput = document.getElementById('taskInput');
+            taskInput.value = 'Building website...';
+            taskInput.disabled = true;
+            
+            setTimeout(() => {
+                taskInput.value = 'Build a website landing page';
+                taskInput.disabled = false;
+            }, 1500);
+        }
+        
+        function toggleTask(checkbox) {
+            checkbox.classList.toggle('checked');
+            const taskItem = checkbox.parentElement;
+            taskItem.classList.toggle('completed');
+            
+            if (checkbox.classList.contains('checked')) {
+                completedTasks++;
+            } else {
+                completedTasks--;
+            }
+            
+            const progress = (completedTasks / totalTasks) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressPercent').textContent = Math.round(progress);
+        }
     </script>
 </body>
 </html>
