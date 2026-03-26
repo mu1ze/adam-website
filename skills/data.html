@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data - ADAM Skills</title>
+    <style>
+        :root { --primary: #00ff88; --primary-dim: #00cc6a; --bg: #0a0a0a; --bg-secondary: #111111; --text: #e0e0e0; --text-dim: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { background: var(--bg-secondary); padding: 40px 20px; border-bottom: 2px solid var(--primary); text-align: center; }
+        .ascii-art { font-size: 7px; line-height: 1.1; color: var(--primary); white-space: pre; margin-bottom: 20px; }
+        .nav { background: var(--bg-secondary); padding: 15px 20px; border-bottom: 1px solid #333; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: var(--primary); text-decoration: none; font-size: 14px; padding: 5px 15px; border: 1px solid var(--primary); border-radius: 4px; transition: all 0.2s; }
+        .nav a:hover { background: var(--primary); color: var(--bg); }
+        .section { background: var(--bg-secondary); margin: 20px 0; padding: 30px; border-radius: 8px; border-left: 3px solid var(--primary); }
+        .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
+        .section p { color: var(--text); margin-bottom: 10px; }
+        .code-block { background: #000; padding: 15px; border-radius: 4px; margin: 15px 0; border: 1px solid #333; font-size: 13px; color: var(--primary-dim); overflow-x: auto; white-space: pre; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { padding: 8px 0; border-bottom: 1px solid #222; }
+        .feature-list li:before { content: "> "; color: var(--primary); }
+        .status { display: inline-block; background: var(--primary); color: var(--bg); padding: 2px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .footer { text-align: center; padding: 30px; color: var(--text-dim); font-size: 12px; border-top: 1px solid #333; margin-top: 40px; }
+        .breadcrumb { color: var(--text-dim); font-size: 12px; margin-bottom: 20px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 600px) { .ascii-art { font-size: 5px; } .nav { gap: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="ascii-art">
+    ┌────────────────────┐
+    │    DATA ENGINE    │
+    │────────────────────│
+    │  ▓▓▓▓▓▓░░░ 67%    │
+    │  ╭────────────╮   │
+    │  │ ██ ██ ██ ██│   │
+    │  │ ██ ██ ██ ██│   │
+    │  │ ██ ██ ██ ██│   │
+    │  ╰────────────╯   │
+    └────────────────────┘
+        </div>
+        <h1 style="color: var(--primary); font-size: 28px;">DATA</h1>
+        <p style="color: var(--text-dim);">Analysis, processing, and visualization of data</p>
+    </div>
+    
+    <div class="nav">
+        <a href="../index.html">← Home</a>
+        <a href="research.html">Research</a>
+        <a href="content.html">Content</a>
+        <a href="code.html">Code</a>
+        <a href="data.html">Data</a>
+        <a href="delegation.html">Tasks</a>
+        <a href="monitoring.html">Monitor</a>
+        <a href="web.html">Web</a>
+        <a href="files.html">Files</a>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#skills">Skills</a> / Data</div>
+        
+        <div class="section">
+            <h2>// Overview</h2>
+            <p>The Data module processes, analyzes, and visualizes data. ADAM can work with CSVs, JSON, databases, and APIs to extract insights, generate reports, and create charts.</p>
+            <p style="margin-top: 15px;"><span class="status">ACTIVE</span></p>
+        </div>
+        
+        <div class="section">
+            <h2>// Capabilities</h2>
+            <ul class="feature-list">
+                <li>Parse and analyze CSV/JSON files</li>
+                <li>SQL query generation and optimization</li>
+                <li>Statistical analysis and trends</li>
+                <li>Data cleaning and transformation</li>
+                <li>Report generation from datasets</li>
+                <li>API data aggregation</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>// Example Usage</h2>
+            <div class="code-block">> analyze: this sales CSV and find trends
+> query: get top 10 customers by revenue
+> clean: remove duplicates from this dataset
+> chart: create bar chart of monthly data
+> report: summarize key metrics from JSON</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>ADAM v1.0 | AI Assistant | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p>
+    </div>
+</body>
+</html>

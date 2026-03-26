@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code - ADAM Skills</title>
+    <style>
+        :root { --primary: #00ff88; --primary-dim: #00cc6a; --bg: #0a0a0a; --bg-secondary: #111111; --text: #e0e0e0; --text-dim: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { background: var(--bg-secondary); padding: 40px 20px; border-bottom: 2px solid var(--primary); text-align: center; }
+        .ascii-art { font-size: 7px; line-height: 1.1; color: var(--primary); white-space: pre; margin-bottom: 20px; }
+        .nav { background: var(--bg-secondary); padding: 15px 20px; border-bottom: 1px solid #333; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: var(--primary); text-decoration: none; font-size: 14px; padding: 5px 15px; border: 1px solid var(--primary); border-radius: 4px; transition: all 0.2s; }
+        .nav a:hover { background: var(--primary); color: var(--bg); }
+        .section { background: var(--bg-secondary); margin: 20px 0; padding: 30px; border-radius: 8px; border-left: 3px solid var(--primary); }
+        .section h2 { color: var(--primary); margin-bottom: 15px; font-size: 18px; }
+        .section p { color: var(--text); margin-bottom: 10px; }
+        .code-block { background: #000; padding: 15px; border-radius: 4px; margin: 15px 0; border: 1px solid #333; font-size: 13px; color: var(--primary-dim); overflow-x: auto; white-space: pre; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { padding: 8px 0; border-bottom: 1px solid #222; }
+        .feature-list li:before { content: "> "; color: var(--primary); }
+        .status { display: inline-block; background: var(--primary); color: var(--bg); padding: 2px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .footer { text-align: center; padding: 30px; color: var(--text-dim); font-size: 12px; border-top: 1px solid #333; margin-top: 40px; }
+        .breadcrumb { color: var(--text-dim); font-size: 12px; margin-bottom: 20px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        @media (max-width: 600px) { .ascii-art { font-size: 5px; } .nav { gap: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="ascii-art">
+    ┌─────────────────┐
+    │  &lt;/&gt;  CODE  &gt;/&lt;  │
+    │─────────────────│
+    │ ╔═══╗ ╔═══╗ ╔═══╗│
+    │ ║ 1 ║ ║ 2 ║ ║ 3 ║│
+    │ ╠═══╣ ╠═══╣ ╠═══╣│
+    │ ║ 4 ║ ║ 5 ║ ║ 6 ║│
+    │ ╚═══╝ ╚═══╝ ╚═══╝│
+    │    [ DEV MODULE ]│
+    └─────────────────┘
+        </div>
+        <h1 style="color: var(--primary); font-size: 28px;">CODE</h1>
+        <p style="color: var(--text-dim);">Programming, code review, and debugging across 50+ languages</p>
+    </div>
+    
+    <div class="nav">
+        <a href="../index.html">← Home</a>
+        <a href="research.html">Research</a>
+        <a href="content.html">Content</a>
+        <a href="code.html">Code</a>
+        <a href="data.html">Data</a>
+        <a href="delegation.html">Tasks</a>
+        <a href="monitoring.html">Monitor</a>
+        <a href="web.html">Web</a>
+        <a href="files.html">Files</a>
+    </div>
+    
+    <div class="container">
+        <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#skills">Skills</a> / Code</div>
+        
+        <div class="section">
+            <h2>// Overview</h2>
+            <p>The Code module provides comprehensive software development assistance. ADAM writes, reviews, debugs, and explains code across 50+ programming languages including Python, JavaScript, TypeScript, Rust, Go, and more.</p>
+            <p style="margin-top: 15px;"><span class="status">ACTIVE</span></p>
+        </div>
+        
+        <div class="section">
+            <h2>// Capabilities</h2>
+            <ul class="feature-list">
+                <li>Write and refactor production code</li>
+                <li>Code review with best practice suggestions</li>
+                <li>Debug error messages and stack traces</li>
+                <li>Explain complex algorithms and codebases</li>
+                <li>Write tests and documentation</li>
+                <li>Database queries and schema design</li>
+                <li>API design and integration</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>// Supported Languages</h2>
+            <div class="code-block">Python, JavaScript, TypeScript, Rust, Go, Java, C++, C#,
+Ruby, PHP, Swift, Kotlin, Scala, R, MATLAB, Julia,
+SQL, HTML, CSS, Bash, PowerShell, and 30+ more...</div>
+        </div>
+        
+        <div class="section">
+            <h2>// Example Usage</h2>
+            <div class="code-block">> write: Python function to parse JSON logs
+> review: check this code for security issues
+> debug: explain this error: TypeError: undefined
+> explain: how does this regex pattern work?
+> refactor: simplify this 100-line function</div>
+        </div>
+        
+        <div class="section">
+            <h2>// Configuration</h2>
+            <div class="code-block">Model:      Devstral (specialized for code)
+Context:    128K tokens
+Linting:    enabled
+Best Practices: strict</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>ADAM v1.0 | AI Assistant | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p>
+    </div>
+</body>
+</html>

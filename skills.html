@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills - ADAM</title>
+    <style>
+        :root { --primary: #00ff88; --primary-dim: #00cc6a; --bg: #0a0a0a; --bg-secondary: #111111; --text: #e0e0e0; --text-dim: #888888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        .header {
+            background: var(--bg-secondary);
+            padding: 40px 20px;
+            border-bottom: 2px solid var(--primary);
+            text-align: center;
+        }
+        .header h1 { color: var(--primary); font-size: 32px; margin-bottom: 10px; }
+        .header p { color: var(--text-dim); }
+        
+        .nav {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #333;
+        }
+        .nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 5px 15px;
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .nav a:hover { background: var(--primary); color: var(--bg); }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .skill-card {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            display: block;
+        }
+        .skill-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.1);
+        }
+        
+        .skill-card .ascii-icon {
+            font-size: 8px;
+            line-height: 1.1;
+            color: var(--primary);
+            white-space: pre;
+            margin-bottom: 15px;
+        }
+        
+        .skill-card h2 {
+            color: var(--primary);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .skill-card p {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .skill-card .features {
+            font-size: 12px;
+            color: var(--primary-dim);
+        }
+        
+        .skill-card .features span {
+            display: inline-block;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin: 2px;
+        }
+        
+        .skill-card .arrow {
+            color: var(--primary);
+            font-size: 14px;
+            margin-top: 15px;
+            display: block;
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 12px;
+            border-top: 1px solid #333;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>⚡ SKILLS OVERVIEW</h1>
+        <p>Click any skill to learn more</p>
+    </header>
+    
+    <nav class="nav">
+        <a href="index.html">← Home</a>
+        <a href="skills.html">Skills</a>
+    </nav>
+    
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="skills-grid">
+            <a href="skills/research.html" class="skill-card">
+                <div class="ascii-icon">  _______________    _____________________
+ \             /    |                   |
+  \           /     |    WEB RESEARCH    |
+   \========/      |     MODULE v1      |
+   |         |     |_____________________|
+   |  O   O  |         \|/    \|/
+   |    _    |          _Y_   _Y_
+   |_________|         |_____|_____|</div>
+                <h2>🔍 Research</h2>
+                <p>Web search, fact-checking, and information synthesis from multiple sources.</p>
+                <div class="features">
+                    <span>Web Search</span><span>Fact Check</span><span>Synthesis</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/content.html" class="skill-card">
+                <div class="ascii-icon">       ╔═══════════════════╗
+       ║   CONTENT CREATOR ║
+       ╠═══════════════════╣
+       ║ ╭─────────────────╮ ║
+       ║ │  ✎ Draft 1.0  │ ║
+       ║ │  ══════════════│ ║
+       ║ ╰─────────────────╯ ║
+       ╚═══════════════════╝</div>
+                <h2>📝 Content</h2>
+                <p>Writing, editing, copywriting, and creative content generation.</p>
+                <div class="features">
+                    <span>Emails</span><span>Docs</span><span>Creative</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/code.html" class="skill-card">
+                <div class="ascii-icon">    ┌─────────────────┐
+    │  </>  CODE  >/<  │
+    │─────────────────│
+    │ ╔═══╗ ╔═══╗ ╔═══╗│
+    │ ║ 1 ║ ║ 2 ║ ║ 3 ║│
+    │ ╠═══╣ ╠═══╣ ╠═══╣│
+    │ ║ 4 ║ ║ 5 ║ ║ 6 ║│
+    │ ╚═══╝ ╚═══╝ ╚═══╝│</div>
+                <h2>💻 Code</h2>
+                <p>Programming, code review, debugging across 50+ languages.</p>
+                <div class="features">
+                    <span>Write</span><span>Review</span><span>Debug</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/data.html" class="skill-card">
+                <div class="ascii-icon">    ┌────────────────────┐
+    │    DATA ENGINE    │
+    │────────────────────│
+    │  ▓▓▓▓▓▓░░░ 67%    │
+    │  ╭────────────╮   │
+    │  │ ██ ██ ██ ██│   │
+    │  ╰────────────╯   │
+    └────────────────────┘</div>
+                <h2>📊 Data</h2>
+                <p>Analysis, processing, and visualization of datasets.</p>
+                <div class="features">
+                    <span>CSV</span><span>SQL</span><span>Charts</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/delegation.html" class="skill-card">
+                <div class="ascii-icon">      ┌──────────────────────┐
+      │  TASK MANAGER v1.0   │
+      │──────────────────────│
+      │  [✓] Task 1   DONE  │
+      │  [▓] Task 2   50%  │
+      │  [ ] Task 3   TODO  │
+      └──────────────────────┘</div>
+                <h2>🤖 Delegation</h2>
+                <p>Task management, scheduling, and workflow orchestration.</p>
+                <div class="features">
+                    <span>Tasks</span><span>Reminders</span><span>Scheduling</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/monitoring.html" class="skill-card">
+                <div class="ascii-icon">    ┌──────────────────────────┐
+    │    SYSTEM MONITOR       │
+    │─────────────────────────│
+    │  CPU: ████████░░ 80%   │
+    │  RAM: ██████░░░░ 60%   │
+    │─────────────────────────│
+    │  ● ONLINE  ▲ UPTIME    │
+    └──────────────────────────┘</div>
+                <h2>🔔 Monitoring</h2>
+                <p>System health, security audits, and alerts.</p>
+                <div class="features">
+                    <span>Health</span><span>Security</span><span>Alerts</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/web.html" class="skill-card">
+                <div class="ascii-icon">      ╭─────────────────────────╮
+      │  🌐  WEB AUTOMATION  🌐 │
+      │─────────────────────────│
+      │  ╔═══╗ ╔═══╗ ╔═══╗   │
+      │  ║ ● ║ ║ ● ║ ║ ● ║   │
+      │  ╚═══╝ ╚═══╝ ╚═══╝   │</div>
+                <h2>🌐 Web</h2>
+                <p>Browser automation, scraping, and form handling.</p>
+                <div class="features">
+                    <span>Scrape</span><span>Forms</span><span>Screenshots</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+            
+            <a href="skills/files.html" class="skill-card">
+                <div class="ascii-icon">      ╭───────────────────────────╮
+      │     FILE MANAGER         │
+      │───────────────────────────│
+      │  📁 projects/           │
+      │   ├── 📄 index.html     │
+      │   └── 📁 scripts/        │
+      └───────────────────────────╯</div>
+                <h2>📁 Files</h2>
+                <p>File operations, organization, and Git management.</p>
+                <div class="features">
+                    <span>CRUD</span><span>Search</span><span>Git</span>
+                </div>
+                <span class="arrow">Learn more →</span>
+            </a>
+        </div>
+    </div>
+    
+    <footer>
+        <p>ADAM v1.0 | AI Assistant | <span style="color: var(--primary);">Powered by Nemotron Ultra 253B</span></p>
+    </footer>
+</body>
+</html>
