@@ -242,6 +242,18 @@
             font-size: 13px;
             border: 1px solid var(--border);
         }
+        .message-content .ascii-art {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            color: var(--primary);
+            white-space: pre;
+            line-height: 1.2;
+            border: 1px solid var(--border);
+        }
         .message-content code {
             background: rgba(0,0,0,0.3);
             padding: 2px 6px;
@@ -485,7 +497,7 @@
                     <div class="input-wrapper">
                         <textarea 
                             id="userInput" 
-                            placeholder="Ask ADAM anything..." 
+                            placeholder="Ask ADAM anything... (try 'generate ascii: cat')" 
                             rows="1"
                             onkeydown="handleKeyDown(event)"
                             oninput="autoResize(this)"
@@ -588,6 +600,12 @@
         }
         
         function formatMessage(content) {
+            // Detect ASCII art (lines with special chars)
+            if (content.match(/^[╔║╚╝╠╣╦╩╬─│┌┐└┘├┤┬┴┼═]+$/m) || 
+                content.match(/^[\/\\|()_<>[\]{}]+$/m) ||
+                (content.match(/^[\s\S]{10,}$/m) && content.includes('/\\'))) {
+                return `<pre class="ascii-art">${escapeHtml(content)}</pre>`;
+            }
             // Format code blocks
             content = content.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
             // Format inline code
@@ -646,11 +664,26 @@
             input.style.height = 'auto';
             sendBtn.disabled = true;
             
-            // Add user message
+            // Check for ASCII art command
+            if (message.toLowerCase().startsWith('generate ascii:') || message.toLowerCase().startsWith('/ascii')) {
+                const prompt = message.replace(/^(generate ascii:|\/ascii)\s*/i, '');
+                addMessage(message, true);
+                addTypingIndicator();
+                
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    const asciiArt = generateAsciiArt(prompt);
+                    addMessage(asciiArt, false);
+                }, 800);
+                
+                sendBtn.disabled = false;
+                return;
+            }
+            
+            // Regular chat with Mistral
             addMessage(message, true);
             conversationHistory.push({ role: 'user', content: message });
             
-            // Show typing indicator
             addTypingIndicator();
             
             try {
@@ -686,6 +719,157 @@
             }
             
             sendBtn.disabled = false;
+        }
+        
+        // ASCII Art Generator
+        function generateAsciiArt(prompt) {
+            const p = prompt.toLowerCase();
+            
+            // Cat
+            if (p.includes('cat')) {
+                return `  /\\_/\\  
+ ( o.o ) 
+  > ^ <
+ /|   |\\
+(_|   |_)`;
+            }
+            
+            // Dog
+            if (p.includes('dog')) {
+                return `    /\\____/\\  
+   /  o o  \\  
+  ( ==  ^  == )
+   )         (  
+  (           ) 
+ ( (  )   (  ) )
+(__(__)___(__)__)`;
+            }
+            
+            // Robot
+            if (p.includes('robot')) {
+                return `   ___
+  /o o\\
+ | === | 
+ |  <> |
+  \\___/
+  /| |\\
+ (_| |_)
+   | |
+   | |
+  _| |_`;
+            }
+            
+            // House
+            if (p.includes('house') || p.includes('home')) {
+                return `      /\\
+     /  \\
+    /    \\
+   /______\\
+   |  __  |
+   | |  | |
+   | |__| |
+  /|      |\\
+ / |      | \\
+  \\|______|/
+   |______|`;
+            }
+            
+            // Star
+            if (p.includes('star')) {
+                return `        *
+       /|\\
+      / | \\
+     /  |  \\
+    *---+---*
+     \\  |  /
+      \\ | /
+       \\|/
+        *`;
+            }
+            
+            // Heart
+            if (p.includes('heart')) {
+                return `  @@@@   @@@@  
+ @@@@@@@ @@@@@@@
+@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@
+  @@@@@@@@@@@@@
+    @@@@@@@@@
+      @@@@@
+        @`;
+            }
+            
+            // Tree
+            if (p.includes('tree')) {
+                return `       *
+      /|\\
+     / | \\
+    /  |  \\
+   /   |   \\
+  /____|____\\
+      |||
+      |||
+      |||
+     /|||\\`;
+            }
+            
+            // Rocket
+            if (p.includes('rocket')) {
+                return `     /
+    /
+   /\\
+  |  |
+  |  |
+  |__|
+   ||
+  /||\\
+ / | \\\\
+/  |  \\`;
+            }
+            
+            // Computer / Tech
+            if (p.includes('computer') || p.includes('tech')) {
+                return `  .------------------.
+  |  [] [] [] [] [] |
+  |__________________|
+       _|    |_
+      |__________|
+        |    |
+       /|    |\\
+      / |    | \\
+     /__|    |__\\`;
+            }
+            
+            // Skull
+            if (p.includes('skull') || p.includes('dead') || p.includes('bone')) {
+                return `    _____
+   /     \\
+  | () () |
+  |   __  |
+  |  |  | |
+   \\ |  | /
+    \\|__|/
+   /|    |\\
+  / |    | \\
+    |    |
+    |____|`;
+            }
+            
+            // Default geometric pattern
+            return `  ╔═══════════════╗
+  ║  ASCII ART   ║
+  ╠═══════════════╣
+  ║   ${prompt.substring(0, 12).padEnd(12)}  ║
+  ╠═══════════════╣
+  ║  ┌──┐  ┌──┐  ║
+  ║  │██│  │██│  ║
+  ║  └──┘  └──┘  ║
+  ║  ┌──┐  ┌──┐  ║
+  ║  │██│  │██│  ║
+  ║  └──┘  └──┘  ║
+  ╚═══════════════╝
+  
+  (Type: cat, dog, robot, house, star, heart, tree, rocket, skull)`;
         }
     </script>
 </body>
