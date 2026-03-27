@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Demo - ADAM</title>
+    <style>
+        :root {
+            --primary: #228B22;
+            --primary-dim: #1B6B1B;
+            --bg: #0a0a0a;
+            --bg-secondary: #111111;
+            --text: #e0e0e0;
+            --text-dim: #888888;
+            --border: #333;
+        }
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text: #111111;
+            --text-dim: #444444;
+            --border: #dee2e6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 102;
+            background: var(--bg-secondary);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        .theme-toggle:hover { background: var(--primary); color: var(--bg); }
+        
+        .header {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-bottom: 2px solid var(--primary);
+            text-align: center;
+        }
+        .header h1 {
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .header p { color: var(--text-dim); font-size: 14px; }
+        
+        .model-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--bg);
+            padding: 2px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .message.user {
+            background: var(--primary);
+            color: var(--bg);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        
+        .message.assistant {
+            background: var(--bg-secondary);
+            color: var(--text);
+            align-self: flex-start;
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 2px;
+        }
+        
+        .message .sender {
+            font-size: 11px;
+            color: var(--primary);
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        
+        .message.assistant .sender { color: var(--primary); }
+        .message.user .sender { color: rgba(255,255,255,0.7); }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            align-self: flex-start;
+            max-width: 80px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+        
+        .input-area {
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-area input:focus { border-color: var(--primary); }
+        .input-area input::placeholder { color: var(--text-dim); }
+        
+        .send-btn {
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-height: 44px;
+        }
+        .send-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .status-bar {
+            padding: 8px 15px;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+        .status-bar .online { color: var(--primary); }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+        }
+        .welcome-message h2 { color: var(--primary); margin-bottom: 10px; }
+        .welcome-message p { font-size: 14px; }
+        
+        .nav-link {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 12px;
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 4px;
+            z-index: 102;
+        }
+        .nav-link:hover { background: var(--primary); color: var(--bg); }
+        
+        @media (max-width: 600px) {
+            .message { max-width: 95%; }
+            .input-area { flex-direction: column; }
+            .send-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="nav-link">← Home</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    
+    <div class="header">
+        <h1>🤖 AI Demo</h1>
+        <p>Chat with Mistral AI - Powered by mistral-small-latest</p>
+        <span class="model-badge">FREE TIER</span>
+    </div>
+    
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h2>Welcome to the AI Demo</h2>
+                <p>Ask me anything! I'm powered by Mistral AI.</p>
+                <p style="margin-top: 10px; font-size: 12px;">Try: "Write a Python function" or "Explain quantum computing"</p>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <span>Model: mistral-small-latest</span>
+        <span>Status: <span class="online">● Online</span></span>
+    </div>
+
+    <script>
+        const API_KEY = 'OMHySKy89WAO5Jh3lZxljDM19LyApqTz';
+        const API_URL = 'https://api.mistral.ai/v1/chat/completions';
+        
+        let conversationHistory = [];
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            document.querySelector('.theme-toggle').textContent = next === 'light' ? '🌙' : '☀️';
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function addMessage(content, sender, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.innerHTML = `<div class="sender">${isUser ? 'You' : 'Mistral AI'}</div><div>${escapeHtml(content)}</div>`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="sender">Mistral AI</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const sendBtn = document.getElementById('sendBtn');
+            input.value = '';
+            sendBtn.disabled = true;
+            
+            // Remove welcome message if exists
+            const welcome = document.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+            
+            // Add user message
+            addMessage(message, 'user', true);
+            conversationHistory.push({ role: 'user', content: message });
+            
+            // Show typing indicator
+            addTypingIndicator();
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'mistral-small-latest',
+                        messages: conversationHistory,
+                        max_tokens: 1000
+                    })
+                });
+                
+                removeTypingIndicator();
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const assistantMessage = data.choices[0].message.content;
+                
+                addMessage(assistantMessage, 'assistant');
+                conversationHistory.push({ role: 'assistant', content: assistantMessage });
+                
+            } catch (error) {
+                removeTypingIndicator();
+                addMessage(`Error: ${error.message}. Please try again.`, 'assistant');
+            }
+            
+            sendBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
