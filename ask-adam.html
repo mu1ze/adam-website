@@ -398,6 +398,181 @@
             height: 100%;
         }
         
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title {
+            color: var(--primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .modal-close:hover {
+            color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .ascii-canvas {
+            background: #000;
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+        .ascii-canvas pre {
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1.0;
+            margin: 0;
+            white-space: pre;
+            display: inline-block;
+        }
+        /* Glow effect */
+        .ascii-canvas::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), transparent, var(--primary));
+            border-radius: 14px;
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .modal-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .modal-btn.primary {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+        .modal-btn.primary:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--primary);
+            color: var(--bg);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* Quality selector */
+        .quality-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .quality-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .quality-btn:hover { border-color: var(--primary); }
+        .quality-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+        
         .image-categories {
             padding: 20px;
             display: grid;
@@ -729,6 +904,47 @@
         <span>Status: <span class="online">● Online</span> | ADAM v1.0</span>
     </div>
 
+    <!-- ASCII Art Modal -->
+    <div class="modal-overlay" id="asciiModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span id="modalEmoji">🐱</span>
+                    <span id="modalTitle">Cat</span>
+                </div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="quality-selector">
+                <button class="quality-btn" onclick="setQuality('low')">Small</button>
+                <button class="quality-btn active" onclick="setQuality('medium')">Medium</button>
+                <button class="quality-btn" onclick="setQuality('high')">High</button>
+            </div>
+            
+            <div class="ascii-canvas">
+                <pre id="modalAscii"></pre>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="copyAscii()">
+                    📋 Copy
+                </button>
+                <button class="modal-btn" onclick="regenerateAscii()">
+                    🔄 Regenerate
+                </button>
+                <button class="modal-btn" onclick="shareAscii()">
+                    📤 Share
+                </button>
+                <button class="modal-btn primary" onclick="closeModal()">
+                    ✓ Done
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
     <script>
         const API_KEY = 'OMHySKy89WAO5Jh3lZxljDM19LyApqTz';
         const API_URL = 'https://api.mistral.ai/v1/chat/completions';
@@ -742,78 +958,272 @@
         let currentModel = 'mistral-small-latest';
         let currentMode = 'chat';
         let currentCategory = null;
+        let currentAsciiItem = null;
+        let currentQuality = 'medium';
         
-        // ASCII Art Database
+        // ASCII Art Database with multiple quality levels
         const asciiDatabase = {
             animals: [
-                { name: 'Cat', emoji: '🐱', art: `  /\\_/\\  
+                { 
+                    name: 'Cat', 
+                    emoji: '🐱', 
+                    art: {
+                        low: `  /\\__/\\ 
  ( o.o ) 
-  > ^ <
- /|   |\\
-(_|   |_)` },
-                { name: 'Dog', emoji: '🐕', art: `    /\\____/\\  
+  > ^ < `,
+                        medium: `  /\\____/\\  
+ (  o.o  ) 
+  >  ^  <  
+ /|      |\\
+(_|      |_)`,
+                        high: `       /\\_____/\\       
+      /  o   o  \\      
+     |    ___    |     
+     |   /   \\   |     
+      \\_| \\_/ |_/      
+        \\_____/        
+       /|       |\\     
+      / |       | \\    
+     /  |       |  \\   
+    /___|       |___\\  
+       |       |      
+      /|       |\\     
+     / |       | \\    
+    (_)       (_)` }
+                },
+                { 
+                    name: 'Dog', 
+                    emoji: '🐕', 
+                    art: {
+                        low: `    /\\____/\\  
    /  o o  \\  
-  ( ==  ^  == )
-   )         (  
-  (           ) 
- ( (  )   (  ) )
- (__(__)___(__)__)` },
-                { name: 'Bear', emoji: '🐻', art: `    _______
-   /       \\
-  /  o   o  \\
- |     <     |
-  \\  \\___/  /
-   \\_______/
-   /|     |\\
-  / |     | \\
-    |     |
-    |_____|` },
-                { name: 'Fox', emoji: '🦊', art: `   /\\   /\\
-  /  \\-/  \\
- /    o    \\
- \\   ___   /
-  \\__\\|/__/
-    /|  |\\
-   / |  | \\
-     |  |
-    _|  |_` },
-                { name: 'Wolf', emoji: '🐺', art: `    /\\____/\\
-   /  o  o  \\
-  (  ==\\^/.== )
-   \\  (____)  /
-    \\________/
-    /|      |\\
-   / |      | \\
-  /__|      |__\\` },
-                { name: 'Panda', emoji: '🐼', art: `   _______
-  /       \\
- |  o   o  |
+  ( ==  ^  == )`,
+                        medium: `      /\\________/\\      
+     /  o    o  \\     
+    (    ____    )    
+     \\  /    \\  /     
+      \\/ (  ) \\/      
+       |      |       
+       |______|       
+      /|      |\\      
+     / |      | \\     
+    /__|      |__\\`,
+                        high: `          /\\____________/\\          
+         /  o          o  \\         
+        /     _______     \\        
+       |     /         \\     |       
+        \\   |   _______   |   /     
+         \\  |  /       \\  |  /      
+          \\\ | |  o   o | | /       
+           \\| |    <    | |/        
+            \\ | \\_____/ | /         
+             \\|_________|/          
+              |    |    |           
+              |    |    |           
+             /|    |    |\\          
+            / |    |    | \\         
+           /__|    |    |__\\`
+                    }
+                },
+                { 
+                    name: 'Bear', 
+                    emoji: '🐻', 
+                    art: {
+                        low: `    _______   
+   /       \\  
+  /  o   o  \\ 
  |    <    |
- |  \\___/  |
-  \\_______/
-  /|     |\\
- / |     | \\
-   |     |
-   |_____|` },
-                { name: 'Owl', emoji: '🦉', art: `    _______
-   /  ___  \\
-  |  /   \\  |
-  | | o o | |
-  |  \\___/  |
-   \\_______/
-    /|   |\\
-   / |   | \\
-      |   |
-      |___|` },
-                { name: 'Butterfly', emoji: '🦋', art: `    o    o
-   /|\\/  /|\\
-  / |    | \\
- |  \\    /  |
-  \\  |    |  /
-   \\ |    | /
-    \\|____|/
-      |  |
-      |__|` }
+  \\  \\___/  /`,
+                        medium: `       _________       
+      /         \\      
+     /  o     o  \\     
+    |    _____    |    
+    |   /     \\   |    
+     \\ |       | /     
+      \\|_______|/      
+      /|       |\\      
+     / |       | \\     
+    /__|       |__\\`,
+                        high: `          ___________          
+         /           \\         
+        /  o       o  \\        
+       |     _____     |       
+       |    /     \\     |      
+        \\  | ()   () |  /      
+         \\ |    <    | /       
+          \\|_________|/        
+          /|           |\\       
+         / |           | \\      
+        /  |           |  \\     
+       /___|           |___\\`
+                    }
+                },
+                { 
+                    name: 'Fox', 
+                    emoji: '🦊', 
+                    art: {
+                        low: `   /\\   /\\  
+  /  \\-/  \\ 
+ (    o    )
+  \\  ___  /  
+   \\/   \\/`,
+                        medium: `     /\\       /\\     
+    /  \\    -/  \\    
+   /    \\___/    \\   
+  |      o        |   
+   \\    ____    /    
+    \\  /    \\  /     
+     \\/      \\/      
+      |   |   |      
+      |___|___|`,
+                        high: `         /\\             /\\         
+        /  \\   _____   /  \\        
+       /    \\-/     \\-/    \\       
+      /     |    o    |      \\      
+     |      |___ ___ |      |      
+      \\      ___| |___      /      
+       \\    /   \\   \\    /       
+        \\  /     \\   \\  /        
+         \\/       \\___\\/         
+          |    |\\    |           
+          |____| \\___|           
+              |      |           
+             /|      |\\          
+            / |      | \\`
+                    }
+                },
+                { 
+                    name: 'Wolf', 
+                    emoji: '🐺', 
+                    art: {
+                        low: `    /\\____/\\   
+   /  o  o  \\  
+  (  ==^==  )
+   )       (  
+  (         )`,
+                        medium: `      /\\________/\\      
+     /  o    o  \\     
+    (    ____    )    
+     \\  /    \\  /     
+      \\/ (  ) \\/      
+       |      |       
+       |______|       
+      /|      |\\      
+     / |      | \\     
+    /__|      |__\\`,
+                        high: `         /\\____________/\\         
+        /  o          o  \\        
+       (    __________    )       
+        \\  /          \\  /        
+         \\/   (    )   \\/         
+          |      __      |         
+          |     |  |     |         
+          |_____|  |_____|         
+         /|              |\\        
+        / |              | \\       
+       /  |              |  \\      
+      /___|              |___\\`
+                    }
+                },
+                { 
+                    name: 'Panda', 
+                    emoji: '🐼', 
+                    art: {
+                        low: `   _______   
+  /       \\  
+ |  o   o  | 
+ |    <    | 
+  \\  ___  /  
+   |_____|`,
+                        medium: `     ___________     
+    /           \\    
+   |  o     o  |    
+   |    ____   |    
+   |   /    \\  |    
+    \\ |      | /     
+     \\|______|/     
+     /|      |\\     
+    / |      | \\    
+   /__|      |__\\`,
+                        high: `        _____________        
+       /               \\       
+      |  o         o  |       
+      |    _______    |       
+      |   /       \\   |       
+       \\ |    <    | /        
+        \\|_________|/        
+        /|           |\\       
+       / |           | \\      
+      /  |           |  \\     
+     /___|           |___\\`
+                    }
+                },
+                { 
+                    name: 'Owl', 
+                    emoji: '🦉', 
+                    art: {
+                        low: `    _______   
+   /  ___  \\  
+  |  (o) (o) | 
+  |    <    | 
+   \\  ___  /  
+    |_____|`,
+                        medium: `      _________      
+     /    _    \\     
+    |   /   \\   |    
+    |  | o o |  |    
+    |  |  v  |  |    
+     \\ |_____| /     
+      \\_________/     
+      /|       |\\     
+     / |       | \\    
+        |       |        
+        |_______|`,
+                        high: `         __________         
+        /    _    \\        
+       |   /   \\   |        
+       |  | o o |  |        
+       |  |  v  |  |        
+        \\ |_____| /         
+         \\________/          
+        /|         |\\         
+       / |    _    | \\        
+      /  |   | |   |  \\       
+         |___| |___|          
+             |||              
+             |||`
+                    }
+                },
+                { 
+                    name: 'Butterfly', 
+                    emoji: '🦋', 
+                    art: {
+                        low: `  o    o  
+ /|\\  /|\\ 
+ / | \\/ | \\`,
+                        medium: `    o        o      
+   /|\\      /|\\     
+  / | \\    / | \\    
+ |  |  |  |  |  |   
+  \\ |  |__|  | /    
+   \\|/      \\|/     
+      \\    /      
+       \\  /`,
+                        high: `        o            o           
+       /|\\          /|\\          
+      / | \\        / | \\         
+     /  |  \\      /  |  \\        
+    |   |   |    |   |   |       
+    |   |   |    |   |   |       
+     \\  |   |____|   |  /        
+      \\ |  /      \\  | /         
+       \\|/__________\\|/          
+          \\        /             
+           \\      /              
+            \\    /               
+             \\  /`
+                    }
+                }
             ],
             objects: [
                 { name: 'Heart', emoji: '❤️', art: `  @@@@   @@@@  
@@ -1209,17 +1619,93 @@ ___/__________\\___
         }
         
         function generateAscii(item) {
-            const imageOutput = document.getElementById('imageOutput');
-            const asciiResult = document.getElementById('asciiResult');
-            const subCategories = document.getElementById('subCategories');
-            
-            subCategories.classList.remove('visible');
-            subCategories.innerHTML = '';
-            asciiResult.textContent = item.art;
-            imageOutput.classList.add('visible');
-            
-            // Add to chat history as a message
+            currentAsciiItem = item;
+            openModal(item);
+            // Also add to chat
             addAsciiToChat(item);
+        }
+        
+        function openModal(item) {
+            const modal = document.getElementById('asciiModal');
+            const modalEmoji = document.getElementById('modalEmoji');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalAscii = document.getElementById('modalAscii');
+            
+            modalEmoji.textContent = item.emoji;
+            modalTitle.textContent = item.name;
+            modalAscii.textContent = getAsciiForQuality(item, currentQuality);
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('asciiModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function getAsciiForQuality(item, quality) {
+            // Return quality-appropriate ASCII art
+            if (item.art && item.art[quality]) {
+                return item.art[quality];
+            }
+            // Fallback to simple art
+            if (item.art && typeof item.art === 'string') {
+                return item.art;
+            }
+            return item.art?.medium || item.art;
+        }
+        
+        function setQuality(quality) {
+            currentQuality = quality;
+            // Update button states
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase() === quality);
+            });
+            // Update display
+            if (currentAsciiItem) {
+                document.getElementById('modalAscii').textContent = getAsciiForQuality(currentAsciiItem, quality);
+            }
+        }
+        
+        function copyAscii() {
+            const ascii = document.getElementById('modalAscii').textContent;
+            navigator.clipboard.writeText(ascii).then(() => {
+                showToast('Copied to clipboard!');
+            }).catch(() => {
+                showToast('Failed to copy');
+            });
+        }
+        
+        function regenerateAscii() {
+            // Cycle through available qualities
+            const qualities = ['low', 'medium', 'high'];
+            const currentIndex = qualities.indexOf(currentQuality);
+            const nextQuality = qualities[(currentIndex + 1) % qualities.length];
+            setQuality(nextQuality);
+            showToast(`Switched to ${nextQuality} quality`);
+        }
+        
+        function shareAscii() {
+            const ascii = document.getElementById('modalAscii').textContent;
+            const text = `${currentAsciiItem.emoji} ${currentAsciiItem.name}\n\n${ascii}\n\nCreated by ADAM ASCII Generator`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `${currentAsciiItem.name} ASCII Art`,
+                    text: text
+                }).catch(() => {});
+            } else {
+                copyAscii();
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
         
         function addAsciiToChat(item) {
@@ -1238,12 +1724,35 @@ ___/__________\\___
                 <div class="avatar">🎨</div>
                 <div class="message-content">
                     <p style="margin-bottom: 10px;">Here's your ${item.name.toLowerCase()} ASCII art:</p>
-                    <pre class="ascii-art">${item.art}</pre>
+                    <pre class="ascii-art">${item.art?.medium || item.art || ''}</pre>
+                    <button onclick="openModalFromElement(this)" style="background: var(--primary); color: var(--bg); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-family: inherit;">View Full Size →</button>
                 </div>
             `;
+            // Store item data for modal
+            msgDiv.dataset.item = JSON.stringify(item);
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
+        
+        // Make openModal accessible from inline handlers
+        window.openModalFromElement = function(btn) {
+            const msgDiv = btn.closest('.message');
+            const item = JSON.parse(msgDiv.dataset.item);
+            currentAsciiItem = item;
+            openModal(item);
+        };
+        
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        // Close modal on background click
+        document.getElementById('asciiModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        });
         
         function escapeHtml(text) {
             const div = document.createElement('div');
