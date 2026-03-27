@@ -573,6 +573,133 @@
             border-color: var(--primary);
         }
         
+        /* AI Generator Section */
+        .ai-generator {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .ai-generator-title {
+            color: var(--primary);
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ai-prompt-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            min-height: 80px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        .ai-prompt-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .ai-prompt-input::placeholder {
+            color: var(--text-dim);
+        }
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .ai-generate-btn {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, var(--primary), #00ff88);
+            color: #000;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .ai-generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+        }
+        .ai-generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .preset-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .preset-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Loading animation */
+        .ai-loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .ai-loading.visible {
+            display: block;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        
         .image-categories {
             padding: 20px;
             display: grid;
@@ -832,6 +959,42 @@
             
             <!-- Image Mode -->
             <div class="image-mode" id="imageMode">
+                <!-- AI Generator -->
+                <div style="padding: 20px;">
+                    <div class="ai-generator">
+                        <div class="ai-generator-title">
+                            <span>✨</span>
+                            <span>AI Enhanced ASCII Generator</span>
+                            <span style="font-size: 11px; color: var(--text-dim); font-weight: normal;">Powered by Mistral</span>
+                        </div>
+                        <textarea 
+                            class="ai-prompt-input" 
+                            id="aiPrompt" 
+                            placeholder="Describe what you want to see as ASCII art... e.g., 'A majestic dragon breathing fire in a dark cave'"
+                        ></textarea>
+                        <div class="ai-actions">
+                            <button class="ai-generate-btn" id="aiGenerateBtn" onclick="generateAIAscii()">
+                                <span>⚡</span>
+                                <span>Generate with Mistral AI</span>
+                            </button>
+                        </div>
+                        <div class="preset-btns">
+                            <button class="preset-btn" onclick="setPrompt('A majestic lion standing on a rock in the savanna at sunset')">🦁 Lion</button>
+                            <button class="preset-btn" onclick="setPrompt('A futuristic robot warrior with glowing eyes and chrome armor')">🤖 Robot</button>
+                            <button class="preset-btn" onclick="setPrompt('An enchanted castle on a hilltop with magical stars above')">🏰 Castle</button>
+                            <button class="preset-btn" onclick="setPrompt('A fierce dragon breathing fire in a dark cave')">🐉 Dragon</button>
+                            <button class="preset-btn" onclick="setPrompt('A vintage sports car in a neon-lit garage at night')">🏎️ Car</button>
+                            <button class="preset-btn" onclick="setPrompt('An astronaut floating in space with Earth in the background')">🚀 Astronaut</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading -->
+                    <div class="ai-loading" id="aiLoading">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Generating detailed ASCII art<span class="loading-dots"></span></div>
+                    </div>
+                </div>
+                
                 <!-- Categories -->
                 <div class="image-categories" id="imageCategories">
                     <button class="category-btn" onclick="selectCategory('animals')">
@@ -1706,6 +1869,79 @@ ___/__________\\___
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        
+        function setPrompt(text) {
+            document.getElementById('aiPrompt').value = text;
+        }
+        
+        async function generateAIAscii() {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            if (!prompt) {
+                showToast('Please enter a description');
+                return;
+            }
+            
+            const loadingEl = document.getElementById('aiLoading');
+            const generateBtn = document.getElementById('aiGenerateBtn');
+            
+            loadingEl.classList.add('visible');
+            generateBtn.disabled = true;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'mistral-large-latest',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `You are an ASCII art master. Create incredibly detailed, high-quality ASCII art based on this request: "${prompt}"
+                                
+Rules:
+- Use box-drawing characters (╔║╚╝╠╣╦╩╬═│┌┐└┘├┤┬┴┼), standard symbols (/\\|()_<>[]{}*#@%^), and ASCII characters
+- Make it DETAILED and LARGE - at least 15 rows tall
+- Use consistent character width for alignment
+- NO markdown code blocks - just plain ASCII art
+- ONLY output the ASCII art - no description, no explanation
+- Make it visually impressive with shading and detail
+- Center the artwork when possible`
+                            }
+                        ],
+                        max_tokens: 2000,
+                        temperature: 0.9
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const asciiArt = data.choices[0].message.content.trim();
+                
+                // Show in modal
+                const modal = document.getElementById('asciiModal');
+                document.getElementById('modalEmoji').textContent = '✨';
+                document.getElementById('modalTitle').textContent = 'AI Generated';
+                document.getElementById('modalAscii').textContent = asciiArt;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Store for potential copy
+                currentAsciiItem = { name: 'AI Art', emoji: '✨', art: asciiArt };
+                
+            } catch (error) {
+                showToast(`Error: ${error.message}`);
+            } finally {
+                loadingEl.classList.remove('visible');
+                generateBtn.disabled = false;
+            }
         }
         
         function addAsciiToChat(item) {
