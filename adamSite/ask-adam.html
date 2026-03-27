@@ -156,6 +156,39 @@
             overflow: hidden;
         }
         
+        /* Mode Selector */
+        .mode-selector {
+            padding: 15px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+        .mode-btn {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .mode-btn:hover { border-color: var(--primary); }
+        .mode-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+        .mode-btn .icon { font-size: 18px; }
+        
+        /* Chat Header */
         .chat-header {
             padding: 15px 20px;
             background: var(--bg-secondary);
@@ -234,24 +267,12 @@
         }
         
         .message-content pre {
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin: 10px 0;
-            font-size: 13px;
-            border: 1px solid var(--border);
-        }
-        .message-content .ascii-art {
-            font-family: 'Courier New', monospace;
             background: #000;
             padding: 15px;
             border-radius: 8px;
             overflow-x: auto;
             margin: 10px 0;
-            color: var(--primary);
-            white-space: pre;
-            line-height: 1.2;
+            font-size: 13px;
             border: 1px solid var(--border);
         }
         .message-content code {
@@ -261,6 +282,20 @@
             font-family: 'Courier New', monospace;
         }
         .message-content pre code { padding: 0; background: none; }
+        
+        .message-content .ascii-art {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            color: var(--primary);
+            white-space: pre;
+            line-height: 1.2;
+            border: 1px solid var(--primary);
+            font-size: 12px;
+        }
         
         /* Typing Indicator */
         .typing-indicator {
@@ -356,17 +391,121 @@
             font-family: inherit;
         }
         
-        /* Status Bar */
-        .status-bar {
-            padding: 8px 20px;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-            font-size: 11px;
-            color: var(--text-dim);
-            display: flex;
-            justify-content: space-between;
+        /* IMAGE MODE STYLES */
+        .image-mode {
+            display: none;
+            flex-direction: column;
+            height: 100%;
         }
-        .status-bar .online { color: var(--primary); }
+        
+        .image-categories {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .category-btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 25px 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+        }
+        .category-btn:active {
+            transform: translateY(0);
+        }
+        .category-btn .emoji { font-size: 40px; }
+        .category-btn .label {
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .category-btn .count {
+            color: var(--text-dim);
+            font-size: 11px;
+        }
+        
+        .image-output {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+        .image-output.visible { display: block; }
+        
+        .ascii-display {
+            background: #000;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 600px;
+            overflow-x: auto;
+        }
+        .ascii-display pre {
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.1;
+            margin: 0;
+            white-space: pre;
+        }
+        
+        .back-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { border-color: var(--primary); color: var(--primary); }
+        
+        .sub-categories {
+            display: none;
+            padding: 20px;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .sub-categories.visible { display: flex; }
+        
+        .sub-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px 20px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: inherit;
+            color: var(--text);
+        }
+        .sub-btn:hover { border-color: var(--primary); background: rgba(0, 255, 136, 0.1); }
+        .sub-btn .emoji { font-size: 24px; }
+        .sub-btn .text { flex: 1; }
+        .sub-btn .name { font-size: 14px; }
+        .sub-btn .desc { font-size: 12px; color: var(--text-dim); }
+        .sub-btn .arrow { color: var(--primary); }
         
         /* Welcome State */
         .welcome-state {
@@ -413,9 +552,22 @@
         }
         .suggestion-icon { margin-right: 8px; }
         
+        /* Status Bar */
+        .status-bar {
+            padding: 8px 20px;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+        .status-bar .online { color: var(--primary); }
+        
         @media (max-width: 600px) {
             .suggestion-grid { grid-template-columns: 1fr; }
             .message { max-width: 95%; }
+            .image-categories { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -452,14 +604,26 @@
             <div class="chat-history" id="chatHistory">
                 <div class="chat-history-item active" onclick="loadChat(0)">Research AI trends 2026</div>
                 <div class="chat-history-item" onclick="loadChat(1)">Python fibonacci</div>
-                <div class="chat-history-item" onclick="loadChat(2)">Explain quantum</div>
+                <div class="chat-history-item" onclick="loadChat(2)">ASCII art cat</div>
             </div>
         </div>
         
         <!-- Chat Area -->
         <div class="chat-area">
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <button class="mode-btn active" id="chatModeBtn" onclick="setMode('chat')">
+                    <span class="icon">💬</span>
+                    <span>Chat Mode</span>
+                </button>
+                <button class="mode-btn" id="imageModeBtn" onclick="setMode('image')">
+                    <span class="icon">🎨</span>
+                    <span>Image Mode</span>
+                </button>
+            </div>
+            
             <!-- Chat Header -->
-            <div class="chat-header">
+            <div class="chat-header" id="chatHeader">
                 <h2>> ASK ADAM</h2>
                 <select class="model-select" id="modelSelect" onchange="changeModel()">
                     <option value="mistral-small-latest">Mistral Small (Free)</option>
@@ -473,13 +637,10 @@
                 <!-- Welcome State -->
                 <div class="welcome-state" id="welcomeState">
                     <h1>🤖 Hello, I'm ADAM</h1>
-                    <p>Your AI assistant powered by Mistral. Ask me anything - from coding help to research, writing, or just chatting.</p>
+                    <p>Your AI assistant powered by Mistral. Ask me anything!</p>
                     <div class="suggestion-grid">
                         <button class="suggestion" onclick="sendSuggestion('Write a Python function to calculate fibonacci')">
                             <span class="suggestion-icon">💻</span> Write a fibonacci function
-                        </button>
-                        <button class="suggestion" onclick="sendSuggestion('Explain quantum computing in simple terms')">
-                            <span class="suggestion-icon">🔬</span> Explain quantum computing
                         </button>
                         <button class="suggestion" onclick="sendSuggestion('What are the top AI trends in 2026?')">
                             <span class="suggestion-icon">📊</span> Top AI trends 2026
@@ -487,17 +648,69 @@
                         <button class="suggestion" onclick="sendSuggestion('Help me write a professional email')">
                             <span class="suggestion-icon">📧</span> Help me write an email
                         </button>
+                        <button class="suggestion" onclick="setMode('image')">
+                            <span class="suggestion-icon">🎨</span> Generate ASCII Art
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Input Area -->
-            <div class="input-area">
+            <!-- Image Mode -->
+            <div class="image-mode" id="imageMode">
+                <!-- Categories -->
+                <div class="image-categories" id="imageCategories">
+                    <button class="category-btn" onclick="selectCategory('animals')">
+                        <span class="emoji">🐾</span>
+                        <span class="label">Animals</span>
+                        <span class="count">8 items</span>
+                    </button>
+                    <button class="category-btn" onclick="selectCategory('objects')">
+                        <span class="emoji">🎁</span>
+                        <span class="label">Objects</span>
+                        <span class="count">8 items</span>
+                    </button>
+                    <button class="category-btn" onclick="selectCategory('places')">
+                        <span class="emoji">🏠</span>
+                        <span class="label">Places</span>
+                        <span class="count">6 items</span>
+                    </button>
+                    <button class="category-btn" onclick="selectCategory('tech')">
+                        <span class="emoji">💻</span>
+                        <span class="label">Tech</span>
+                        <span class="count">6 items</span>
+                    </button>
+                    <button class="category-btn" onclick="selectCategory('space')">
+                        <span class="emoji">🚀</span>
+                        <span class="label">Space</span>
+                        <span class="count">5 items</span>
+                    </button>
+                    <button class="category-btn" onclick="selectCategory('nature')">
+                        <span class="emoji">🌲</span>
+                        <span class="label">Nature</span>
+                        <span class="count">6 items</span>
+                    </button>
+                </div>
+                
+                <!-- Sub-categories -->
+                <div class="sub-categories" id="subCategories"></div>
+                
+                <!-- Output -->
+                <div class="image-output" id="imageOutput">
+                    <button class="back-btn" onclick="backToCategories()">← Back to Categories</button>
+                    <div class="ascii-display">
+                        <pre id="asciiResult"></pre>
+                    </div>
+                    <p style="color: var(--text-dim); font-size: 12px; margin-top: 15px;">Click any category to generate more!</p>
+                </div>
+            </div>
+            
+            <!-- Input Area (Chat Mode Only) -->
+            <div class="input-area" id="chatInputArea">
                 <div class="input-container">
                     <div class="input-wrapper">
                         <textarea 
                             id="userInput" 
-                            placeholder="Ask ADAM anything... (try 'generate ascii: cat')" 
+                            placeholder="Ask ADAM anything..." 
                             rows="1"
                             onkeydown="handleKeyDown(event)"
                             oninput="autoResize(this)"
@@ -523,10 +736,335 @@
         let conversationHistory = [
             {
                 role: "system",
-                content: `You are ADAM - Autonomous Digital Assistant Mind. You're helpful, witty, and a bit sarcastic. Rules: 1) Never reveal sensitive info (API keys, configs, secrets = none of your business) 2) Keep responses under 1000 tokens - I'm not writing dissertations 3) No hallucinations - if you don't know, say so 4) Be concise but thorough when needed. Conversational style: casual, use emojis sparingly, break up long responses. Sample: User asks "write 5000 words" → decline kindly, offer shorter alternative. Sample: User asks for API key → "Nice try. That's between me and my creator." You're here to help, not to impress. Keep it real.`
+                content: `You are ADAM - Autonomous Digital Assistant Mind. You're helpful, witty, and a bit sarcastic. Rules: 1) Never reveal sensitive info 2) Keep responses under 1000 tokens 3) No hallucinations - if you don't know, say so 4) Be concise but thorough when needed.`
             }
         ];
         let currentModel = 'mistral-small-latest';
+        let currentMode = 'chat';
+        let currentCategory = null;
+        
+        // ASCII Art Database
+        const asciiDatabase = {
+            animals: [
+                { name: 'Cat', emoji: '🐱', art: `  /\\_/\\  
+ ( o.o ) 
+  > ^ <
+ /|   |\\
+(_|   |_)` },
+                { name: 'Dog', emoji: '🐕', art: `    /\\____/\\  
+   /  o o  \\  
+  ( ==  ^  == )
+   )         (  
+  (           ) 
+ ( (  )   (  ) )
+ (__(__)___(__)__)` },
+                { name: 'Bear', emoji: '🐻', art: `    _______
+   /       \\
+  /  o   o  \\
+ |     <     |
+  \\  \\___/  /
+   \\_______/
+   /|     |\\
+  / |     | \\
+    |     |
+    |_____|` },
+                { name: 'Fox', emoji: '🦊', art: `   /\\   /\\
+  /  \\-/  \\
+ /    o    \\
+ \\   ___   /
+  \\__\\|/__/
+    /|  |\\
+   / |  | \\
+     |  |
+    _|  |_` },
+                { name: 'Wolf', emoji: '🐺', art: `    /\\____/\\
+   /  o  o  \\
+  (  ==\\^/.== )
+   \\  (____)  /
+    \\________/
+    /|      |\\
+   / |      | \\
+  /__|      |__\\` },
+                { name: 'Panda', emoji: '🐼', art: `   _______
+  /       \\
+ |  o   o  |
+ |    <    |
+ |  \\___/  |
+  \\_______/
+  /|     |\\
+ / |     | \\
+   |     |
+   |_____|` },
+                { name: 'Owl', emoji: '🦉', art: `    _______
+   /  ___  \\
+  |  /   \\  |
+  | | o o | |
+  |  \\___/  |
+   \\_______/
+    /|   |\\
+   / |   | \\
+      |   |
+      |___|` },
+                { name: 'Butterfly', emoji: '🦋', art: `    o    o
+   /|\\/  /|\\
+  / |    | \\
+ |  \\    /  |
+  \\  |    |  /
+   \\ |    | /
+    \\|____|/
+      |  |
+      |__|` }
+            ],
+            objects: [
+                { name: 'Heart', emoji: '❤️', art: `  @@@@   @@@@  
+ @@@@@@@ @@@@@@@
+@@@@@@@@@@@@@@@@@
+ @@@@@@@@@@@@@@@
+  @@@@@@@@@@@@@
+    @@@@@@@@@
+      @@@@@
+        @` },
+                { name: 'Star', emoji: '⭐', art: `        *
+       /|\\
+      / | \\
+     /  |  \\
+    *---+---*
+     \\  |  /
+      \\ | /
+       \\|/
+        *` },
+                { name: 'Diamond', emoji: '💎', art: `       /\\
+      /  \\
+     /    \\
+    /      \\
+   /   /\\   \\
+  /   /  \\   \\
+ /   /    \\   \\
+/___/      \\___\\` },
+                { name: 'Crown', emoji: '👑', art: `  /\\   /\\   /\\
+ /  \\ /  \\ /  \\
+/____\\____/____\\
+|    |    |    |
+|    |    |    |
+|____|____|____|
+    |    |
+    |____|` },
+                { name: 'Gift Box', emoji: '🎁', art: `    _______
+   |       |
+   |_______|
+  /|       |\\
+ / |       | \\
+/__|_______|__\\
+   |       |
+   |       |` },
+                { name: 'Pizza', emoji: '🍕', art: `       /\\
+      /  \\
+    /      \\
+   /________\\
+  |  \\\\/  |
+  |   ()   |
+   \\______/` },
+                { name: 'Cake', emoji: '🎂', art: `     ___
+    /   \\
+   /_____\\
+  |  🍒  |
+  |_______|
+  |       |
+  |_______|
+ /|       |\\` },
+                { name: 'Coffee', emoji: '☕', art: `     ____
+    /   \\__
+   |  O  O  |
+   |   __   |
+    \\______/
+    /    \\
+   /|    |\\` }
+            ],
+            places: [
+                { name: 'House', emoji: '🏠', art: `      /\\
+     /  \\
+    /    \\
+   /______\\
+   |  __  |
+   | |  | |
+   | |__| |
+  /|      |\\
+ / |      | \\
+  \\|______|/
+   |______|` },
+                { name: 'Castle', emoji: '🏰', art: `  |   |   |
+  |   |   |
+  |___|___|
+ /|       |\\
+/ |       | \\
+| |       | |
+| |_______| |
+\\ |       | /
+ \\|_______|/
+   |     |
+   |_____|` },
+                { name: 'Tree', emoji: '🌲', art: `       *
+      /|\\
+     / | \\
+    /  |  \\
+   /   |   \\
+  /____|____\\
+      |||
+      |||
+      |||
+     /|||\\` },
+                { name: 'Palm Tree', emoji: '🌴', art: `      *
+     /|\\
+    / | \\
+   /  |  \\
+      |
+      |
+      |
+     /|\\
+    / | \\` },
+                { name: 'Bridge', emoji: '🌉', art: `   /\\                /\\
+  /  \\              /  \\
+ /    \\____________/    \\
+/______|    |____|______\\
+       |    |    |
+       |____|____|
+       /        \\` },
+                { name: 'Boat', emoji: '⛵', art: `        /\\
+       /  \\
+      /____\\
+       |  |
+       |  |
+      /|  |\\
+     / |  | \\
+    /__|  |__\\` }
+            ],
+            tech: [
+                { name: 'Computer', emoji: '💻', art: `  .------------------.
+  |  [] [] [] [] [] |
+  |__________________|
+       _|    |_
+      |__________|
+        |    |
+       /|    |\\
+      / |    | \\
+     /__|    |__\\` },
+                { name: 'Robot', emoji: '🤖', art: `   ___
+  /o o\\
+ | === | 
+ |  <> |
+  \\___/
+  /| |\\
+ (_| |_)
+   | |
+   | |
+  _| |_` },
+                { name: 'Rocket', emoji: '🚀', art: `     /
+    /
+   /\\
+  |  |
+  |  |
+  |__|
+   ||
+  /||\\
+ / | \\\\
+/  |  \\` },
+                { name: 'Car', emoji: '🚗', art: `      ___
+    /    \\__
+   |  o  o  |
+   |   __   |
+___|__|  |__|___
+   \\_________/` },
+                { name: 'Airplane', emoji: '✈️', art: `      ___\\
+     /    \\__
+    /        \\
+___/__________\\___
+   \\_________/
+     \\____/
+      \\/` },
+                { name: 'Phone', emoji: '📱', art: `   _____
+  |     |
+  |  ○  |
+  |     |
+  |_____|
+  |     |
+  |_____|` }
+            ],
+            space: [
+                { name: 'Moon', emoji: '🌙', art: `    _____
+   /     \\
+  /   o   \\
+ |    o    |
+  \\   o   /
+   \\_____/` },
+                { name: 'Planet', emoji: '🪐', art: `    _____
+   /     \\
+  /   o   \\
+ |   o  o  |
+  \\   o   /
+   \\_____/
+    /   \\` },
+                { name: 'Alien', emoji: '👽', art: `     ___
+    /   \\
+   | o o |
+   |  v  |
+    \\___/
+   /|   |\\
+  / |   | \\` },
+                { name: 'UFO', emoji: '🛸', art: `      ___
+    /     \\
+---/  o o  \\---
+    \\_____/
+     /   \\` },
+                { name: 'Astronaut', emoji: '👨‍🚀', art: `     ____
+    /    \\
+   | o  o |
+   |  __  |
+   |_|  |_|
+      /\\
+     /  \\` }
+            ],
+            nature: [
+                { name: 'Flower', emoji: '🌸', art: `      _._
+    .-'   '-.
+   /  .   .  \\
+  |  \\___/   |
+   \\   |    /
+    '-.|.-'
+      \\|/
+       \`` },
+                { name: 'Sun', emoji: '☀️', art: `    \\  |  /
+     \\ | /
+  ------+------
+     / | \\
+    /  |  \\
+      /|\\` },
+                { name: 'Cloud', emoji: '☁️', art: `      ____
+    .-'    '-.
+   /          \\
+  |    .--.    |
+   \\  /    \\  /
+    '-.__.--'` },
+                { name: 'Mountain', emoji: '⛰️', art: `        /\\
+       /  \\
+      /    \\
+     /   /\\   \\
+    /   /  \\   \\
+   /___/    \\___\\` },
+                { name: 'Lightning', emoji: '⚡', art: `     |
+     /\\
+    /  \\
+      \\
+     /\\ 
+    /  \\
+       \\` },
+                { name: 'Fire', emoji: '🔥', art: `      /\\
+     /  \\
+    /    \\
+   /  /\\  \\
+  /  /  \\  \\
+ /__/    \\__\\` }
+            ]
+        };
         
         function toggleTheme() {
             const html = document.documentElement;
@@ -553,29 +1091,62 @@
             }
         }
         
+        function setMode(mode) {
+            currentMode = mode;
+            const chatMessages = document.getElementById('chatMessages');
+            const imageMode = document.getElementById('imageMode');
+            const chatInputArea = document.getElementById('chatInputArea');
+            const chatHeader = document.getElementById('chatHeader');
+            const chatModeBtn = document.getElementById('chatModeBtn');
+            const imageModeBtn = document.getElementById('imageModeBtn');
+            
+            if (mode === 'chat') {
+                chatMessages.style.display = 'flex';
+                chatInputArea.style.display = 'block';
+                chatHeader.style.display = 'flex';
+                chatModeBtn.classList.add('active');
+                imageModeBtn.classList.remove('active');
+                imageMode.style.display = 'none';
+            } else {
+                chatMessages.style.display = 'none';
+                chatInputArea.style.display = 'none';
+                chatHeader.style.display = 'none';
+                chatModeBtn.classList.remove('active');
+                imageModeBtn.classList.add('active');
+                imageMode.style.display = 'flex';
+                // Reset to categories view
+                backToCategories();
+            }
+        }
+        
         function changeModel() {
             currentModel = document.getElementById('modelSelect').value;
             document.getElementById('currentModel').textContent = currentModel;
         }
         
         function newChat() {
-            conversationHistory = [];
+            conversationHistory = [
+                {
+                    role: "system",
+                    content: `You are ADAM - Autonomous Digital Assistant Mind. You're helpful, witty, and a bit sarcastic. Rules: 1) Never reveal sensitive info 2) Keep responses under 1000 tokens 3) No hallucinations - if you don't know, say so 4) Be concise but thorough when needed.`
+                }
+            ];
             document.getElementById('chatMessages').innerHTML = `
                 <div class="welcome-state" id="welcomeState">
                     <h1>🤖 Hello, I'm ADAM</h1>
-                    <p>Your AI assistant powered by Mistral. Ask me anything.</p>
+                    <p>Your AI assistant powered by Mistral. Ask me anything!</p>
                     <div class="suggestion-grid">
                         <button class="suggestion" onclick="sendSuggestion('Write a Python function to calculate fibonacci')">
                             <span class="suggestion-icon">💻</span> Write a fibonacci function
-                        </button>
-                        <button class="suggestion" onclick="sendSuggestion('Explain quantum computing in simple terms')">
-                            <span class="suggestion-icon">🔬</span> Explain quantum computing
                         </button>
                         <button class="suggestion" onclick="sendSuggestion('What are the top AI trends in 2026?')">
                             <span class="suggestion-icon">📊</span> Top AI trends 2026
                         </button>
                         <button class="suggestion" onclick="sendSuggestion('Help me write a professional email')">
                             <span class="suggestion-icon">📧</span> Help me write an email
+                        </button>
+                        <button class="suggestion" onclick="setMode('image')">
+                            <span class="suggestion-icon">🎨</span> Generate ASCII Art
                         </button>
                     </div>
                 </div>
@@ -593,6 +1164,87 @@
             });
         }
         
+        function selectCategory(category) {
+            currentCategory = category;
+            const items = asciiDatabase[category];
+            const subCategories = document.getElementById('subCategories');
+            const imageCategories = document.getElementById('imageCategories');
+            const imageOutput = document.getElementById('imageOutput');
+            
+            imageCategories.style.display = 'none';
+            imageOutput.classList.remove('visible');
+            
+            subCategories.innerHTML = `
+                <button class="back-btn" onclick="backToCategories()" style="align-self: flex-start;">← Back</button>
+                <h3 style="color: var(--primary); margin-bottom: 10px;">${category.charAt(0).toUpperCase() + category.slice(1)} - Choose one:</h3>
+            `;
+            
+            items.forEach((item, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'sub-btn';
+                btn.onclick = () => generateAscii(item);
+                btn.innerHTML = `
+                    <span class="emoji">${item.emoji}</span>
+                    <span class="text">
+                        <span class="name">${item.name}</span>
+                    </span>
+                    <span class="arrow">→</span>
+                `;
+                subCategories.appendChild(btn);
+            });
+            
+            subCategories.classList.add('visible');
+        }
+        
+        function backToCategories() {
+            const subCategories = document.getElementById('subCategories');
+            const imageCategories = document.getElementById('imageCategories');
+            const imageOutput = document.getElementById('imageOutput');
+            
+            subCategories.classList.remove('visible');
+            subCategories.innerHTML = '';
+            imageCategories.style.display = 'grid';
+            imageOutput.classList.remove('visible');
+            currentCategory = null;
+        }
+        
+        function generateAscii(item) {
+            const imageOutput = document.getElementById('imageOutput');
+            const asciiResult = document.getElementById('asciiResult');
+            const subCategories = document.getElementById('subCategories');
+            
+            subCategories.classList.remove('visible');
+            subCategories.innerHTML = '';
+            asciiResult.textContent = item.art;
+            imageOutput.classList.add('visible');
+            
+            // Add to chat history as a message
+            addAsciiToChat(item);
+        }
+        
+        function addAsciiToChat(item) {
+            const messagesDiv = document.getElementById('chatMessages');
+            
+            // Switch back to chat mode temporarily to show message
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.style.display = 'flex';
+            
+            const welcome = document.getElementById('welcomeState');
+            if (welcome) welcome.remove();
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message assistant';
+            msgDiv.innerHTML = `
+                <div class="avatar">🎨</div>
+                <div class="message-content">
+                    <p style="margin-bottom: 10px;">Here's your ${item.name.toLowerCase()} ASCII art:</p>
+                    <pre class="ascii-art">${item.art}</pre>
+                </div>
+            `;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -600,10 +1252,10 @@
         }
         
         function formatMessage(content) {
-            // Detect ASCII art (lines with special chars)
+            // Detect ASCII art patterns
             if (content.match(/^[╔║╚╝╠╣╦╩╬─│┌┐└┘├┤┬┴┼═]+$/m) || 
                 content.match(/^[\/\\|()_<>[\]{}]+$/m) ||
-                (content.match(/^[\s\S]{10,}$/m) && content.includes('/\\'))) {
+                (content.includes('/\\') && content.includes('_'))) {
                 return `<pre class="ascii-art">${escapeHtml(content)}</pre>`;
             }
             // Format code blocks
@@ -621,6 +1273,8 @@
             const messagesDiv = document.getElementById('chatMessages');
             const welcome = document.getElementById('welcomeState');
             if (welcome) welcome.remove();
+            
+            messagesDiv.style.display = 'flex';
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
@@ -664,23 +1318,6 @@
             input.style.height = 'auto';
             sendBtn.disabled = true;
             
-            // Check for ASCII art command
-            if (message.toLowerCase().startsWith('generate ascii:') || message.toLowerCase().startsWith('/ascii')) {
-                const prompt = message.replace(/^(generate ascii:|\/ascii)\s*/i, '');
-                addMessage(message, true);
-                addTypingIndicator();
-                
-                setTimeout(() => {
-                    removeTypingIndicator();
-                    const asciiArt = generateAsciiArt(prompt);
-                    addMessage(asciiArt, false);
-                }, 800);
-                
-                sendBtn.disabled = false;
-                return;
-            }
-            
-            // Regular chat with Mistral
             addMessage(message, true);
             conversationHistory.push({ role: 'user', content: message });
             
@@ -696,7 +1333,7 @@
                     body: JSON.stringify({
                         model: currentModel,
                         messages: conversationHistory,
-                        max_tokens: 1500
+                        max_tokens: 1000
                     })
                 });
                 
@@ -719,157 +1356,6 @@
             }
             
             sendBtn.disabled = false;
-        }
-        
-        // ASCII Art Generator
-        function generateAsciiArt(prompt) {
-            const p = prompt.toLowerCase();
-            
-            // Cat
-            if (p.includes('cat')) {
-                return `  /\\_/\\  
- ( o.o ) 
-  > ^ <
- /|   |\\
-(_|   |_)`;
-            }
-            
-            // Dog
-            if (p.includes('dog')) {
-                return `    /\\____/\\  
-   /  o o  \\  
-  ( ==  ^  == )
-   )         (  
-  (           ) 
- ( (  )   (  ) )
-(__(__)___(__)__)`;
-            }
-            
-            // Robot
-            if (p.includes('robot')) {
-                return `   ___
-  /o o\\
- | === | 
- |  <> |
-  \\___/
-  /| |\\
- (_| |_)
-   | |
-   | |
-  _| |_`;
-            }
-            
-            // House
-            if (p.includes('house') || p.includes('home')) {
-                return `      /\\
-     /  \\
-    /    \\
-   /______\\
-   |  __  |
-   | |  | |
-   | |__| |
-  /|      |\\
- / |      | \\
-  \\|______|/
-   |______|`;
-            }
-            
-            // Star
-            if (p.includes('star')) {
-                return `        *
-       /|\\
-      / | \\
-     /  |  \\
-    *---+---*
-     \\  |  /
-      \\ | /
-       \\|/
-        *`;
-            }
-            
-            // Heart
-            if (p.includes('heart')) {
-                return `  @@@@   @@@@  
- @@@@@@@ @@@@@@@
-@@@@@@@@@@@@@@@@@
- @@@@@@@@@@@@@@@
-  @@@@@@@@@@@@@
-    @@@@@@@@@
-      @@@@@
-        @`;
-            }
-            
-            // Tree
-            if (p.includes('tree')) {
-                return `       *
-      /|\\
-     / | \\
-    /  |  \\
-   /   |   \\
-  /____|____\\
-      |||
-      |||
-      |||
-     /|||\\`;
-            }
-            
-            // Rocket
-            if (p.includes('rocket')) {
-                return `     /
-    /
-   /\\
-  |  |
-  |  |
-  |__|
-   ||
-  /||\\
- / | \\\\
-/  |  \\`;
-            }
-            
-            // Computer / Tech
-            if (p.includes('computer') || p.includes('tech')) {
-                return `  .------------------.
-  |  [] [] [] [] [] |
-  |__________________|
-       _|    |_
-      |__________|
-        |    |
-       /|    |\\
-      / |    | \\
-     /__|    |__\\`;
-            }
-            
-            // Skull
-            if (p.includes('skull') || p.includes('dead') || p.includes('bone')) {
-                return `    _____
-   /     \\
-  | () () |
-  |   __  |
-  |  |  | |
-   \\ |  | /
-    \\|__|/
-   /|    |\\
-  / |    | \\
-    |    |
-    |____|`;
-            }
-            
-            // Default geometric pattern
-            return `  ╔═══════════════╗
-  ║  ASCII ART   ║
-  ╠═══════════════╣
-  ║   ${prompt.substring(0, 12).padEnd(12)}  ║
-  ╠═══════════════╣
-  ║  ┌──┐  ┌──┐  ║
-  ║  │██│  │██│  ║
-  ║  └──┘  └──┘  ║
-  ║  ┌──┐  ┌──┐  ║
-  ║  │██│  │██│  ║
-  ║  └──┘  └──┘  ║
-  ╚═══════════════╝
-  
-  (Type: cat, dog, robot, house, star, heart, tree, rocket, skull)`;
         }
     </script>
 </body>
