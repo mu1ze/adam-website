@@ -486,91 +486,42 @@
             height: 100%;
         }
         
-        /* Modal Overlay */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
-        .modal-overlay.active {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-content {
-            background: var(--bg-secondary);
-            border: 2px solid var(--primary);
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow: auto;
-            text-align: center;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-        .modal-title {
-            color: var(--primary);
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        .modal-close:hover {
-            color: var(--primary);
-            background: rgba(0, 255, 136, 0.1);
-        }
-        
-        .ascii-canvas {
+        /* ASCII Display - In-chat responsive */
+        .ascii-display-container {
             background: #000;
             border: 1px solid var(--primary);
             border-radius: 12px;
-            padding: 30px;
-            margin: 20px 0;
+            padding: 20px;
+            margin: 15px 0;
             overflow-x: auto;
+            max-height: 70vh;
+            overflow-y: auto;
             position: relative;
         }
-        .ascii-canvas pre {
+        @media (max-width: 768px) {
+            .ascii-display-container {
+                padding: 10px;
+                margin: 10px 0;
+                max-height: 50vh;
+            }
+        }
+        .ascii-display-container pre {
             color: var(--primary);
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            line-height: 1.0;
+            font-size: 11px;
+            line-height: 1.05;
             margin: 0;
             white-space: pre;
             display: inline-block;
         }
+        @media (max-width: 768px) {
+            .ascii-display-container pre {
+                font-size: 7px;
+                line-height: 1.0;
+            }
+        }
         /* Glow effect */
-        .ascii-canvas::before {
+        .ascii-display-container::before {
             content: '';
             position: absolute;
             top: -2px;
@@ -584,37 +535,38 @@
             filter: blur(10px);
         }
         
-        .modal-actions {
+        .ascii-display-actions {
             display: flex;
             gap: 10px;
-            justify-content: center;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
-        .modal-btn {
+        .ascii-display-actions button {
             background: var(--bg);
             border: 1px solid var(--border);
-            color: var(--text);
-            padding: 12px 24px;
-            border-radius: 8px;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 12px;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .modal-btn:hover {
+        .ascii-display-actions button:hover {
             border-color: var(--primary);
-            transform: translateY(-2px);
+            color: var(--primary);
         }
-        .modal-btn.primary {
-            background: var(--primary);
-            color: var(--bg);
-            border-color: var(--primary);
-        }
-        .modal-btn.primary:hover {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        @media (max-width: 768px) {
+            .ascii-display-actions {
+                gap: 8px;
+            }
+            .ascii-display-actions button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
         }
         
         .toast {
@@ -1219,44 +1171,6 @@
         }
     </style>
 
-    <!-- ASCII Art Modal -->
-    <div class="modal-overlay" id="asciiModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <span id="modalEmoji">🐱</span>
-                    <span id="modalTitle">Cat</span>
-                </div>
-                <button class="modal-close" onclick="closeModal()">×</button>
-            </div>
-            
-            <div class="quality-selector">
-                <button class="quality-btn" onclick="setQuality('low')">Small</button>
-                <button class="quality-btn active" onclick="setQuality('medium')">Medium</button>
-                <button class="quality-btn" onclick="setQuality('high')">High</button>
-            </div>
-            
-            <div class="ascii-canvas">
-                <pre id="modalAscii"></pre>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="modal-btn" onclick="copyAscii()">
-                    📋 Copy
-                </button>
-                <button class="modal-btn" onclick="regenerateAscii()">
-                    🔄 Regenerate
-                </button>
-                <button class="modal-btn" onclick="shareAscii()">
-                    📤 Share
-                </button>
-                <button class="modal-btn primary" onclick="closeModal()">
-                    ✓ Done
-                </button>
-            </div>
-        </div>
-    </div>
-    
     <!-- Toast -->
     <div class="toast" id="toast">Copied to clipboard!</div>
 
@@ -1940,82 +1854,6 @@ ___/__________\\___
             addAsciiToChat(item);
         }
         
-        function openModal(item) {
-            const modal = document.getElementById('asciiModal');
-            const modalEmoji = document.getElementById('modalEmoji');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalAscii = document.getElementById('modalAscii');
-            
-            modalEmoji.textContent = item.emoji;
-            modalTitle.textContent = item.name;
-            modalAscii.textContent = getAsciiForQuality(item, currentQuality);
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeModal() {
-            const modal = document.getElementById('asciiModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        function getAsciiForQuality(item, quality) {
-            // Return quality-appropriate ASCII art
-            if (item.art && item.art[quality]) {
-                return item.art[quality];
-            }
-            // Fallback to simple art
-            if (item.art && typeof item.art === 'string') {
-                return item.art;
-            }
-            return item.art?.medium || item.art;
-        }
-        
-        function setQuality(quality) {
-            currentQuality = quality;
-            // Update button states
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase() === quality);
-            });
-            // Update display
-            if (currentAsciiItem) {
-                document.getElementById('modalAscii').textContent = getAsciiForQuality(currentAsciiItem, quality);
-            }
-        }
-        
-        function copyAscii() {
-            const ascii = document.getElementById('modalAscii').textContent;
-            navigator.clipboard.writeText(ascii).then(() => {
-                showToast('Copied to clipboard!');
-            }).catch(() => {
-                showToast('Failed to copy');
-            });
-        }
-        
-        function regenerateAscii() {
-            // Cycle through available qualities
-            const qualities = ['low', 'medium', 'high'];
-            const currentIndex = qualities.indexOf(currentQuality);
-            const nextQuality = qualities[(currentIndex + 1) % qualities.length];
-            setQuality(nextQuality);
-            showToast(`Switched to ${nextQuality} quality`);
-        }
-        
-        function shareAscii() {
-            const ascii = document.getElementById('modalAscii').textContent;
-            const text = `${currentAsciiItem.emoji} ${currentAsciiItem.name}\n\n${ascii}\n\nCreated by ADAM ASCII Generator`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: `${currentAsciiItem.name} ASCII Art`,
-                    text: text
-                }).catch(() => {});
-            } else {
-                copyAscii();
-            }
-        }
-        
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -2040,6 +1878,26 @@ ___/__________\\___
             loadingEl.classList.add('visible');
             generateBtn.disabled = true;
             
+            // Switch to chat mode to show result
+            setMode('chat');
+            
+            // Show typing indicator
+            const messagesDiv = document.getElementById('chatMessages');
+            const welcome = document.getElementById('welcomeState');
+            if (welcome) welcome.remove();
+            messagesDiv.style.display = 'flex';
+            
+            const typingId = 'typing-' + Date.now();
+            messagesDiv.innerHTML += `
+                <div class="message assistant" id="${typingId}">
+                    <div class="avatar">✨</div>
+                    <div class="message-content">
+                        <p style="margin-bottom: 10px;">Generating your ASCII art<span class="loading-dots"></span></p>
+                    </div>
+                </div>
+            `;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -2056,7 +1914,7 @@ ___/__________\\___
                                 
 Rules:
 - Use box-drawing characters (╔║╚╝╠╣╦╩╬═│┌┐└┘├┤┬┴┼), standard symbols (/\\|()_<>[]{}*#@%^), and ASCII characters
-- Make it DETAILED and LARGE - at least 15 rows tall
+- Make it DETAILED and LARGE - at least 20 rows tall
 - Use consistent character width for alignment
 - NO markdown code blocks - just plain ASCII art
 - ONLY output the ASCII art - no description, no explanation
@@ -2064,7 +1922,7 @@ Rules:
 - Center the artwork when possible`
                             }
                         ],
-                        max_tokens: 2000,
+                        max_tokens: 2500,
                         temperature: 0.9
                     })
                 });
@@ -2077,18 +1935,40 @@ Rules:
                 const data = await response.json();
                 const asciiArt = data.choices[0].message.content.trim();
                 
-                // Show in modal
-                const modal = document.getElementById('asciiModal');
-                document.getElementById('modalEmoji').textContent = '✨';
-                document.getElementById('modalTitle').textContent = 'AI Generated';
-                document.getElementById('modalAscii').textContent = asciiArt;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
+                // Store cached ASCII
+                cachedAscii = asciiArt;
                 
-                // Store for potential copy
-                currentAsciiItem = { name: 'AI Art', emoji: '✨', art: asciiArt };
+                // Remove typing indicator and show result
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message assistant';
+                msgDiv.innerHTML = `
+                    <div class="avatar">✨</div>
+                    <div class="message-content">
+                        <p style="margin-bottom: 10px; color: var(--primary);">AI Generated ASCII Art</p>
+                        <div class="ascii-display-container">
+                            <pre>${escapeHtml(asciiArt)}</pre>
+                        </div>
+                        <div class="ascii-display-actions">
+                            <button onclick="copyCachedAscii()">📋 Copy</button>
+                            <button onclick="regenerateAscii()">🔄 Regenerate</button>
+                            <button onclick="shareCachedAscii()">📤 Share</button>
+                        </div>
+                    </div>
+                `;
+                messagesDiv.appendChild(msgDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                // Clear the input
+                document.getElementById('aiPrompt').value = '';
                 
             } catch (error) {
+                // Remove typing indicator
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                
                 showToast(`Error: ${error.message}`);
             } finally {
                 loadingEl.classList.remove('visible');
@@ -2096,15 +1976,43 @@ Rules:
             }
         }
         
+        let cachedAscii = '';
+        
+        function copyCachedAscii() {
+            if (cachedAscii) {
+                navigator.clipboard.writeText(cachedAscii).then(() => {
+                    showToast('Copied to clipboard!');
+                }).catch(() => {
+                    showToast('Failed to copy');
+                });
+            }
+        }
+        
+        function shareCachedAscii() {
+            if (cachedAscii) {
+                const text = `${cachedAscii}\n\nCreated by ADAM ASCII Generator`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'ASCII Art',
+                        text: text
+                    }).catch(() => {});
+                } else {
+                    copyCachedAscii();
+                }
+            }
+        }
+        
         function addAsciiToChat(item) {
             const messagesDiv = document.getElementById('chatMessages');
             
-            // Switch back to chat mode temporarily to show message
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.style.display = 'flex';
+            // Switch back to chat mode to show message
+            messagesDiv.style.display = 'flex';
             
             const welcome = document.getElementById('welcomeState');
             if (welcome) welcome.remove();
+            
+            const art = item.art?.medium || item.art || '';
+            cachedAscii = art;
             
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message assistant';
@@ -2112,35 +2020,18 @@ Rules:
                 <div class="avatar">🎨</div>
                 <div class="message-content">
                     <p style="margin-bottom: 10px;">Here's your ${item.name.toLowerCase()} ASCII art:</p>
-                    <pre class="ascii-art">${item.art?.medium || item.art || ''}</pre>
-                    <button onclick="openModalFromElement(this)" style="background: var(--primary); color: var(--bg); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-family: inherit;">View Full Size →</button>
+                    <div class="ascii-display-container">
+                        <pre>${escapeHtml(art)}</pre>
+                    </div>
+                    <div class="ascii-display-actions">
+                        <button onclick="copyCachedAscii()">📋 Copy</button>
+                        <button onclick="shareCachedAscii()">📤 Share</button>
+                    </div>
                 </div>
             `;
-            // Store item data for modal
-            msgDiv.dataset.item = JSON.stringify(item);
             messagesDiv.appendChild(msgDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
-        
-        // Make openModal accessible from inline handlers
-        window.openModalFromElement = function(btn) {
-            const msgDiv = btn.closest('.message');
-            const item = JSON.parse(msgDiv.dataset.item);
-            currentAsciiItem = item;
-            openModal(item);
-        };
-        
-        // Close modal on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-        
-        // Close modal on background click
-        document.getElementById('asciiModal').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeModal();
-            }
-        });
         
         function escapeHtml(text) {
             const div = document.createElement('div');
