@@ -56,17 +56,14 @@
         }
         
         .controls-buttons {
-            display: flex;
+            display: none;
             gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+            padding-top: 10px;
         }
         .controls-buttons.open {
-            max-height: 200px;
-            padding-top: 10px;
+            display: flex;
         }
         
         .controls button {
@@ -115,23 +112,58 @@
             top: 20px;
             left: 20px;
             color: #00ff88;
+            z-index: 50;
         }
         .info h1 {
-            font-size: 28px;
+            font-size: 20px;
             text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
         }
         .info p {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.7;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            z-index: 50;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            background: #00ff88;
+            color: #000;
         }
         
         .animation-name {
             position: fixed;
-            top: 20px;
+            top: 70px;
             right: 20px;
             color: #ff6b6b;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        @media (min-width: 768px) {
+            .animation-name {
+                top: 20px;
+                font-size: 18px;
+            }
+            .info h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
@@ -140,6 +172,7 @@
         <h1>🚶 Humanoid Walker</h1>
         <p>Drag to rotate • Scroll to zoom</p>
     </div>
+    <a href="index.html" class="back-btn">← Back to ADAM</a>
     <div class="animation-name" id="animName">SELECT AN ANIMATION</div>
     
     <canvas id="canvas"></canvas>
