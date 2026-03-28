@@ -81,12 +81,13 @@
         <h1>🚶 Humanoid Walker</h1>
         <p>Drag to rotate • Scroll to zoom</p>
     </div>
-    <div class="animation-name" id="animName">WALK</div>
+    <div class="animation-name" id="animName">SELECT AN ANIMATION</div>
     
     <canvas id="canvas"></canvas>
     
     <div class="controls">
-        <button id="walkBtn" class="active" onclick="setAnimation('walk')">🚶 Walk</button>
+        <button id="stopBtn" class="active" onclick="setAnimation('stop')">⏹ Stop</button>
+        <button id="walkBtn" onclick="setAnimation('walk')">🚶 Walk</button>
         <button id="runBtn" onclick="setAnimation('run')">🏃 Run</button>
         <button id="danceBtn" onclick="setAnimation('dance')">💃 Dance</button>
         <button id="waveBtn" onclick="setAnimation('wave')">👋 Wave</button>
@@ -109,7 +110,7 @@
         let scene, camera, renderer, controls;
         let humanoid;
         let animationTime = 0;
-        let currentAnimation = 'walk';
+        let currentAnimation = 'stop';
         let animationSpeed = 1;
         
         // Body parts
@@ -285,9 +286,37 @@
             
             // Update button states
             document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(name + 'Btn').classList.add('active');
+            if (name !== 'stop') {
+                document.getElementById(name + 'Btn').classList.add('active');
+            } else {
+                document.getElementById('stopBtn').classList.add('active');
+                // Reset all rotations to default pose
+                resetPose();
+            }
             
             animationTime = 0;
+        }
+        
+        function resetPose() {
+            humanoid.rotation.set(0, 0, 0);
+            torso.rotation.set(0, 0, 0);
+            torso.scale.set(1, 1, 1);
+            head.rotation.set(0, 0, 0);
+            humanoid.position.set(0, 0, 0);
+            
+            leftArm.rotation.set(0, 0, 0);
+            rightArm.rotation.set(0, 0, 0);
+            leftForearm.rotation.set(0, 0, 0);
+            rightForearm.rotation.set(0, 0, 0);
+            leftLeg.rotation.set(0, 0, 0);
+            rightLeg.rotation.set(0, 0, 0);
+            leftShin.rotation.set(0, 0, 0);
+            rightShin.rotation.set(0, 0, 0);
+        }
+        
+        function animateStop(t) {
+            // Just hold the reset pose
+            resetPose();
         }
         
         function animateWalk(t) {
@@ -436,6 +465,7 @@
             humanoid.position.x = 0;
             
             switch(currentAnimation) {
+                case 'stop': animateStop(t); break;
                 case 'walk': animateWalk(t); break;
                 case 'run': animateRun(t); break;
                 case 'dance': animateDance(t); break;
