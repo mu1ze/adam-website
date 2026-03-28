@@ -181,51 +181,223 @@
             overflow: hidden;
         }
         
-        /* Mode Selector - Compact on mobile */
-        .mode-selector {
-            padding: 12px 15px;
+        /* Quick Prompt Bar */
+        .quick-prompt-bar {
+            padding: 10px 15px;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
             display: flex;
             gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
         }
         @media (max-width: 768px) {
-            .mode-selector {
+            .quick-prompt-bar {
                 padding: 8px 10px;
                 gap: 8px;
             }
         }
-        .mode-btn {
-            flex: 1;
+        .quick-prompt-btn {
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text-dim);
-            padding: 12px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 12px;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .mode-btn:hover { border-color: var(--primary); }
-        .mode-btn.active {
-            background: var(--primary);
-            color: var(--bg);
+        .quick-prompt-btn:hover {
             border-color: var(--primary);
+            color: var(--primary);
         }
-        .mode-btn .icon { font-size: 18px; }
         @media (max-width: 768px) {
-            .mode-btn {
-                padding: 10px 8px;
-                font-size: 12px;
-                gap: 5px;
+            .quick-prompt-btn {
+                padding: 6px 10px;
+                font-size: 11px;
             }
-            .mode-btn .icon { font-size: 14px; }
-            .mode-btn span:not(.icon) { display: none; } /* Hide text, show icon only */
+        }
+        
+        /* ASCII Quick Prompts Dropdown */
+        .ascii-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .ascii-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            margin-top: 5px;
+        }
+        .ascii-dropdown-content.show { display: block; }
+        .ascii-dropdown-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .ascii-dropdown-section {
+            padding: 8px 0;
+        }
+        .ascii-dropdown-section-title {
+            padding: 6px 15px;
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ascii-dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .ascii-dropdown-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--primary);
+        }
+        .ascii-dropdown-item .emoji { font-size: 16px; }
+        .ascii-dropdown-item .name { flex: 1; }
+        .ascii-dropdown-item .cached {
+            font-size: 10px;
+            color: var(--primary);
+            opacity: 0;
+        }
+        .ascii-dropdown-item.cached .cached { opacity: 1; }
+        
+        /* Text Art Modal */
+        .text-art-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .text-art-modal.hidden { display: none; }
+        .text-art-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        .text-art-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .text-art-input:focus { outline: none; border-color: var(--primary); }
+        .text-art-output {
+            background: #000;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1.1;
+            white-space: pre;
+            color: var(--primary);
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .text-art-styles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .style-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        .style-btn:hover, .style-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Live Clock Widget */
+        .live-clock-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 30px 40px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.3);
+        }
+        .live-clock-container.hidden { display: none; }
+        .live-clock-time {
+            font-family: 'Courier New', monospace;
+            font-size: 48px;
+            color: var(--primary);
+            letter-spacing: 4px;
+        }
+        .live-clock-date {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-top: 10px;
+        }
+        .live-clock-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .live-clock-close:hover { color: var(--primary); }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
         }
         
         /* Chat Header - Simplified on mobile */
@@ -477,13 +649,6 @@
             border-radius: 3px;
             border: 1px solid var(--border);
             font-family: inherit;
-        }
-        
-        /* IMAGE MODE STYLES */
-        .image-mode {
-            display: none;
-            flex-direction: column;
-            height: 100%;
         }
         
         /* ASCII Display - In-chat responsive */
@@ -1011,15 +1176,31 @@
         
         <!-- Chat Area -->
         <div class="chat-area">
-            <!-- Mode Selector -->
-            <div class="mode-selector">
-                <button class="mode-btn active" id="chatModeBtn" onclick="setMode('chat')">
-                    <span class="icon">💬</span>
-                    <span>Chat Mode</span>
+            <!-- Quick Prompt Bar -->
+            <div class="quick-prompt-bar">
+                <div class="ascii-dropdown" id="asciiDropdown">
+                    <button class="quick-prompt-btn" onclick="toggleAsciiDropdown()">
+                        <span>🎨</span>
+                        <span>ASCII Image</span>
+                        <span style="font-size: 10px;">▼</span>
+                    </button>
+                    <div class="ascii-dropdown-content" id="asciiDropdownContent"></div>
+                </div>
+                <button class="quick-prompt-btn" onclick="showTextArtPrompt()">
+                    <span>🔤</span>
+                    <span>Big Text</span>
                 </button>
-                <button class="mode-btn" id="imageModeBtn" onclick="setMode('image')">
-                    <span class="icon">🎨</span>
-                    <span>Image Mode</span>
+                <button class="quick-prompt-btn" onclick="showLiveClock()">
+                    <span>🕐</span>
+                    <span>Live Clock</span>
+                </button>
+                <button class="quick-prompt-btn" onclick="magic8Ball()">
+                    <span>🎱</span>
+                    <span>8-Ball</span>
+                </button>
+                <button class="quick-prompt-btn" onclick="showKeyboard()">
+                    <span>⌨️</span>
+                    <span>Keyboard</span>
                 </button>
             </div>
             
@@ -1049,113 +1230,13 @@
                         <button class="suggestion" onclick="sendSuggestion('Help me write a professional email')">
                             <span class="suggestion-icon">📧</span> Help me write an email
                         </button>
-                        <button class="suggestion" onclick="setMode('image')">
+                        <button class="suggestion" onclick="toggleAsciiDropdown()">
                             <span class="suggestion-icon">🎨</span> Generate ASCII Art
                         </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Image Mode -->
-            <div class="image-mode" id="imageMode">
-                <!-- AI Generator -->
-                <div style="padding: 20px;">
-                    <div class="ai-generator">
-                        <div class="ai-generator-title">
-                            <span>✨</span>
-                            <span>AI Enhanced ASCII Generator</span>
-                            <span style="font-size: 11px; color: var(--text-dim); font-weight: normal;">Powered by Mistral</span>
-                        </div>
-                        <textarea 
-                            class="ai-prompt-input" 
-                            id="aiPrompt" 
-                            placeholder="Describe what you want to see as ASCII art... e.g., 'A majestic dragon breathing fire in a dark cave'"
-                        ></textarea>
-                        <div class="ai-actions">
-                            <button class="ai-generate-btn" id="aiGenerateBtn" onclick="generateAIAscii()">
-                                <span>⚡</span>
-                                <span>Generate with Mistral AI</span>
-                            </button>
-                        </div>
-                        <div class="preset-btns">
-                            <button class="preset-btn" onclick="setPrompt('A majestic lion standing on a rock in the savanna at sunset')">🦁 Lion</button>
-                            <button class="preset-btn" onclick="setPrompt('A futuristic robot warrior with glowing eyes and chrome armor')">🤖 Robot</button>
-                            <button class="preset-btn" onclick="setPrompt('An enchanted castle on a hilltop with magical stars above')">🏰 Castle</button>
-                            <button class="preset-btn" onclick="setPrompt('A fierce dragon breathing fire in a dark cave')">🐉 Dragon</button>
-                            <button class="preset-btn" onclick="setPrompt('A vintage sports car in a neon-lit garage at night')">🏎️ Car</button>
-                            <button class="preset-btn" onclick="setPrompt('An astronaut floating in space with Earth in the background')">🚀 Astronaut</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Loading -->
-                    <div class="ai-loading" id="aiLoading">
-                        <div class="loading-spinner"></div>
-                        <div class="loading-text">Generating detailed ASCII art<span class="loading-dots"></span></div>
-                    </div>
-                </div>
-                
-                <!-- Categories -->
-                <div class="image-categories" id="imageCategories">
-                    <button class="category-btn" onclick="selectCategory('animals')">
-                        <span class="emoji">🐾</span>
-                        <span class="label">Animals</span>
-                        <span class="count">8 items</span>
-                    </button>
-                    <button class="category-btn" onclick="selectCategory('objects')">
-                        <span class="emoji">🎁</span>
-                        <span class="label">Objects</span>
-                        <span class="count">8 items</span>
-                    </button>
-                    <button class="category-btn" onclick="selectCategory('places')">
-                        <span class="emoji">🏠</span>
-                        <span class="label">Places</span>
-                        <span class="count">6 items</span>
-                    </button>
-                    <button class="category-btn" onclick="selectCategory('tech')">
-                        <span class="emoji">💻</span>
-                        <span class="label">Tech</span>
-                        <span class="count">6 items</span>
-                    </button>
-                    <button class="category-btn" onclick="selectCategory('space')">
-                        <span class="emoji">🚀</span>
-                        <span class="label">Space</span>
-                        <span class="count">5 items</span>
-                    </button>
-                    <button class="category-btn" onclick="selectCategory('nature')">
-                        <span class="emoji">🌲</span>
-                        <span class="label">Nature</span>
-                        <span class="count">6 items</span>
-                    </button>
-                </div>
-                
-                <!-- Sub-categories -->
-                <div class="sub-categories" id="subCategories"></div>
-                
-                <!-- Output -->
-                <div class="image-output" id="imageOutput">
-                    <button class="back-btn" onclick="backToCategories()">← Back to Categories</button>
-                    <div class="ascii-display">
-                        <pre id="asciiResult"></pre>
-                    </div>
-                    <p style="color: var(--text-dim); font-size: 12px; margin-top: 15px;">Click any category to generate more!</p>
-                </div>
-            </div>
-            
-            <!-- Input Area (Chat Mode Only) -->
-            <div class="input-area" id="chatInputArea">
-                <div class="input-container">
-                    <div class="input-wrapper">
-                        <textarea 
-                            id="userInput" 
-                            placeholder="Ask ADAM anything..." 
-                            rows="1"
-                            onkeydown="handleKeyDown(event)"
-                            oninput="autoResize(this)"
-                        ></textarea>
-                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">▶</button>
-                    </div>
-                </div>
-                <div class="input-hint">Press <kbd>Enter</kbd> to send, <kbd>Shift+Enter</kbd> for new line</div>
             </div>
         </div>
     </div>
@@ -1730,34 +1811,6 @@ ___/__________\\___
             }
         }
         
-        function setMode(mode) {
-            currentMode = mode;
-            const chatMessages = document.getElementById('chatMessages');
-            const imageMode = document.getElementById('imageMode');
-            const chatInputArea = document.getElementById('chatInputArea');
-            const chatHeader = document.getElementById('chatHeader');
-            const chatModeBtn = document.getElementById('chatModeBtn');
-            const imageModeBtn = document.getElementById('imageModeBtn');
-            
-            if (mode === 'chat') {
-                chatMessages.style.display = 'flex';
-                chatInputArea.style.display = 'block';
-                chatHeader.style.display = 'flex';
-                chatModeBtn.classList.add('active');
-                imageModeBtn.classList.remove('active');
-                imageMode.style.display = 'none';
-            } else {
-                chatMessages.style.display = 'none';
-                chatInputArea.style.display = 'none';
-                chatHeader.style.display = 'none';
-                chatModeBtn.classList.remove('active');
-                imageModeBtn.classList.add('active');
-                imageMode.style.display = 'flex';
-                // Reset to categories view
-                backToCategories();
-            }
-        }
-        
         function changeModel() {
             currentModel = document.getElementById('modelSelect').value;
             document.getElementById('currentModel').textContent = currentModel;
@@ -1784,7 +1837,7 @@ ___/__________\\___
                         <button class="suggestion" onclick="sendSuggestion('Help me write a professional email')">
                             <span class="suggestion-icon">📧</span> Help me write an email
                         </button>
-                        <button class="suggestion" onclick="setMode('image')">
+                        <button class="suggestion" onclick="toggleAsciiDropdown()">
                             <span class="suggestion-icon">🎨</span> Generate ASCII Art
                         </button>
                     </div>
@@ -1877,9 +1930,6 @@ ___/__________\\___
             
             loadingEl.classList.add('visible');
             generateBtn.disabled = true;
-            
-            // Switch to chat mode to show result
-            setMode('chat');
             
             // Show typing indicator
             const messagesDiv = document.getElementById('chatMessages');
@@ -2025,6 +2075,314 @@ Rules:
                         <button onclick="copyCachedAscii()">📋 Copy</button>
                         <button onclick="shareCachedAscii()">📤 Share</button>
                     </div>
+                </div>
+            `;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // ASCII Prompts Cache
+        let asciiPromptsCache = JSON.parse(localStorage.getItem('asciiPromptsCache') || '{}');
+        
+        function toggleAsciiDropdown() {
+            const dropdown = document.getElementById('asciiDropdownContent');
+            const isShown = dropdown.classList.contains('show');
+            
+            if (!isShown) {
+                renderAsciiDropdown();
+            }
+            dropdown.classList.toggle('show');
+            
+            // Close on outside click
+            setTimeout(() => {
+                document.addEventListener('click', closeAsciiDropdownOutside);
+            }, 0);
+        }
+        
+        function closeAsciiDropdownOutside(e) {
+            const dropdown = document.getElementById('asciiDropdown');
+            if (!dropdown.contains(e.target)) {
+                document.getElementById('asciiDropdownContent').classList.remove('show');
+                document.removeEventListener('click', closeAsciiDropdownOutside);
+            }
+        }
+        
+        function renderAsciiDropdown() {
+            const dropdown = document.getElementById('asciiDropdownContent');
+            const categories = {
+                'Animals': ['Cat', 'Dog', 'Bear', 'Fox', 'Wolf', 'Panda', 'Owl', 'Butterfly'],
+                'Objects': ['Heart', 'Star', 'Diamond', 'Crown', 'Gift Box', 'Pizza', 'Cake', 'Coffee'],
+                'Places': ['House', 'Castle', 'Tree', 'Palm Tree', 'Bridge', 'Boat'],
+                'Tech': ['Computer', 'Robot', 'Rocket', 'Car', 'Airplane', 'Phone'],
+                'Space': ['Moon', 'Planet', 'Alien', 'UFO', 'Astronaut'],
+                'Nature': ['Flower', 'Sun', 'Cloud', 'Mountain', 'Lightning', 'Fire']
+            };
+            
+            let html = '<div class="ascii-dropdown-header">ASCII Art Prompts</div>';
+            
+            for (const [category, items] of Object.entries(categories)) {
+                html += `<div class="ascii-dropdown-section">
+                    <div class="ascii-dropdown-section-title">${category}</div>`;
+                
+                for (const item of items) {
+                    const cacheKey = item.toLowerCase();
+                    const isCached = asciiPromptsCache[cacheKey];
+                    const itemData = findAsciiItem(item);
+                    
+                    if (itemData) {
+                        html += `<div class="ascii-dropdown-item ${isCached ? 'cached' : ''}" 
+                                    onclick="selectAsciiPrompt('${item}')">
+                            <span class="emoji">${itemData.emoji}</span>
+                            <span class="name">${item}</span>
+                            <span class="cached">✓ Used</span>
+                        </div>`;
+                    }
+                }
+                html += '</div>';
+            }
+            
+            dropdown.innerHTML = html;
+        }
+        
+        function findAsciiItem(name) {
+            for (const category of Object.values(asciiDatabase)) {
+                for (const item of category) {
+                    if (item.name.toLowerCase() === name.toLowerCase()) {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function selectAsciiPrompt(name) {
+            const item = findAsciiPrompt(name);
+            if (item) {
+                // Cache the selection
+                asciiPromptsCache[name.toLowerCase()] = {
+                    name: item.name,
+                    emoji: item.emoji,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('asciiPromptsCache', JSON.stringify(asciiPromptsCache));
+                
+                // Add to chat
+                addAsciiToChat(item);
+            }
+            
+            document.getElementById('asciiDropdownContent').classList.remove('show');
+        }
+        
+        function findAsciiPrompt(name) {
+            for (const category of Object.values(asciiDatabase)) {
+                for (const item of category) {
+                    if (item.name.toLowerCase() === name.toLowerCase()) {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function showKeyboard() {
+            const shortcuts = [
+                { key: 'Enter', desc: 'Send message' },
+                { key: 'Shift + Enter', desc: 'New line' },
+                { key: 'Esc', desc: 'Clear input' },
+                { key: '↑', desc: 'Recall last input' }
+            ];
+            
+            const html = shortcuts.map(s => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                <kbd style="background:var(--bg);padding:4px 8px;border-radius:4px;border:1px solid var(--border);font-family:inherit;">${s.key}</kbd>
+                <span style="color:var(--text-dim);font-size:12px;">${s.desc}</span>
+            </div>`).join('');
+            
+            showModal('Keyboard Shortcuts', html);
+        }
+        
+        function showModal(title, content) {
+            const modal = document.createElement('div');
+            modal.id = 'customModal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+            modal.innerHTML = `<div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;max-width:400px;width:100%;padding:20px;">
+                <h3 style="color:var(--primary);margin-bottom:15px;">${title}</h3>
+                <div>${content}</div>
+                <button onclick="closeModal()" style="margin-top:15px;width:100%;background:var(--primary);color:var(--bg);border:none;padding:10px;border-radius:6px;cursor:pointer;font-family:inherit;">Close</button>
+            </div>`;
+            document.body.appendChild(modal);
+            modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            if (modal) modal.remove();
+        }
+        
+        // ===== TEXT ART GENERATOR =====
+        let currentTextArtStyle = 'block';
+        
+        function showTextArtPrompt() {
+            const html = `
+                <div style="margin-bottom:15px;">
+                    <input type="text" class="text-art-input" id="textArtInput" 
+                           placeholder="Type something..." maxlength="20"
+                           oninput="generateTextArt()">
+                </div>
+                <div class="text-art-styles">
+                    <button class="style-btn active" onclick="setTextArtStyle('block', this)">█ Blocks</button>
+                    <button class="style-btn" onclick="setTextArtStyle('banner', this)">Banner</button>
+                    <button class="style-btn" onclick="setTextArtStyle('slant', this)">Slant</button>
+                    <button class="style-btn" onclick="setTextArtStyle('round', this)">Round</button>
+                </div>
+                <div class="text-art-output" id="textArtOutput">
+                    <span style="color:var(--text-dim);">Type above...</span>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="sendTextArtToChat()" style="flex:1;background:var(--primary);color:var(--bg);border:none;padding:12px;border-radius:6px;cursor:pointer;font-family:inherit;">Send to Chat</button>
+                    <button onclick="copyTextArt()" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:6px;cursor:pointer;font-family:inherit;">Copy</button>
+                    <button onclick="closeModal()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:6px;cursor:pointer;font-family:inherit;">Close</button>
+                </div>
+            `;
+            showModal('Big Text Art Generator', html);
+        }
+        
+        function setTextArtStyle(style, btn) {
+            currentTextArtStyle = style;
+            document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            generateTextArt();
+        }
+        
+        const blockLetters = {
+            'A': ['███','█ █','███','█ █','█ █'], 'B': ['███','█ █','███','█ █','███'], 'C': ['███','█  ','█  ','█  ','███'],
+            'D': ['███','█ █','█ █','█ █','███'], 'E': ['███','█  ','███','█  ','███'], 'F': ['███','█  ','███','█  ','█  '],
+            'G': ['███','█  ','█ █','█ █','███'], 'H': ['█ █','█ █','███','█ █','█ █'], 'I': ['███',' █ ',' █ ',' █ ','███'],
+            'J': ['███','  █','  █','█ █','███'], 'K': ['█ █','██ █','███','█ ██','█  █'], 'L': ['█  ','█  ','█  ','█  ','███'],
+            'M': ['█ █','█████','█ █ █','█ █ █','█   █'], 'N': ['█ █','███','███','███','█ █'], 'O': ['███','█ █','█ █','█ █','███'],
+            'P': ['███','█ █','███','█  ','█  '], 'Q': ['███','█ █','█ █','█ █','███'], 'R': ['███','█ █','███','█ █','█ █'],
+            'S': ['███','█  ','███','  █','███'], 'T': ['███',' █ ',' █ ',' █ ',' █ '], 'U': ['█ █','█ █','█ █','█ █','███'],
+            'V': ['█ █','█ █','█ █','█ █',' █ '], 'W': ['█   █','█ █ █','█ █ █','█████','█ █ █'], 'X': ['█ █',' █ █','███',' █ █','█ █'],
+            'Y': ['█ █','█ █','███',' █ ',' █ '], 'Z': ['███','  █ ',' ██ ','█  ','███'],
+            '0': ['███','█ █','█ █','█ █','███'], '1': ['██ ',' █ ',' █ ',' █ ','███'], '2': ['███','  █','███','█  ','███'],
+            '3': ['███','  █','███','  █','███'], '4': ['█ █','█ █','███','  █','  █'], '5': ['███','█  ','███','  █','███'],
+            '6': ['███','█  ','███','█ █','███'], '7': ['███','  █','  █','  █','  █'], '8': ['███','█ █','███','█ █','███'],
+            '9': ['███','█ █','███','  █','███'], ' ': ['  ','  ','  ','  ','  '], '.': ['  ','  ','  ','██','██'],
+            '!': ['██','██','██','  ','██'], '?': ['███','  █','███','   ',' █ '], ':': ['  ','██','██','██','  '],
+            '-': ['   ','   ','███','   ','   '], '_': ['   ','   ','   ','   ','███']
+        };
+        
+        function generateTextArt() {
+            const input = document.getElementById('textArtInput');
+            const output = document.getElementById('textArtOutput');
+            if (!input || !output) return;
+            
+            const text = input.value.toUpperCase();
+            if (!text.trim()) {
+                output.innerHTML = '<span style="color:var(--text-dim);">Type above...</span>';
+                return;
+            }
+            
+            let lines = ['', '', '', '', ''];
+            for (const char of text) {
+                const letter = blockLetters[char];
+                if (letter) {
+                    for (let i = 0; i < 5; i++) {
+                        lines[i] += letter[i] + ' ';
+                    }
+                }
+            }
+            output.textContent = lines.join('\n');
+        }
+        
+        function sendTextArtToChat() {
+            const output = document.getElementById('textArtOutput');
+            if (output && output.textContent.trim() && !output.textContent.includes('Type above')) {
+                const art = output.textContent;
+                addAsciiToChat({ name: 'Text Art', emoji: '🔤', art: art });
+                closeModal();
+            }
+        }
+        
+        function copyTextArt() {
+            const output = document.getElementById('textArtOutput');
+            if (output && output.textContent.trim()) {
+                navigator.clipboard.writeText(output.textContent).then(() => {
+                    showToast('Copied!');
+                });
+            }
+        }
+        
+        // ===== LIVE CLOCK =====
+        let clockInterval = null;
+        
+        function showLiveClock() {
+            const existing = document.querySelector('.live-clock-container');
+            if (existing) { existing.remove(); clearInterval(clockInterval); return; }
+            
+            const clock = document.createElement('div');
+            clock.className = 'live-clock-container';
+            clock.id = 'liveClock';
+            clock.innerHTML = `
+                <button class="live-clock-close" onclick="this.parentElement.remove(); clearInterval(clockInterval);">×</button>
+                <div class="live-clock-time" id="clockTime">--:--:--</div>
+                <div class="live-clock-date" id="clockDate">Loading...</div>
+            `;
+            document.body.appendChild(clock);
+            
+            updateClock();
+            clockInterval = setInterval(updateClock, 1000);
+        }
+        
+        function updateClock() {
+            const timeEl = document.getElementById('clockTime');
+            const dateEl = document.getElementById('clockDate');
+            if (!timeEl || !dateEl) return;
+            
+            const now = new Date();
+            timeEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+            dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        
+        // ===== MAGIC 8-BALL =====
+        const eightBallAnswers = [
+            { text: 'It is certain', color: '#228B22' },
+            { text: 'It is decidedly so', color: '#228B22' },
+            { text: 'Without a doubt', color: '#228B22' },
+            { text: 'Yes definitely', color: '#228B22' },
+            { text: 'You may rely on it', color: '#228B22' },
+            { text: 'As I see it, yes', color: '#228B22' },
+            { text: 'Most likely', color: '#228B22' },
+            { text: 'Outlook good', color: '#228B22' },
+            { text: 'Yes', color: '#228B22' },
+            { text: 'Signs point to yes', color '#DAA520' },
+            { text: 'Reply hazy, try again', color: '#DAA520' },
+            { text: 'Ask again later', color: '#DAA520' },
+            { text: 'Better not tell you now', color: '#DAA520' },
+            { text: 'Cannot predict now', color: '#DAA520' },
+            { text: 'Concentrate and ask again', color: '#DAA520' },
+            { text: "Don't count on it", color: '#DC143C' },
+            { text: 'My reply is no', color: '#DC143C' },
+            { text: 'My sources say no', color: '#DC143C' },
+            { text: 'Outlook not so good', color: '#DC143C' },
+            { text: 'Very doubtful', color: '#DC143C' }
+        ];
+        
+        function magic8Ball() {
+            const answer = eightBallAnswers[Math.floor(Math.random() * eightBallAnswers.length)];
+            
+            // Show animated 8-ball in chat
+            const messagesDiv = document.getElementById('chatMessages');
+            const welcome = document.getElementById('welcomeState');
+            if (welcome) welcome.remove();
+            messagesDiv.style.display = 'flex';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message assistant';
+            msgDiv.innerHTML = `
+                <div class="avatar">🎱</div>
+                <div class="message-content" style="text-align:center;">
+                    <div style="font-size:80px;animation:shake 0.5s ease-in-out;">🎱</div>
+                    <div style="margin-top:15px;font-size:18px;font-weight:bold;color:${answer.color};">${answer.text}</div>
                 </div>
             `;
             messagesDiv.appendChild(msgDiv);
