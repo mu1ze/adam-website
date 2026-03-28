@@ -1906,24 +1906,22 @@ ___/__________\\___
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'mistral-large-latest',
+                        model: 'mistral-small-latest',
                         messages: [
                             {
                                 role: 'user',
-                                content: `You are an ASCII art master. Create incredibly detailed, high-quality ASCII art based on this request: "${prompt}"
+                                content: `Create ASCII art for: "${prompt}"
                                 
 Rules:
-- Use box-drawing characters (╔║╚╝╠╣╦╩╬═│┌┐└┘├┤┬┴┼), standard symbols (/\\|()_<>[]{}*#@%^), and ASCII characters
-- Make it DETAILED and LARGE - at least 20 rows tall
-- Use consistent character width for alignment
-- NO markdown code blocks - just plain ASCII art
-- ONLY output the ASCII art - no description, no explanation
-- Make it visually impressive with shading and detail
-- Center the artwork when possible`
+- Use simple ASCII characters (/\\|()_<>[]{}*#@%)
+- Keep it moderate size, 10-15 rows
+- NO markdown, just plain ASCII
+- ONLY output the ASCII art
+- Clean and recognizable`
                             }
                         ],
-                        max_tokens: 2500,
-                        temperature: 0.9
+                        max_tokens: 1000,
+                        temperature: 0.8
                     })
                 });
                 
