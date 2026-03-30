@@ -7,6 +7,7 @@ const commands = [
   { action: 'skills', icon: '⚡', label: 'Go to Skills', route: '/skills' },
   { action: 'plugins', icon: '🔌', label: 'Go to Plugins', route: '/plugins' },
   { action: 'status', icon: '📊', label: 'Go to Status', route: '/#status' },
+  { action: 'ask', icon: '💬', label: 'Ask Adam', route: '/ask-adam' },
 ];
 
 export default function CommandPalette() {
