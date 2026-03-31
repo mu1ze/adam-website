@@ -1,4 +1,5 @@
 import DocsClient from './DocsClient';
+import PretextShowcase from './PretextShowcase';
 
 export const metadata = {
   title: 'ADAM - Documentation',
@@ -13,6 +14,7 @@ export default function DocsPage() {
         <p>Interactive DOM-Free Documentation</p>
       </div>
       <DocsClient />
+      <PretextShowcase />
     </main>
   );
 }
