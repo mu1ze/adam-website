@@ -1,14 +1,9 @@
 'use client';
 
-import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
-import { motion, useMotionValue } from 'framer-motion';
-import { prepareWithSegments, layoutNextLine } from '@chenglou/pretext';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Trail, Sphere, MeshDistortMaterial } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
+import { prepareWithSegments, layoutNextLine, layoutWithLines } from '@chenglou/pretext';
 
 const FONT = '16px "Courier New", monospace';
-const CHAR_WIDTH = 9.61;
 const LINE_HEIGHT = 26;
 
 const DOCS_TEXT = `[ SYSTEM INITIALIZATION ]
@@ -26,344 +21,579 @@ ADAM's skillset expands dynamically. The current installed skills include:
 ADAM uses a modular plugin architecture to connect to a wider array of services. Our currently active plugins include Stripe Automation (for instantaneous subscription modifications), Supabase Database (for secure edge-computed data synchronizations), and Rube MCP integrations.
 
 [ ADVANCED INTERACTION ]
-Choose an interaction mode above. In DOM-mode, the text dynamically slices itself in half 60 times a second to perfectly wrap the robot geometry without ever triggering layout reflows. Switch to the Physics or Snake modes to interact with individual characters in real-time.`;
+Choose an interaction mode above. In DOM-mode, the text dynamically reflows around an obstacle. In Magnetic mode, characters smoothly repel from your cursor. In Gravity mode, click to place gravity wells that warp the text field.`;
 
 const FULL_TEXT = DOCS_TEXT + '\n\n' + DOCS_TEXT;
 
-// Snake Head Component
-function GlowingSnake({ snakeTarget }) {
-  const meshRef = useRef();
-  const { size } = useThree();
-
-  useFrame(() => {
-    if (!meshRef.current) return;
-    
-    // Convert DOM relative Top-Left into WebGL Center-origin Space
-    const targetX = snakeTarget.current.x - size.width / 2;
-    const targetY = -(snakeTarget.current.y - size.height / 2);
-    
-    // Lerp snake head to mouse pointer softly
-    meshRef.current.position.x += (targetX - meshRef.current.position.x) * 0.15;
-    meshRef.current.position.y += (targetY - meshRef.current.position.y) * 0.15;
-    
-    // Resolve back the WebGL smoothly interpolated coordinate into DOM coordinate for the physics engine
-    snakeTarget.current.resolvedX = meshRef.current.position.x + size.width / 2;
-    snakeTarget.current.resolvedY = -(meshRef.current.position.y - size.height / 2);
-  });
-
-  return (
-    <Trail width={15} length={50} color={new THREE.Color(0.0, 1.0, 0.4)} attenuation={(t) => t * t}>
-      <Sphere ref={meshRef} args={[10, 32, 32]}>
-        <MeshDistortMaterial color="#00ff88" speed={6} distort={0.5} emissive="#00ff88" emissiveIntensity={3} />
-      </Sphere>
-    </Trail>
-  );
-}
-
-export default function DocsClient() {
+// ─── MODE 1: DOM LAYOUT SWAP (text reflows around draggable obstacle) ───
+function DragReflowMode({ preparedText }) {
   const containerRef = useRef(null);
-  const robotRef = useRef(null);
   const [lines, setLines] = useState([]);
   const [containerHeight, setContainerHeight] = useState(800);
-  const [mode, setMode] = useState('snake'); // 'drag' | 'snake' | 'click'
-  
-  const [preparedText, setPreparedText] = useState(null);
+  const obstacleRef = useRef({ x: 20, y: 20 });
+  const dragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
 
-  // High performance DOM references for char explosion physics
-  const charsCache = useRef({});
-  const coordsCache = useRef({});
-  
-  const snakeTarget = useRef({ x: -100, y: -100, resolvedX: -100, resolvedY: -100 });
-  const renderLoop = useRef(null);
-
-  useEffect(() => {
-    setPreparedText(prepareWithSegments(FULL_TEXT, FONT, { whiteSpace: 'pre-wrap' }));
-  }, []);
-
-  const robotX = useMotionValue(20);
-  const robotY = useMotionValue(20);
-
-  // Imperative text wrap layout
-  const reflowLayout = () => {
+  const reflow = useCallback(() => {
     if (!preparedText || !containerRef.current) return;
-    
     const containerWidth = containerRef.current.clientWidth || 800;
-    
-    const rx = robotX.get();
-    const ry = robotY.get();
+    const rx = obstacleRef.current.x;
+    const ry = obstacleRef.current.y;
     const rWidth = 150;
     const rHeight = 250;
-    
+    const padding = 20;
+
     const newLines = [];
     let cursor = { segmentIndex: 0, graphemeIndex: 0 };
     let currentY = 0;
 
-    // Reset physics caches for new lines mapping
-    charsCache.current = {};
-    coordsCache.current = {};
-
     while (true) {
-      const intersects = (mode === 'drag') && (currentY + LINE_HEIGHT > ry) && (currentY < ry + rHeight);
+      const intersects = (currentY + LINE_HEIGHT > ry) && (currentY < ry + rHeight);
 
       if (intersects) {
-        const padding = 20;
         const leftSpace = Math.max(0, rx - padding);
         const rightStart = rx + rWidth + padding;
         const rightSpace = Math.max(0, containerWidth - rightStart);
-
         let didRender = false;
 
         if (leftSpace > 50) {
           const lineLeft = layoutNextLine(preparedText, cursor, leftSpace);
           if (lineLeft) {
-            newLines.push({
-              text: lineLeft.text, x: 0, y: currentY, width: lineLeft.width,
-              chars: Array.from(lineLeft.text).map((c, i) => ({ char: c, cx: i * CHAR_WIDTH, cy: currentY + LINE_HEIGHT/2 }))
-            });
-            cursor = lineLeft.end; didRender = true;
+            newLines.push({ text: lineLeft.text, x: 0, y: currentY, width: lineLeft.width, glow: true });
+            cursor = lineLeft.end;
+            didRender = true;
           } else break;
         }
 
         if (rightSpace > 50) {
           const lineRight = layoutNextLine(preparedText, cursor, rightSpace);
           if (lineRight) {
-            newLines.push({
-              text: lineRight.text, x: rightStart, y: currentY, width: lineRight.width,
-              chars: Array.from(lineRight.text).map((c, i) => ({ char: c, cx: rightStart + i * CHAR_WIDTH, cy: currentY + LINE_HEIGHT/2 }))
-            });
-            cursor = lineRight.end; didRender = true;
+            newLines.push({ text: lineRight.text, x: rightStart, y: currentY, width: lineRight.width, glow: true });
+            cursor = lineRight.end;
+            didRender = true;
           } else break;
         }
 
         if (!didRender) {
-           const fallbackLine = layoutNextLine(preparedText, cursor, containerWidth);
-           if (!fallbackLine) break;
-           newLines.push({
-              text: fallbackLine.text, x: 0, y: currentY, width: fallbackLine.width,
-              chars: Array.from(fallbackLine.text).map((c, i) => ({ char: c, cx: i * CHAR_WIDTH, cy: currentY + LINE_HEIGHT/2 }))
-           });
-           cursor = fallbackLine.end;
+          const fallback = layoutNextLine(preparedText, cursor, containerWidth);
+          if (!fallback) break;
+          newLines.push({ text: fallback.text, x: 0, y: currentY, width: fallback.width });
+          cursor = fallback.end;
         }
-
       } else {
         const line = layoutNextLine(preparedText, cursor, containerWidth);
         if (!line) break;
-        newLines.push({
-           text: line.text, x: 0, y: currentY, width: line.width,
-           chars: Array.from(line.text).map((c, i) => ({ char: c, cx: i * CHAR_WIDTH, cy: currentY + LINE_HEIGHT/2 }))
-        });
+        newLines.push({ text: line.text, x: 0, y: currentY, width: line.width });
         cursor = line.end;
       }
-
       currentY += LINE_HEIGHT;
     }
-    
+
     setContainerHeight(currentY + LINE_HEIGHT);
     setLines(newLines);
-  };
+  }, [preparedText]);
 
   useLayoutEffect(() => {
-    reflowLayout();
-    const handleResize = () => reflowLayout();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [preparedText, mode]); // run on mode change to map lines correctly
+    reflow();
+    window.addEventListener('resize', reflow);
+    return () => window.removeEventListener('resize', reflow);
+  }, [reflow]);
 
-  // Setup Snake physics loop out-of-DOM in requestAnimationFrame!
-  useEffect(() => {
-    if (mode === 'drag') return; // no 60fps loop needed for drag wrap mode
-    
-    const physicsLoop = () => {
-       const keys = Object.keys(coordsCache.current);
-       const targetX = snakeTarget.current.resolvedX;
-       const targetY = snakeTarget.current.resolvedY;
-       
-       for (let i = 0; i < keys.length; i++) {
-           const key = keys[i];
-           const c = coordsCache.current[key];
-           
-           if (!c || c.exploded) continue;
-           
-           const dx = c.cx - targetX;
-           const dy = c.cy - targetY;
-           const dist = Math.sqrt(dx*dx + dy*dy);
-           
-           if (dist < 60) {
-               const el = charsCache.current[key];
-               if (el) {
-                   c.exploded = true;
-                   const force = (60 - dist) / 60;
-                   const angle = Math.atan2(dy, dx);
-                   
-                   const rx = Math.cos(angle) * force * 150 + (Math.random()-0.5)*30;
-                   const ry = Math.sin(angle) * force * 150 + (Math.random()-0.5)*30;
-                   const rot = (Math.random()-0.5) * 360;
-                   
-                   // Instant explosion out-of-React
-                   el.style.transition = 'none';
-                   el.style.transform = `translate(${rx}px, ${ry}px) rotate(${rot}deg) scale(1.6)`;
-                   el.style.color = '#00ff88';
-                   el.style.opacity = '0';
-                   
-                   // Slow reconstruction naturally
-                   setTimeout(() => {
-                       if(el) {
-                          el.style.transition = 'transform 2s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 2s, color 2s';
-                          el.style.transform = 'translate(0px, 0px) rotate(0deg) scale(1)';
-                          el.style.color = 'var(--text)';
-                          el.style.opacity = '1';
-                       }
-                       // re-arm particle
-                       setTimeout(() => { c.exploded = false; }, 2000);
-                   }, 100);
-               }
-           }
-       }
-       renderLoop.current = requestAnimationFrame(physicsLoop);
+  function startDrag(e) {
+    dragging.current = true;
+    const rect = containerRef.current.getBoundingClientRect();
+    dragOffset.current = {
+      x: e.clientX - rect.left - obstacleRef.current.x,
+      y: e.clientY - rect.top - obstacleRef.current.y,
     };
+    e.preventDefault();
+  }
 
-    renderLoop.current = requestAnimationFrame(physicsLoop);
-    return () => cancelAnimationFrame(renderLoop.current);
-  }, [mode]);
-
-  const handlePointerMove = (e) => {
-      if (mode !== 'snake') return;
-      if (!containerRef.current) return;
+  useEffect(() => {
+    function onMove(e) {
+      if (!dragging.current || !containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      snakeTarget.current.x = e.clientX - rect.left;
-      snakeTarget.current.y = e.clientY - rect.top;
-  };
-
-  const handleGlobalClick = (e) => {
-      if (mode !== 'click') return;
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      
-      const keys = Object.keys(coordsCache.current);
-      for (let i = 0; i < keys.length; i++) {
-         const key = keys[i];
-         const c = coordsCache.current[key];
-         if (!c || c.exploded) continue;
-         
-         const dx = c.cx - clickX;
-         const dy = c.cy - clickY;
-         const dist = Math.sqrt(dx*dx + dy*dy);
-         
-         if (dist < 150) { // Large click explosion radius
-              const el = charsCache.current[key];
-              if (el) {
-                 c.exploded = true;
-                 const force = (150 - dist) / 150;
-                 const angle = Math.atan2(dy, dx);
-                 
-                 const rx = Math.cos(angle) * force * 300 + (Math.random()-0.5)*150;
-                 const ry = Math.sin(angle) * force * 300 + (Math.random()-0.5)*150;
-                 const rot = (Math.random()-0.5) * 1080;
-                 
-                 el.style.transition = 'none';
-                 el.style.transform = `translate(${rx}px, ${ry}px) rotate(${rot}deg) scale(2)`;
-                 el.style.color = '#ff0055';
-                 
-                 setTimeout(() => {
-                    if(el) {
-                       el.style.transition = 'transform 2.5s cubic-bezier(0.2, 0.8, 0.2, 1), color 2.5s';
-                       el.style.transform = 'translate(0px, 0px) rotate(0deg) scale(1)';
-                       el.style.color = 'var(--text)';
-                    }
-                    setTimeout(() => { c.exploded = false; }, 2500);
-                 }, 50);
-              }
-         }
+      obstacleRef.current.x = Math.max(0, Math.min(e.clientX - rect.left - dragOffset.current.x, rect.width - 150));
+      obstacleRef.current.y = Math.max(0, e.clientY - rect.top - dragOffset.current.y);
+      // Move the obstacle element directly for smooth dragging
+      const el = document.getElementById('drag-obstacle');
+      if (el) {
+        el.style.left = obstacleRef.current.x + 'px';
+        el.style.top = obstacleRef.current.y + 'px';
       }
-  };
+      reflow();
+    }
+    function onUp() { dragging.current = false; }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [reflow]);
 
-  const btnStyle = { background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', transition: 'all 0.3s' };
-  const activeBtn = { ...btnStyle, background: 'var(--primary)', color: 'var(--bg)', borderColor: 'var(--primary)' };
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        minHeight: containerHeight + 'px',
+        width: '100%',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        overflow: 'hidden',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+      }}
+    >
+      {/* Draggable obstacle */}
+      <div
+        id="drag-obstacle"
+        onMouseDown={startDrag}
+        style={{
+          position: 'absolute',
+          left: obstacleRef.current.x,
+          top: obstacleRef.current.y,
+          width: 150,
+          height: 250,
+          background: 'rgba(0, 255, 136, 0.08)',
+          border: '2px dashed var(--primary)',
+          borderRadius: '8px',
+          zIndex: 10,
+          cursor: 'grab',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--primary)',
+          fontSize: '12px',
+          userSelect: 'none',
+        }}
+      >
+        ↕ DRAG ME
+      </div>
+
+      {/* Text layer */}
+      <div style={{ position: 'absolute', inset: 0, padding: '20px', pointerEvents: 'none' }}>
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              top: line.y + 20,
+              left: line.x + 20,
+              width: line.width,
+              height: LINE_HEIGHT,
+              whiteSpace: 'pre',
+              color: line.glow ? 'var(--primary)' : 'var(--text)',
+              fontFamily: '"Courier New", monospace',
+              fontSize: '16px',
+              lineHeight: LINE_HEIGHT + 'px',
+              transition: 'color 0.3s ease',
+            }}
+          >
+            {line.text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── MODE 2: MAGNETIC CURSOR (canvas-rendered, smooth character repulsion) ───
+function MagneticCursorMode({ preparedText }) {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+  const linesRef = useRef([]);
+  const rafRef = useRef(null);
+  const sizeRef = useRef({ w: 800, h: 600 });
+  // Per-char spring state: current offset
+  const springRef = useRef(null); // Float32Array: [dx0, dy0, dx1, dy1, ...]
+
+  const reflow = useCallback(() => {
+    if (!preparedText || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const result = layoutWithLines(preparedText, w - 20, LINE_HEIGHT);
+    linesRef.current = result.lines || [];
+
+    const h = (result.lines.length * LINE_HEIGHT) + 40;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    sizeRef.current = { w, h };
+
+    // Count total chars and initialize spring state
+    let totalChars = 0;
+    for (const line of result.lines) totalChars += Array.from(line.text).length;
+    springRef.current = new Float32Array(totalChars * 2); // dx, dy pairs
+  }, [preparedText]);
+
+  useEffect(() => {
+    reflow();
+    window.addEventListener('resize', reflow);
+    return () => window.removeEventListener('resize', reflow);
+  }, [reflow]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    function render() {
+      const dpr = window.devicePixelRatio || 1;
+      const { w, h } = sizeRef.current;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = FONT;
+      ctx.textBaseline = 'top';
+
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const lines = linesRef.current;
+      const spr = springRef.current;
+      if (!spr) { rafRef.current = requestAnimationFrame(render); return; }
+
+      const RADIUS = 80;
+      const FORCE = 40;
+      const SPRING = 0.12; // spring constant for returning
+
+      let charIdx = 0;
+
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+        const baseY = li * LINE_HEIGHT + 10;
+        const chars = Array.from(line.text);
+        let xCursor = 10;
+
+        for (let ci = 0; ci < chars.length; ci++) {
+          const ch = chars[ci];
+          const charW = ctx.measureText(ch).width;
+          const cx = xCursor + charW / 2;
+          const cy = baseY + LINE_HEIGHT / 2;
+
+          const dx = cx - mx;
+          const dy = cy - my;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          let targetDx = 0;
+          let targetDy = 0;
+
+          if (dist < RADIUS && dist > 0) {
+            const strength = (1 - dist / RADIUS) * FORCE;
+            targetDx = (dx / dist) * strength;
+            targetDy = (dy / dist) * strength;
+          }
+
+          // Spring interpolation
+          const si = charIdx * 2;
+          spr[si] += (targetDx - spr[si]) * SPRING;
+          spr[si + 1] += (targetDy - spr[si + 1]) * SPRING;
+
+          // Snap tiny values to zero
+          if (Math.abs(spr[si]) < 0.01) spr[si] = 0;
+          if (Math.abs(spr[si + 1]) < 0.01) spr[si + 1] = 0;
+
+          const offsetDx = spr[si];
+          const offsetDy = spr[si + 1];
+          const displacement = Math.sqrt(offsetDx * offsetDx + offsetDy * offsetDy);
+
+          // Color based on displacement
+          if (displacement > 2) {
+            const intensity = Math.min(displacement / 20, 1);
+            const r = Math.round(34 + intensity * (0 - 34));
+            const g = Math.round(139 + intensity * (255 - 139));
+            const b = Math.round(34 + intensity * (136 - 34));
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+          } else {
+            ctx.fillStyle = '#e0e0e0';
+          }
+
+          ctx.fillText(ch, xCursor + offsetDx, baseY + offsetDy);
+          xCursor += charW;
+          charIdx++;
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(render);
+    }
+
+    rafRef.current = requestAnimationFrame(render);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      onMouseMove={(e) => {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (rect) mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }}
+      onMouseLeave={() => { mouseRef.current = { x: -9999, y: -9999 }; }}
+      style={{
+        display: 'block',
+        width: '100%',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        borderRadius: '8px',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
+        cursor: 'crosshair',
+      }}
+    />
+  );
+}
+
+// ─── MODE 3: GRAVITY WELLS (canvas-rendered, click to place warp points) ───
+function GravityWellsMode({ preparedText }) {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+  const linesRef = useRef([]);
+  const rafRef = useRef(null);
+  const sizeRef = useRef({ w: 800, h: 600 });
+  const wellsRef = useRef([]); // [{x, y, radius, age}]
+  const springRef = useRef(null);
+
+  const reflow = useCallback(() => {
+    if (!preparedText || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const w = parent.clientWidth;
+    const result = layoutWithLines(preparedText, w - 20, LINE_HEIGHT);
+    linesRef.current = result.lines || [];
+
+    const h = (result.lines.length * LINE_HEIGHT) + 40;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    sizeRef.current = { w, h };
+
+    let totalChars = 0;
+    for (const line of result.lines) totalChars += Array.from(line.text).length;
+    springRef.current = new Float32Array(totalChars * 2);
+  }, [preparedText]);
+
+  useEffect(() => {
+    reflow();
+    window.addEventListener('resize', reflow);
+    return () => window.removeEventListener('resize', reflow);
+  }, [reflow]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    function render() {
+      const dpr = window.devicePixelRatio || 1;
+      const { w, h } = sizeRef.current;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      const wells = wellsRef.current;
+      const lines = linesRef.current;
+      const spr = springRef.current;
+
+      // Draw well indicators
+      for (const well of wells) {
+        // Pulse animation
+        well.age = (well.age || 0) + 0.02;
+        const pulseR = well.radius + Math.sin(well.age * 3) * 5;
+
+        ctx.beginPath();
+        ctx.arc(well.x, well.y, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(well.x, well.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.6)';
+        ctx.fill();
+      }
+
+      // Render text with gravity warping
+      ctx.font = FONT;
+      ctx.textBaseline = 'top';
+
+      const SPRING_K = 0.08;
+      let charIdx = 0;
+
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+        const baseY = li * LINE_HEIGHT + 10;
+        const chars = Array.from(line.text);
+        let xCursor = 10;
+
+        for (let ci = 0; ci < chars.length; ci++) {
+          const ch = chars[ci];
+          const charW = ctx.measureText(ch).width;
+          const cx = xCursor + charW / 2;
+          const cy = baseY + LINE_HEIGHT / 2;
+
+          let targetDx = 0;
+          let targetDy = 0;
+
+          // Sum forces from all gravity wells
+          for (const well of wells) {
+            const dx = cx - well.x;
+            const dy = cy - well.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < well.radius && dist > 0) {
+              const strength = (1 - dist / well.radius) * 60;
+              targetDx += (dx / dist) * strength;
+              targetDy += (dy / dist) * strength;
+            }
+          }
+
+          if (spr) {
+            const si = charIdx * 2;
+            spr[si] += (targetDx - spr[si]) * SPRING_K;
+            spr[si + 1] += (targetDy - spr[si + 1]) * SPRING_K;
+            if (Math.abs(spr[si]) < 0.01) spr[si] = 0;
+            if (Math.abs(spr[si + 1]) < 0.01) spr[si + 1] = 0;
+
+            const offsetDx = spr[si];
+            const offsetDy = spr[si + 1];
+            const displacement = Math.sqrt(offsetDx * offsetDx + offsetDy * offsetDy);
+
+            if (displacement > 1) {
+              const intensity = Math.min(displacement / 30, 1);
+              const r = Math.round(224 * intensity);
+              const g = Math.round(139 + (255 - 139) * intensity);
+              const b = Math.round(34 + (136 - 34) * intensity);
+              ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+              ctx.globalAlpha = Math.max(0.4, 1 - intensity * 0.3);
+            } else {
+              ctx.fillStyle = '#e0e0e0';
+              ctx.globalAlpha = 1;
+            }
+
+            ctx.fillText(ch, xCursor + offsetDx, baseY + offsetDy);
+          } else {
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillText(ch, xCursor, baseY);
+          }
+
+          xCursor += charW;
+          charIdx++;
+        }
+      }
+
+      ctx.globalAlpha = 1;
+
+      // HUD
+      ctx.fillStyle = 'rgba(0, 255, 136, 0.5)';
+      ctx.font = '12px "Courier New", monospace';
+      ctx.fillText(`Wells: ${wells.length}  |  Click to place  |  Double-click to clear`, 10, h - 15);
+
+      rafRef.current = requestAnimationFrame(render);
+    }
+
+    rafRef.current = requestAnimationFrame(render);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  function handleClick(e) {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    wellsRef.current.push({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      radius: 80 + Math.random() * 40,
+      age: 0,
+    });
+  }
+
+  function handleDblClick() {
+    wellsRef.current = [];
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      onMouseMove={(e) => {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (rect) mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }}
+      onMouseLeave={() => { mouseRef.current = { x: -9999, y: -9999 }; }}
+      onClick={handleClick}
+      onDoubleClick={handleDblClick}
+      style={{
+        display: 'block',
+        width: '100%',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        borderRadius: '8px',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
+        cursor: 'crosshair',
+      }}
+    />
+  );
+}
+
+// ─── MAIN COMPONENT ───
+export default function DocsClient() {
+  const [mode, setMode] = useState('magnetic');
+  const [preparedText, setPreparedText] = useState(null);
+
+  useEffect(() => {
+    setPreparedText(prepareWithSegments(FULL_TEXT, FONT, { whiteSpace: 'pre-wrap' }));
+  }, []);
+
+  const btnStyle = {
+    background: 'var(--bg)',
+    color: 'var(--text)',
+    border: '1px solid var(--border)',
+    padding: '10px 20px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: '14px',
+    transition: 'all 0.3s',
+  };
+  const activeBtn = {
+    ...btnStyle,
+    background: 'var(--primary)',
+    color: 'var(--bg)',
+    borderColor: 'var(--primary)',
+  };
 
   return (
     <div style={{ position: 'relative' }}>
-        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '30px' }}>
-            <button onClick={() => setMode('drag')} style={mode === 'drag' ? activeBtn : btnStyle}>1. DOM Layout Swap</button>
-            <button onClick={() => setMode('snake')} style={mode === 'snake' ? activeBtn : btnStyle}>2. Snake Explode</button>
-            <button onClick={() => setMode('click')} style={mode === 'click' ? activeBtn : btnStyle}>3. Click Explode</button>
-        </div>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '30px', flexWrap: 'wrap' }}>
+        <button onClick={() => setMode('magnetic')} style={mode === 'magnetic' ? activeBtn : btnStyle}>
+          🧲 Magnetic Cursor
+        </button>
+        <button onClick={() => setMode('gravity')} style={mode === 'gravity' ? activeBtn : btnStyle}>
+          🌀 Gravity Wells
+        </button>
+        <button onClick={() => setMode('drag')} style={mode === 'drag' ? activeBtn : btnStyle}>
+          📐 DOM Layout Swap
+        </button>
+      </div>
 
-        <div 
-          ref={containerRef} 
-          className="docs-container"
-          onMouseMove={handlePointerMove}
-          onClick={handleGlobalClick}
-          style={{ 
-            position: 'relative', 
-            minHeight: containerHeight + 'px', 
-            width: '100%',
-            maxWidth: '1000px',
-            margin: '0 auto',
-            overflow: mode === 'drag' ? 'hidden' : 'visible', 
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px'
-          }}
-        >
-          {/* DRAG MODE: Static Adam image */}
-          {mode === 'drag' && (
-              <motion.img
-                src="/adam.png"
-                ref={robotRef}
-                drag
-                dragConstraints={containerRef}
-                dragMomentum={false}
-                style={{ position: 'absolute', width: 150, height: 250, objectFit: 'contain', x: robotX, y: robotY, zIndex: 10, cursor: 'grab', filter: 'drop-shadow(0 0 15px rgba(0, 255, 136, 0.4))' }}
-                whileDrag={{ cursor: 'grabbing', scale: 1.05 }}
-                onDrag={() => reflowLayout()}
-              />
-          )}
+      <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '15px' }}>
+        {mode === 'magnetic' && '↕ Move your cursor over the text to see characters repel smoothly.'}
+        {mode === 'gravity' && '↕ Click anywhere to place gravity wells. Double-click to clear all.'}
+        {mode === 'drag' && '↕ Drag the obstacle around — text reflows in real-time using per-line width control.'}
+      </p>
 
-          {/* SNAKE MODE: Dynamic WebGL Canvas overlay */}
-          {mode === 'snake' && (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 5, pointerEvents: 'none' }}>
-                 <Canvas orthographic camera={{ position: [0, 0, 100], zoom: 1 }}>
-                    <ambientLight intensity={1} />
-                    <GlowingSnake snakeTarget={snakeTarget} />
-                 </Canvas>
-              </div>
-          )}
-          
-          {/* The Text Layer */}
-          <div style={{ position: 'absolute', inset: 0, padding: '20px', pointerEvents: mode === 'drag' ? 'none' : 'auto' }}>
-            {lines.map((line, lIdx) => (
-              <div
-                key={lIdx}
-                style={{
-                  position: 'absolute', top: line.y + 20, left: line.x + 20, width: line.width, height: LINE_HEIGHT,
-                  whiteSpace: 'pre', color: 'var(--text)', fontFamily: '"Courier New", monospace', fontSize: '16px', lineHeight: LINE_HEIGHT + 'px'
-                }}
-              >
-                {mode === 'drag' 
-                  ? line.text 
-                  : line.chars.map((c, cIdx) => (
-                      <span
-                        key={cIdx}
-                        ref={el => {
-                            if (el) {
-                               const gid = lIdx * 10000 + cIdx;
-                               charsCache.current[gid] = el;
-                               // cx/cy calculations must account for the 20px container padding
-                               coordsCache.current[gid] = { cx: c.cx + 20, cy: c.cy + 20, exploded: false };
-                            }
-                        }}
-                        style={{ display: 'inline-block', position: 'relative' }}
-                      >
-                        {c.char}
-                      </span>
-                  ))
-                }
-              </div>
-            ))}
-          </div>
-        </div>
+      {mode === 'drag' && preparedText && <DragReflowMode preparedText={preparedText} />}
+      {mode === 'magnetic' && preparedText && <MagneticCursorMode key="magnetic" preparedText={preparedText} />}
+      {mode === 'gravity' && preparedText && <GravityWellsMode key="gravity" preparedText={preparedText} />}
     </div>
   );
 }

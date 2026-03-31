@@ -8,6 +8,7 @@ const commands = [
   { action: 'plugins', icon: '🔌', label: 'Go to Plugins', route: '/plugins' },
   { action: 'status', icon: '📊', label: 'Go to Status', route: '/#status' },
   { action: 'ask', icon: '💬', label: 'Ask Adam', route: '/ask-adam' },
+  { action: 'docs', icon: '📐', label: 'Documentation', route: '/docs' },
 ];
 
 export default function CommandPalette() {
