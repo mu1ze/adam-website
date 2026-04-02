@@ -268,11 +268,11 @@ export default function PongPage() {
 
   // Touch controls
   const handleTouchStart = (e) => {
-    e.preventDefault(); // Prevent page scroll
+    if (gameState === 'PLAYING') e.preventDefault();
   };
 
   const handleTouchMove = (e) => {
-    e.preventDefault(); // Prevent page scroll
+    if (gameState === 'PLAYING') e.preventDefault();
     if (gameState !== 'PLAYING') return;
     const rect = canvasRef.current.getBoundingClientRect();
     const touchY = e.touches ? e.touches[0].clientY : e.clientY;

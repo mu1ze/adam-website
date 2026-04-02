@@ -37,6 +37,7 @@ export default function SpaceInvadersPage() {
     keys: { ArrowLeft: false, ArrowRight: false, Space: false },
     lastShot: 0,
     lastTick: 0,
+    touchTargetX: null, // mobile: finger X in canvas coords
   });
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function SpaceInvadersPage() {
       lastTick: Date.now(),
       lastAlienMove: Date.now(),
       score: 0,
+      touchTargetX: null,
     };
     setScore(0);
     setGameState('PLAYING');
@@ -109,8 +111,16 @@ export default function SpaceInvadersPage() {
         state.shipX = Math.min(GAME_WIDTH - SHIP_WIDTH, state.shipX + 5);
       }
 
-      // Player Fire
-      if (state.keys.Space && now - state.lastShot > 300) {
+      // Mobile: follow finger with smooth lerp
+      if (state.touchTargetX !== null) {
+        const targetX = state.touchTargetX - SHIP_WIDTH / 2;
+        state.shipX += (targetX - state.shipX) * 0.15;
+        state.shipX = Math.max(0, Math.min(GAME_WIDTH - SHIP_WIDTH, state.shipX));
+      }
+
+      // Player Fire (keyboard OR auto-fire on mobile when touching)
+      const shouldFire = state.keys.Space || state.touchTargetX !== null;
+      if (shouldFire && now - state.lastShot > 400) {
         state.bullets.push({
           x: state.shipX + SHIP_WIDTH / 2 - BULLET_WIDTH / 2,
           y: GAME_HEIGHT - SHIP_HEIGHT - 10 - BULLET_HEIGHT
@@ -286,19 +296,23 @@ export default function SpaceInvadersPage() {
     };
   }, [gameState]);
 
-  // Mobile Controls
-  const handleTouchStart = (dir) => () => {
-    stateRef.current.keys[dir] = true;
+  // Mobile Touch Controls — finger-follow + auto-fire
+  const handleCanvasTouchStart = (e) => {
+    e.preventDefault();
+    if (gameState !== 'PLAYING') return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = GAME_WIDTH / rect.width;
+    stateRef.current.touchTargetX = (e.touches[0].clientX - rect.left) * scaleX;
   };
-  const handleTouchEnd = (dir) => () => {
-    stateRef.current.keys[dir] = false;
+  const handleCanvasTouchMove = (e) => {
+    e.preventDefault();
+    if (gameState !== 'PLAYING') return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = GAME_WIDTH / rect.width;
+    stateRef.current.touchTargetX = (e.touches[0].clientX - rect.left) * scaleX;
   };
-  const handleShoot = () => {
-    stateRef.current.keys.Space = true;
-    setTimeout(() => { stateRef.current.keys.Space = false; }, 100);
-    if (gameState === 'READY' || gameState === 'GAMEOVER' || gameState === 'WIN') {
-        startGame();
-    }
+  const handleCanvasTouchEnd = () => {
+    stateRef.current.touchTargetX = null;
   };
 
   const handleFullscreen = () => {
@@ -377,6 +391,9 @@ export default function SpaceInvadersPage() {
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           className="game-canvas"
+          onTouchStart={handleCanvasTouchStart}
+          onTouchMove={handleCanvasTouchMove}
+          onTouchEnd={handleCanvasTouchEnd}
           style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1', touchAction: 'none' }}
         />
 
@@ -388,7 +405,7 @@ export default function SpaceInvadersPage() {
             <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
             <div className="game-overlay-controls">
               <p>Desktop: Arrows to Move, <kbd>Space</kbd> to Shoot</p>
-              <p>Mobile: Use on-screen buttons</p>
+              <p>Mobile: Touch & drag to aim, auto-fire enabled</p>
             </div>
           </div>
         )}
@@ -426,26 +443,7 @@ export default function SpaceInvadersPage() {
         )}
       </div>
 
-      {/* Mobile Controls */}
-      {isMobile && (
-        <div className="mobile-controls" style={{ display: 'flex', gap: '20px', padding: '20px', justifyContent: 'center' }}>
-          <button 
-            onTouchStart={handleTouchStart('ArrowLeft')} 
-            onTouchEnd={handleTouchEnd('ArrowLeft')}
-            onMouseDown={handleTouchStart('ArrowLeft')}
-            onMouseUp={handleTouchEnd('ArrowLeft')}
-            style={{ padding: '20px 30px', fontSize: '24px', background: '#222', color: '#00ff88', border: '1px solid #00ff88' }}>←</button>
-          <button 
-            onClick={handleShoot}
-            style={{ padding: '20px 40px', fontSize: '24px', background: '#ff4444', color: '#fff', border: 'none', borderRadius: '5px' }}>FIRE</button>
-          <button 
-            onTouchStart={handleTouchStart('ArrowRight')} 
-            onTouchEnd={handleTouchEnd('ArrowRight')}
-            onMouseDown={handleTouchStart('ArrowRight')}
-            onMouseUp={handleTouchEnd('ArrowRight')}
-            style={{ padding: '20px 30px', fontSize: '24px', background: '#222', color: '#00ff88', border: '1px solid #00ff88' }}>→</button>
-        </div>
-      )}
+
 
       {/* Leaderboard Section (Desktop) */}
       <div className="game-bottom">

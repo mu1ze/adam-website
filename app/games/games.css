@@ -251,7 +251,7 @@
 /* ── Game Page Layout ── */
 .game-page {
   min-height: 100vh;
-  background: #000;
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
 }

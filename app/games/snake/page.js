@@ -216,14 +216,14 @@ export default function SnakePage() {
   // Swipe controls for mobile
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {
-    e.preventDefault(); // Prevent page scroll
+    if (gameState === 'PLAYING') e.preventDefault(); // Only prevent scroll during gameplay
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
     };
   };
   const handleTouchEnd = (e) => {
-    e.preventDefault(); // Prevent page scroll
+    if (gameState === 'PLAYING') e.preventDefault();
     if (!touchStartRef.current || gameState !== 'PLAYING') return;
     
     const touchEndX = e.changedTouches[0].clientX;
