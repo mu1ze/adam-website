@@ -1,26 +1,77 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
+const THOUGHT_PROCESSES = [
+  '[SYS] Allocating memory shards...',
+  '[NET] Querying Global Network...',
+  '[CORE] Synthesizing optimal response...',
+  '[SEC] Verifying constraints...',
+  '[LOG] Scanning historical context...',
+  '[PROC] Running heuristic analysis...',
+  '[SYS] Routing through primary cortex...'
+];
+
 export default function AskAdamClient() {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: '> Connection established. State your query...' }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mood, setMood] = useState('nice'); // 'nice' | 'hostile' | 'cooling'
+  const [mood, setMood] = useState('nice'); 
+  const [thought, setThought] = useState('');
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    // Load from local storage on mount
+    const savedMessages = localStorage.getItem('adam_messages');
+    const savedMood = localStorage.getItem('adam_mood');
+    
+    if (savedMessages) {
+       setMessages(JSON.parse(savedMessages));
+    } else {
+       setMessages([{ role: 'assistant', content: '> Connection established. State your query...' }]);
+    }
+    
+    if (savedMood) {
+       setMood(savedMood);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+        localStorage.setItem('adam_messages', JSON.stringify(messages));
+    }
+    localStorage.setItem('adam_mood', mood);
+  }, [messages, mood]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, thought]);
+
+  useEffect(() => {
+      let interval;
+      if (isLoading) {
+          setThought(THOUGHT_PROCESSES[Math.floor(Math.random() * THOUGHT_PROCESSES.length)]);
+          interval = setInterval(() => {
+              setThought(THOUGHT_PROCESSES[Math.floor(Math.random() * THOUGHT_PROCESSES.length)]);
+          }, 400); // rapidly switch thoughts
+      }
+      return () => clearInterval(interval);
+  }, [isLoading]);
 
   const isHostile = mood === 'hostile';
 
   async function handleSubmit(e) {
     if (e) e.preventDefault();
     if (!input.trim() || isLoading) return;
+
+    if (input.trim() === '> clear memory' || input.trim() === '/clear') {
+        const resetMsg = [{ role: 'assistant', content: '> Memory wiped. Re-establishing connection...' }];
+        setMessages(resetMsg);
+        setMood('nice');
+        setInput('');
+        return;
+    }
 
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -29,7 +80,8 @@ export default function AskAdamClient() {
 
     try {
       const conversation = messages
-        .filter(m => !m.content.startsWith('> Connection established'))
+        .filter(m => !m.content.startsWith('> Connection'))
+        .filter(m => !m.content.startsWith('> Memory wiped'))
         .concat(userMessage);
 
       const res = await fetch('/api/chat', {
@@ -56,7 +108,6 @@ export default function AskAdamClient() {
     }
   }
 
-  // Visual styles based on mood
   const hostileAccent = '#ff2244';
   const niceAccent = 'var(--primary)';
   const currentAccent = isHostile ? hostileAccent : niceAccent;
@@ -71,7 +122,6 @@ export default function AskAdamClient() {
 
   return (
     <div className="detail-section">
-      {/* Mood indicator */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -94,7 +144,6 @@ export default function AskAdamClient() {
         MOOD: {isHostile ? '⚠ HOSTILE — apologize to restore normal mode' : '● COOPERATIVE'}
       </div>
 
-      {/* Chat container */}
       <div
         ref={scrollRef}
         style={{
@@ -116,6 +165,9 @@ export default function AskAdamClient() {
         {messages.map((msg, idx) => {
           const isUser = msg.role === 'user';
           const isHostileReply = !isUser && isHostile;
+          
+          // Naive markdown code block rendering
+          const parts = msg.content.split('```');
 
           return (
             <div
@@ -133,7 +185,8 @@ export default function AskAdamClient() {
                   : isHostileReply ? hostileAccent : 'var(--primary)',
                 padding: '10px 15px',
                 borderRadius: '8px',
-                maxWidth: '80%',
+                maxWidth: '85%',
+                width: isUser ? 'auto' : '100%',
                 fontFamily: 'inherit',
                 fontSize: '14px',
                 lineHeight: '1.6',
@@ -141,7 +194,16 @@ export default function AskAdamClient() {
                 transition: 'color 0.3s ease, border-color 0.3s ease, background 0.3s ease',
               }}
             >
-              {msg.content}
+              {parts.map((part, i) => {
+                 if (i % 2 !== 0) { // It's a code block
+                    return (
+                      <pre key={i} className="code-block" style={{ margin: '10px 0', width: '100%', color: isHostileReply ? hostileAccent : 'var(--primary-dim)', borderColor: isHostileReply ? hostileAccent : 'var(--primary-dim)' }}>
+                        <code>{part.replace(/^\\w+\\n/, '') /* naive attempt to strip lang identifier like \`\`\`javascript */}</code>
+                      </pre>
+                    );
+                 }
+                 return <span key={i}>{part}</span>;
+              })}
             </div>
           );
         })}
@@ -150,19 +212,19 @@ export default function AskAdamClient() {
           <div style={{
             alignSelf: 'flex-start',
             color: isHostile ? hostileAccent : 'var(--primary-dim)',
+            marginTop: '10px'
           }}>
-            &gt; {isHostile ? 'Preparing roast' : 'Processing'}<span className="cursor-blink"></span>
+            &gt; {isHostile ? 'Compiling roast protocols...' : thought}<span className="cursor-blink"></span>
           </div>
         )}
       </div>
 
-      {/* Input form */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px' }}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={isHostile ? "> Say sorry or catch these hands..." : "> Enter command or question..."}
+          placeholder={isHostile ? "> Say sorry or catch these hands..." : "> Enter command or type '> clear memory'"}
           style={{
             flex: 1,
             background: isHostile ? '#0a0000' : '#000',
