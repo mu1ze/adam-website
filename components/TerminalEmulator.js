@@ -26,7 +26,8 @@ const HELP_TEXT_FULL = `╔═════════════════�
 ║    ls skills          List all installed skills               ║
 ║    ls plugins         List all connected plugins             ║
 ║    cat <name>         Show details of a skill or plugin       ║
-║    cd <page>          Navigate to a page (home/docs/ask)      ║
+║    cd <page>          Navigate to a page (home/docs/ask/games)║
+║    leaderboard        Show arcade high scores                 ║
 ║                                                              ║
 ║  SYSTEM                                                      ║
 ║    status             Show system status & metrics            ║
@@ -54,6 +55,7 @@ const HELP_TEXT_COMPACT = `── COMMANDS ────────────�
   ls plugins   — List plugins
   cat <name>   — Show details
   cd <page>    — Navigate
+  leaderboard  — High scores
 
  SYSTEM
   status       — System stats
@@ -266,11 +268,12 @@ export default function TerminalEmulator() {
           'docs': '/docs',
           'ask': '/ask-adam', 'ask-adam': '/ask-adam',
           'terminal': '/terminal',
+          'games': '/games',
         };
 
         if (!page || !routes[page]) {
           addLine(`cd: ${page || '?'}: No such directory`, 'error');
-          addLine(`  Available: home, skills, plugins, docs, ask, terminal`);
+          addLine(`  Available: home, skills, plugins, docs, ask, terminal, games`);
         } else {
           addLine(`Navigating to ${page}...`, 'success');
           setTimeout(() => router.push(routes[page]), 600);
@@ -405,6 +408,39 @@ export default function TerminalEmulator() {
         break;
       }
 
+      case 'leaderboard':
+      case 'games': {
+        const playerName = localStorage.getItem('adam_player_name') || 'GUEST';
+        addLine('');
+        addLine('  ARCADE LEADERBOARDS', 'system');
+        addLine(`  Callsign: ${playerName}`);
+        addLine('  ══════════════════════════════════', 'system');
+        
+        ['pong', 'snake'].forEach(game => {
+          addLine(`  [ ${game.toUpperCase()} ]`, 'success');
+          try {
+            const board = JSON.parse(localStorage.getItem(`adam_leaderboard_${game}`) || '[]');
+            if (board.length === 0) {
+              addLine('    No scores recorded.');
+            } else {
+              board.slice(0, 5).forEach((s, i) => {
+                addLine(`    #${i + 1} ${s.name.padEnd(16)} ${s.score.toString().padStart(6)}`);
+              });
+              
+              const personalScores = board.filter(s => s.name === playerName);
+              if (personalScores.length > 0) {
+                const best = Math.max(...personalScores.map(s => s.score));
+                addLine(`  > Personal Best: ${best}`, 'system');
+              }
+            }
+          } catch {
+            addLine('    Error reading scores.');
+          }
+          addLine('');
+        });
+        break;
+      }
+
       case 'date':
         addLine(`  ${new Date().toString()}`);
         break;
@@ -467,7 +503,7 @@ export default function TerminalEmulator() {
       e.preventDefault();
       // Basic tab completion
       const partial = input.toLowerCase();
-      const allCommands = ['help', 'clear', 'ls', 'cat', 'cd', 'status', 'whoami', 'uptime', 'neofetch', 'connect', 'disconnect', 'connections', 'echo', 'history', 'date', 'ping', 'exit'];
+      const allCommands = ['help', 'clear', 'ls', 'cat', 'cd', 'status', 'whoami', 'uptime', 'neofetch', 'connect', 'disconnect', 'connections', 'echo', 'history', 'date', 'ping', 'leaderboard', 'exit'];
       const match = allCommands.find(c => c.startsWith(partial));
       if (match) setInput(match + ' ');
     }
