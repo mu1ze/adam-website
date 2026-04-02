@@ -17,12 +17,15 @@ export default function AskAdamClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [mood, setMood] = useState('nice'); 
   const [thought, setThought] = useState('');
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const scrollRef = useRef(null);
+  const inputRef = useRef(null);
 
+  // Load saved state + check if disclaimer was already acknowledged
   useEffect(() => {
-    // Load from local storage on mount
     const savedMessages = localStorage.getItem('adam_messages');
     const savedMood = localStorage.getItem('adam_mood');
+    const disclaimerSeen = sessionStorage.getItem('adam_disclaimer_seen');
     
     if (savedMessages) {
        setMessages(JSON.parse(savedMessages));
@@ -30,11 +33,11 @@ export default function AskAdamClient() {
        setMessages([{ role: 'assistant', content: '> Connection established. State your query...' }]);
     }
     
-    if (savedMood) {
-       setMood(savedMood);
-    }
+    if (savedMood) setMood(savedMood);
+    if (!disclaimerSeen) setShowDisclaimer(true);
   }, []);
 
+  // Persist state
   useEffect(() => {
     if (messages.length > 0) {
         localStorage.setItem('adam_messages', JSON.stringify(messages));
@@ -42,22 +45,31 @@ export default function AskAdamClient() {
     localStorage.setItem('adam_mood', mood);
   }, [messages, mood]);
 
+  // Auto scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading, thought]);
 
+  // Thought cycling
   useEffect(() => {
       let interval;
       if (isLoading) {
           setThought(THOUGHT_PROCESSES[Math.floor(Math.random() * THOUGHT_PROCESSES.length)]);
           interval = setInterval(() => {
               setThought(THOUGHT_PROCESSES[Math.floor(Math.random() * THOUGHT_PROCESSES.length)]);
-          }, 400); // rapidly switch thoughts
+          }, 400);
       }
       return () => clearInterval(interval);
   }, [isLoading]);
+
+  const dismissDisclaimer = () => {
+    setShowDisclaimer(false);
+    sessionStorage.setItem('adam_disclaimer_seen', 'true');
+    // Focus the input after dismissing
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
 
   const isHostile = mood === 'hostile';
 
@@ -112,152 +124,250 @@ export default function AskAdamClient() {
   const niceAccent = 'var(--primary)';
   const currentAccent = isHostile ? hostileAccent : niceAccent;
 
-  const containerBorder = isHostile
-    ? `1px solid ${hostileAccent}`
-    : '1px solid var(--border)';
-
-  const containerShadow = isHostile
-    ? `0 0 30px rgba(255, 34, 68, 0.15), inset 0 0 60px rgba(255, 34, 68, 0.05)`
-    : 'none';
-
   return (
-    <div className="detail-section">
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '10px',
-        fontSize: '12px',
-        fontFamily: '"Courier New", monospace',
-        transition: 'color 0.5s ease',
-        color: isHostile ? hostileAccent : 'var(--text-dim)',
-      }}>
-        <span style={{
-          display: 'inline-block',
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          background: currentAccent,
-          animation: isHostile ? 'pulse 0.5s infinite' : 'pulse 2s infinite',
-          transition: 'background 0.5s ease',
-        }} />
-        MOOD: {isHostile ? '⚠ HOSTILE — apologize to restore normal mode' : '● COOPERATIVE'}
-      </div>
-
-      <div
-        ref={scrollRef}
-        style={{
-          background: isHostile ? '#0a0000' : '#000',
-          border: containerBorder,
-          borderRadius: '8px',
-          padding: '20px',
-          minHeight: '400px',
-          maxHeight: '500px',
-          overflowY: 'auto',
-          marginBottom: '20px',
+    <>
+      {/* ═══ DISCLAIMER POPUP ═══ */}
+      {showDisclaimer && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 3000,
+          background: 'rgba(0, 0, 0, 0.88)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          boxShadow: containerShadow,
-          transition: 'all 0.5s ease',
-        }}
-      >
-        {messages.map((msg, idx) => {
-          const isUser = msg.role === 'user';
-          const isHostileReply = !isUser && isHostile;
-          
-          // Naive markdown code block rendering
-          const parts = msg.content.split('```');
-
-          return (
-            <div
-              key={idx}
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(6px)',
+          animation: 'fadeIn 0.3s ease',
+        }}>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid #ffaa00',
+            borderRadius: '12px',
+            padding: '32px',
+            maxWidth: '460px',
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 170, 0, 0.08)',
+            fontFamily: '"Courier New", monospace',
+          }}>
+            <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
+            <h3 style={{ color: '#ffaa00', fontSize: '16px', letterSpacing: '2px', marginBottom: '16px' }}>
+              TESTING PHASE
+            </h3>
+            <p style={{
+              color: 'var(--text-dim)',
+              fontSize: '13px',
+              lineHeight: '1.8',
+              marginBottom: '24px',
+            }}>
+              ADAM is a highly advanced, cooperative autonomous entity designed to be <span style={{ color: 'var(--primary)' }}>friendly and helpful</span>. 
+              However, if you choose to <span style={{ color: hostileAccent }}>instigate him</span>, you are entirely left with the consequences of your actions.
+              <br /><br />
+              Approach with respect.
+            </p>
+            <button
+              onClick={dismissDisclaimer}
               style={{
-                alignSelf: isUser ? 'flex-end' : 'flex-start',
-                background: isUser
-                  ? (isHostile ? 'rgba(255, 34, 68, 0.1)' : 'rgba(0, 255, 136, 0.1)')
-                  : 'transparent',
-                border: isUser
-                  ? `1px solid ${currentAccent}`
-                  : 'none',
-                color: isUser
-                  ? '#e0e0e0'
-                  : isHostileReply ? hostileAccent : 'var(--primary)',
-                padding: '10px 15px',
-                borderRadius: '8px',
-                maxWidth: '85%',
-                width: isUser ? 'auto' : '100%',
-                fontFamily: 'inherit',
+                background: '#ffaa00',
+                color: '#000',
+                border: 'none',
+                padding: '12px 36px',
+                borderRadius: '6px',
+                fontFamily: '"Courier New", monospace',
                 fontSize: '14px',
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
-                transition: 'color 0.3s ease, border-color 0.3s ease, background 0.3s ease',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                letterSpacing: '2px',
+                transition: 'all 0.3s',
+                minHeight: '44px',
               }}
             >
-              {parts.map((part, i) => {
-                 if (i % 2 !== 0) { // It's a code block
-                    return (
-                      <pre key={i} className="code-block" style={{ margin: '10px 0', width: '100%', color: isHostileReply ? hostileAccent : 'var(--primary-dim)', borderColor: isHostileReply ? hostileAccent : 'var(--primary-dim)' }}>
-                        <code>{part.replace(/^\\w+\\n/, '') /* naive attempt to strip lang identifier like \`\`\`javascript */}</code>
-                      </pre>
-                    );
-                 }
-                 return <span key={i}>{part}</span>;
-              })}
-            </div>
-          );
-        })}
-
-        {isLoading && (
-          <div style={{
-            alignSelf: 'flex-start',
-            color: isHostile ? hostileAccent : 'var(--primary-dim)',
-            marginTop: '10px'
-          }}>
-            &gt; {isHostile ? 'Compiling roast protocols...' : thought}<span className="cursor-blink"></span>
+              I UNDERSTAND
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px' }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={isHostile ? "> Say sorry or catch these hands..." : "> Enter command or type '> clear memory'"}
+      {/* ═══ FULL-PAGE CHAT ═══ */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+      }}>
+        {/* Status bar */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          background: isHostile ? 'rgba(255, 34, 68, 0.06)' : 'rgba(0, 255, 136, 0.03)',
+          borderBottom: `1px solid ${isHostile ? hostileAccent + '44' : 'var(--border)'}`,
+          fontSize: '11px',
+          fontFamily: '"Courier New", monospace',
+          color: isHostile ? hostileAccent : 'var(--text-dim)',
+          transition: 'all 0.5s ease',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              display: 'inline-block',
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              background: currentAccent,
+              animation: isHostile ? 'pulse 0.5s infinite' : 'pulse 2s infinite',
+            }} />
+            MOOD: {isHostile ? '⚠ HOSTILE' : '● COOPERATIVE'}
+          </div>
+          <span style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
+            type <span style={{ color: currentAccent }}>/clear</span> to reset
+          </span>
+        </div>
+
+        {/* Message area */}
+        <div
+          ref={scrollRef}
           style={{
             flex: 1,
-            background: isHostile ? '#0a0000' : '#000',
-            border: `1px solid ${isHostile ? hostileAccent + '66' : 'var(--border)'}`,
-            padding: '15px',
-            borderRadius: '4px',
-            color: '#e0e0e0',
-            fontFamily: 'inherit',
-            fontSize: '14px',
-            outline: 'none',
-            transition: 'all 0.5s ease',
-          }}
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          style={{
-            background: currentAccent,
-            color: isHostile ? '#fff' : 'var(--bg)',
-            border: 'none',
-            padding: '0 25px',
-            borderRadius: '4px',
-            cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-            fontFamily: 'inherit',
-            fontWeight: 'bold',
-            opacity: isLoading || !input.trim() ? 0.5 : 1,
-            transition: 'all 0.3s ease',
+            overflowY: 'auto',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            background: isHostile ? 'rgba(255, 34, 68, 0.04)' : 'var(--bg)',
+            transition: 'background 0.5s ease',
           }}
         >
-          {isHostile ? '🔥' : 'SEND'}
-        </button>
-      </form>
-    </div>
+          {messages.map((msg, idx) => {
+            const isUser = msg.role === 'user';
+            const isHostileReply = !isUser && isHostile;
+            const parts = msg.content.split('```');
+
+            return (
+              <div
+                key={idx}
+                style={{
+                  alignSelf: isUser ? 'flex-end' : 'flex-start',
+                  background: isUser
+                    ? (isHostile ? 'rgba(255, 34, 68, 0.1)' : 'rgba(0, 255, 136, 0.08)')
+                    : 'transparent',
+                  border: isUser
+                    ? `1px solid ${currentAccent}44`
+                    : 'none',
+                  color: isUser
+                    ? 'var(--text)'
+                    : isHostileReply ? hostileAccent : 'var(--primary)',
+                  padding: isUser ? '10px 14px' : '4px 0',
+                  borderRadius: isUser ? '12px 12px 4px 12px' : '0',
+                  maxWidth: '85%',
+                  width: isUser ? 'auto' : '100%',
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: '14px',
+                  lineHeight: '1.7',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  transition: 'color 0.3s ease',
+                }}
+              >
+                {parts.map((part, i) => {
+                   if (i % 2 !== 0) {
+                      return (
+                        <pre key={i} style={{
+                          margin: '10px 0',
+                          padding: '12px',
+                          background: 'var(--bg-secondary)',
+                          border: `1px solid ${isHostileReply ? hostileAccent + '44' : 'var(--border)'}`,
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          color: isHostileReply ? hostileAccent : 'var(--primary-dim)',
+                          overflowX: 'auto',
+                        }}>
+                          <code>{part.replace(/^\w+\n/, '')}</code>
+                        </pre>
+                      );
+                   }
+                   return <span key={i}>{part}</span>;
+                })}
+              </div>
+            );
+          })}
+
+          {isLoading && (
+            <div style={{
+              alignSelf: 'flex-start',
+              color: isHostile ? hostileAccent : 'var(--text-dim)',
+              fontSize: '12px',
+              padding: '4px 0',
+            }}>
+              &gt; {isHostile ? 'Compiling roast protocols...' : thought}<span className="cursor-blink"></span>
+            </div>
+          )}
+        </div>
+
+        {/* Input bar */}
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: 'flex',
+            gap: '0',
+            borderTop: `1px solid ${isHostile ? hostileAccent + '44' : 'var(--border)'}`,
+            background: isHostile ? 'rgba(255, 34, 68, 0.04)' : 'var(--bg-secondary)',
+            transition: 'all 0.5s ease',
+            flexShrink: 0,
+          }}
+        >
+          <span style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 12px',
+            color: currentAccent,
+            fontSize: '14px',
+            fontFamily: '"Courier New", monospace',
+            transition: 'color 0.5s ease',
+          }}>
+            &gt;
+          </span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={isHostile ? "Say sorry or catch these hands..." : "Enter command..."}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              padding: '16px 0',
+              color: 'var(--text)',
+              fontFamily: '"Courier New", monospace',
+              fontSize: '14px',
+              outline: 'none',
+            }}
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            style={{
+              background: 'transparent',
+              color: currentAccent,
+              border: 'none',
+              borderLeft: `1px solid ${isHostile ? hostileAccent + '22' : 'var(--border)'}`,
+              padding: '16px 20px',
+              cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
+              fontFamily: '"Courier New", monospace',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              letterSpacing: '1px',
+              opacity: isLoading || !input.trim() ? 0.3 : 1,
+              transition: 'all 0.3s ease',
+            }}
+          >
+            {isHostile ? '🔥' : 'SEND'}
+          </button>
+        </form>
+      </div>
+    </>
   );
 }
