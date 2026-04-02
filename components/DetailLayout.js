@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import FooterSimple from './FooterSimple';
 import Breadcrumbs from './Breadcrumbs';
+import PluginConnectionButton from './PluginConnectionButton';
 
 export default function DetailLayout({ 
   title, 
@@ -10,7 +11,9 @@ export default function DetailLayout({
   capabilities, 
   exampleUsage, 
   config, 
-  category, 
+  category,
+  slug,
+  isPlugin, 
   hero, 
   breadcrumbs,
   children 
@@ -38,7 +41,11 @@ export default function DetailLayout({
         <div className="detail-section">
           <h2>// Overview</h2>
           <p>{description}</p>
-          <p style={{ marginTop: '15px' }}><span className="status-badge">ACTIVE</span></p>
+          {isPlugin && slug ? (
+            <PluginConnectionButton slug={slug} title={title} />
+          ) : (
+            <p style={{ marginTop: '15px' }}><span className="status-badge">ACTIVE</span></p>
+          )}
         </div>
 
         <div className="detail-section">
@@ -68,3 +75,4 @@ export default function DetailLayout({
     </>
   );
 }
+

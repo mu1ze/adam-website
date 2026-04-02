@@ -87,6 +87,8 @@ export default async function PluginDetailPage(props) {
       capabilities={plugin.capabilities}
       exampleUsage={plugin.exampleUsage}
       category={plugin.category}
+      slug={plugin.slug}
+      isPlugin={true}
       hero={<PluginHeroSVG slug={plugin.slug} />}
       breadcrumbs={[
         { label: 'Plugins', href: '/plugins' },

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { plugins } from '@/data/plugins';
 import FooterSimple from '@/components/FooterSimple';
+import { PluginConnectionDot } from '@/components/PluginConnectionButton';
 
 export const metadata = {
   title: 'Plugins - ADAM',
@@ -36,7 +37,7 @@ export default function PluginsPage() {
               <div className="icon">{plugin.icon}</div>
               <h2>{plugin.title}</h2>
               <p>{plugin.description}</p>
-              <span className="status">ACTIVE</span>
+              <PluginConnectionDot slug={plugin.slug} />
             </Link>
           ))}
         </div>
