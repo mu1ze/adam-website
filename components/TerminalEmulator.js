@@ -416,8 +416,8 @@ export default function TerminalEmulator() {
         addLine(`  Callsign: ${playerName}`);
         addLine('  ══════════════════════════════════', 'system');
         
-        ['pong', 'snake'].forEach(game => {
-          addLine(`  [ ${game.toUpperCase()} ]`, 'success');
+        ['pong', 'snake', 'space-invaders'].forEach(game => {
+          addLine(`  [ ${game.toUpperCase().replace('-', ' ')} ]`, 'success');
           try {
             const board = JSON.parse(localStorage.getItem(`adam_leaderboard_${game}`) || '[]');
             if (board.length === 0) {

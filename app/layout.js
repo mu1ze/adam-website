@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
-  title: "ADAM - AI Assistant",
-  description: "Autonomous Digital Assistant Mind - Your AI-powered second brain",
+  title: "ADAM OS - Autonomous Digital Assistant Mind",
+  description: "Next-generation terminal interface and neural hub for ADAM System. Built with cutting-edge cyber-systems.",
 };
 
 export default function RootLayout({ children }) {

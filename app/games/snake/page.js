@@ -243,6 +243,16 @@ export default function SnakePage() {
     touchStartRef.current = null;
   };
 
+  const handleFullscreen = () => {
+    if (canvasRef.current && canvasRef.current.parentElement) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        canvasRef.current.parentElement.requestFullscreen();
+      }
+    }
+  };
+
   return (
     <div className="game-page">
       {/* Name Prompt Modal */}
@@ -276,9 +286,14 @@ export default function SnakePage() {
         <div className="game-title-bar">
           <span className="game-title">SNAKE</span>
         </div>
-        <span className="game-player-name" onClick={changeName}>
-          &gt; {name || 'GUEST'} [CHANGE]
-        </span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <span className="game-player-name" onClick={handleFullscreen}>
+            [FULLSCREEN]
+          </span>
+          <span className="game-player-name" onClick={changeName}>
+            &gt; {name || 'GUEST'} [CHANGE]
+          </span>
+        </div>
       </div>
 
       {/* HUD */}

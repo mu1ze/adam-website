@@ -69,23 +69,24 @@ export default function SpaceInvadersPage() {
       lastShot: 0,
       lastTick: Date.now(),
       lastAlienMove: Date.now(),
+      score: 0,
     };
     setScore(0);
     setGameState('PLAYING');
   };
 
-  const handleGameOver = () => {
+  const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      const rank = submitScore(name, score);
+      const rank = submitScore(name, finalScore);
       setFinalRank(rank);
     }
   };
 
-  const handleWin = () => {
+  const handleWin = (finalScore) => {
     setGameState('WIN');
     if (name) {
-      const rank = submitScore(name, score);
+      const rank = submitScore(name, finalScore);
       setFinalRank(rank);
     }
   };
@@ -133,7 +134,8 @@ export default function SpaceInvadersPage() {
           ) {
             state.aliens.splice(j, 1);
             hit = true;
-            setScore(s => s + (5 - a.row) * 10);
+            state.score += (5 - a.row) * 10;
+            setScore(state.score);
             break;
           }
         }
@@ -145,7 +147,7 @@ export default function SpaceInvadersPage() {
 
       // Win Condition
       if (state.aliens.length === 0) {
-        handleWin();
+        handleWin(state.score);
         return;
       }
 
@@ -165,11 +167,11 @@ export default function SpaceInvadersPage() {
         if (hitEdge) {
           state.alienDirection *= -1;
           state.aliens.forEach(a => a.y += 20); // Move down
-          state.alienSpeed = Math.max(10, state.alienSpeed - 5); // Speed up slightly
+          state.alienSpeed = Math.max(20, state.alienSpeed - 2); // Speed up slightly
           
           // Check if aliens reached bottom
           if (state.aliens.some(a => a.y + ALIEN_HEIGHT > GAME_HEIGHT - SHIP_HEIGHT - 20)) {
-            handleGameOver();
+            handleGameOver(state.score);
             return;
           }
         } else {
@@ -199,7 +201,7 @@ export default function SpaceInvadersPage() {
           b.x < state.shipX + SHIP_WIDTH && b.x + BULLET_WIDTH > state.shipX &&
           b.y < GAME_HEIGHT - 10 && b.y + BULLET_HEIGHT > GAME_HEIGHT - 10 - SHIP_HEIGHT
         ) {
-          handleGameOver();
+          handleGameOver(state.score);
           return;
         }
 
@@ -300,6 +302,16 @@ export default function SpaceInvadersPage() {
     }
   };
 
+  const handleFullscreen = () => {
+    if (canvasRef.current && canvasRef.current.parentElement) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        canvasRef.current.parentElement.requestFullscreen();
+      }
+    }
+  };
+
   return (
     <div className="game-page">
       {/* Name Prompt Modal */}
@@ -333,9 +345,14 @@ export default function SpaceInvadersPage() {
         <div className="game-title-bar">
           <span className="game-title">ALIEN INVADER</span>
         </div>
-        <span className="game-player-name" onClick={changeName}>
-          &gt; {name || 'GUEST'} [CHANGE]
-        </span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <span className="game-player-name" onClick={handleFullscreen}>
+            [FULLSCREEN]
+          </span>
+          <span className="game-player-name" onClick={changeName}>
+            &gt; {name || 'GUEST'} [CHANGE]
+          </span>
+        </div>
       </div>
 
       {/* HUD */}
