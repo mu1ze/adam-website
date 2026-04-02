@@ -554,6 +554,357 @@ function GravityWellsMode({ preparedText }) {
   );
 }
 
+// ─── MODE 4: CIRCULAR FLOW (text flows inside a perfect circle) ───
+function CircularFlowMode({ preparedText }) {
+  const canvasRef = useRef(null);
+  const sizeRef = useRef({ w: 800, h: 800 });
+  const [radius, setRadius] = useState(280);
+  const [stats, setStats] = useState({ lines: 0, time: 0 });
+
+  const render = useCallback(() => {
+    if (!preparedText || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const t0 = performance.now();
+    const w = Math.min(parent.clientWidth, 800);
+    const h = radius * 2 + 80;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    sizeRef.current = { w, h };
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = radius;
+
+    // Draw circle outline
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Faint radial grid lines
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.04)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Layout text inside circle using per-line chord widths
+    ctx.font = FONT;
+    ctx.textBaseline = 'top';
+
+    let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+    const startY = cy - r + 10; // start near top of circle
+    let currentY = startY;
+    let lineCount = 0;
+
+    while (true) {
+      const dy = currentY + LINE_HEIGHT / 2 - cy; // distance from center vertically
+      if (Math.abs(dy) >= r - 5) {
+        // We're outside the circle vertically
+        if (currentY > cy) break; // past bottom, done
+        currentY += LINE_HEIGHT;
+        continue;
+      }
+
+      // Chord width at this Y position: 2 * sqrt(r² - dy²)
+      const chordWidth = 2 * Math.sqrt(r * r - dy * dy);
+      if (chordWidth < 40) {
+        currentY += LINE_HEIGHT;
+        if (currentY > cy + r) break;
+        continue;
+      }
+
+      const line = layoutNextLine(preparedText, cursor, chordWidth - 20);
+      if (!line) break;
+
+      // Center the line horizontally
+      const lineX = cx - chordWidth / 2 + 10;
+
+      // Color gradient based on position in circle
+      const normalizedY = (currentY - startY) / (r * 2);
+      const green = Math.round(139 + normalizedY * (255 - 139));
+      ctx.fillStyle = `rgb(34, ${green}, 34)`;
+
+      ctx.fillText(line.text, lineX, currentY);
+
+      cursor = line.end;
+      currentY += LINE_HEIGHT;
+      lineCount++;
+    }
+
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'var(--primary)';
+    ctx.fill();
+
+    const t1 = performance.now();
+    setStats({ lines: lineCount, time: (t1 - t0).toFixed(2) });
+
+    // HUD
+    ctx.fillStyle = 'rgba(0, 255, 136, 0.5)';
+    ctx.font = '12px "Courier New", monospace';
+    ctx.fillText(`${lineCount} lines  |  r=${r}px  |  ${(t1 - t0).toFixed(2)}ms  |  CSS cannot do this`, 10, h - 15);
+  }, [preparedText, radius]);
+
+  useEffect(() => {
+    render();
+    window.addEventListener('resize', render);
+    return () => window.removeEventListener('resize', render);
+  }, [render]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
+        <input
+          type="range"
+          min="120"
+          max="380"
+          value={radius}
+          onChange={(e) => setRadius(parseInt(e.target.value))}
+          style={{ width: '200px', accentColor: 'var(--primary)', touchAction: 'none' }}
+        />
+        <span style={{ fontSize: '13px', color: 'var(--primary)' }}>
+          Radius: <strong>{radius}px</strong>
+        </span>
+        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+          <span className="cursor-blink"></span> {stats.lines} lines in {stats.time}ms
+        </span>
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: 'block',
+          width: '100%',
+          maxWidth: '800px',
+          margin: '0 auto',
+          borderRadius: '8px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── MODE 5: WAVE REFLOW (animated sine-wave text, 60fps relayout) ───
+function WaveReflowMode({ preparedText }) {
+  const canvasRef = useRef(null);
+  const rafRef = useRef(null);
+  const sizeRef = useRef({ w: 800, h: 600 });
+  const [amplitude, setAmplitude] = useState(120);
+  const [frequency, setFrequency] = useState(3);
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const ampRef = useRef(120);
+  const freqRef = useRef(3);
+
+  // Keep refs in sync
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
+  useEffect(() => { ampRef.current = amplitude; }, [amplitude]);
+  useEffect(() => { freqRef.current = frequency; }, [frequency]);
+
+  useEffect(() => {
+    if (!preparedText || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    function resize() {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const w = Math.min(parent.clientWidth, 1000);
+      const dpr = window.devicePixelRatio || 1;
+      // Height will be set dynamically during render
+      sizeRef.current = { w, h: 800 };
+      canvas.style.width = w + 'px';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let time = 0;
+
+    function render() {
+      if (!pausedRef.current) time += 0.025;
+
+      const w = sizeRef.current.w;
+      const dpr = window.devicePixelRatio || 1;
+      const amp = ampRef.current;
+      const freq = freqRef.current;
+      const baseWidth = w * 0.5;
+
+      // Layout all lines with per-line sine-varying widths
+      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+      let currentY = 0;
+      const renderedLines = [];
+
+      const t0 = performance.now();
+
+      while (true) {
+        const lineIndex = renderedLines.length;
+        const sineOffset = Math.sin(lineIndex * (freq / 10) + time) * amp;
+        const lineWidth = Math.max(60, baseWidth + sineOffset);
+
+        const line = layoutNextLine(preparedText, cursor, lineWidth);
+        if (!line) break;
+
+        // Center each line based on its computed width
+        const xOffset = (w - lineWidth) / 2;
+
+        renderedLines.push({
+          text: line.text,
+          x: xOffset,
+          y: currentY,
+          width: line.width,
+          maxWidth: lineWidth,
+          sineOffset,
+        });
+
+        cursor = line.end;
+        currentY += LINE_HEIGHT;
+
+        // Safety cap
+        if (renderedLines.length > 200) break;
+      }
+
+      const t1 = performance.now();
+      const totalHeight = currentY + 60;
+
+      // Resize canvas to fit
+      canvas.width = w * dpr;
+      canvas.height = totalHeight * dpr;
+      canvas.style.height = totalHeight + 'px';
+      sizeRef.current.h = totalHeight;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, totalHeight);
+
+      // Draw sine guide curves (decorative)
+      ctx.beginPath();
+      for (let y = 0; y < totalHeight; y += 2) {
+        const lineIdx = y / LINE_HEIGHT;
+        const sO = Math.sin(lineIdx * (freq / 10) + time) * amp;
+        const lw = Math.max(60, baseWidth + sO);
+        const leftEdge = (w - lw) / 2;
+        if (y === 0) ctx.moveTo(leftEdge, y + 20);
+        else ctx.lineTo(leftEdge, y + 20);
+      }
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      for (let y = 0; y < totalHeight; y += 2) {
+        const lineIdx = y / LINE_HEIGHT;
+        const sO = Math.sin(lineIdx * (freq / 10) + time) * amp;
+        const lw = Math.max(60, baseWidth + sO);
+        const rightEdge = (w + lw) / 2;
+        if (y === 0) ctx.moveTo(rightEdge, y + 20);
+        else ctx.lineTo(rightEdge, y + 20);
+      }
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+      ctx.stroke();
+
+      // Render text lines
+      ctx.font = FONT;
+      ctx.textBaseline = 'top';
+
+      for (const line of renderedLines) {
+        // Color based on sine offset for a beautiful wave gradient
+        const normalizedOffset = (line.sineOffset + amp) / (amp * 2); // 0 to 1
+        const r = Math.round(34 + normalizedOffset * 30);
+        const g = Math.round(139 + normalizedOffset * (255 - 139));
+        const b = Math.round(34 + normalizedOffset * 100);
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+
+        ctx.fillText(line.text, line.x, line.y + 20);
+      }
+
+      // HUD
+      ctx.fillStyle = 'rgba(0, 255, 136, 0.5)';
+      ctx.font = '12px "Courier New", monospace';
+      ctx.fillText(
+        `${renderedLines.length} lines  |  ${(t1 - t0).toFixed(2)}ms/frame  |  amp=${amp}  freq=${freq}  |  Full relayout every frame`,
+        10, totalHeight - 15
+      );
+
+      rafRef.current = requestAnimationFrame(render);
+    }
+
+    rafRef.current = requestAnimationFrame(render);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
+    };
+  }, [preparedText]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Amplitude:</label>
+          <input
+            type="range" min="20" max="250" value={amplitude}
+            onChange={(e) => setAmplitude(parseInt(e.target.value))}
+            style={{ width: '120px', accentColor: 'var(--primary)', touchAction: 'none' }}
+          />
+          <span style={{ fontSize: '13px', color: 'var(--primary)', minWidth: '40px' }}>{amplitude}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Frequency:</label>
+          <input
+            type="range" min="1" max="12" value={frequency}
+            onChange={(e) => setFrequency(parseInt(e.target.value))}
+            style={{ width: '120px', accentColor: 'var(--primary)', touchAction: 'none' }}
+          />
+          <span style={{ fontSize: '13px', color: 'var(--primary)', minWidth: '25px' }}>{frequency}</span>
+        </div>
+        <button
+          onClick={() => setPaused(p => !p)}
+          style={{
+            background: paused ? 'var(--primary)' : 'var(--bg)',
+            color: paused ? 'var(--bg)' : 'var(--text)',
+            border: '1px solid var(--primary)',
+            padding: '6px 14px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontSize: '13px',
+          }}
+        >
+          {paused ? '▶ Resume' : '⏸ Pause'}
+        </button>
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          display: 'block',
+          width: '100%',
+          maxWidth: '1000px',
+          margin: '0 auto',
+          borderRadius: '8px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+        }}
+      />
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ───
 export default function DocsClient() {
   const [mode, setMode] = useState('magnetic');
@@ -593,17 +944,27 @@ export default function DocsClient() {
         <button onClick={() => setMode('drag')} style={mode === 'drag' ? activeBtn : btnStyle}>
           📐 DOM Layout Swap
         </button>
+        <button onClick={() => setMode('circle')} style={mode === 'circle' ? activeBtn : btnStyle}>
+          🔵 Circular Flow
+        </button>
+        <button onClick={() => setMode('wave')} style={mode === 'wave' ? activeBtn : btnStyle}>
+          🌊 Wave Reflow
+        </button>
       </div>
 
       <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '15px' }}>
         {mode === 'magnetic' && '↕ Move your cursor over the text to see characters repel smoothly.'}
         {mode === 'gravity' && '↕ Click anywhere to place gravity wells. Double-click to clear all.'}
         {mode === 'drag' && '↕ Drag the obstacle around — text reflows in real-time using per-line width control.'}
+        {mode === 'circle' && '↕ Text flows inside a perfect circle — each line\'s width is computed from the chord equation. Impossible with CSS.'}
+        {mode === 'wave' && '↕ Every single frame, PreText recomputes the entire layout with sine-varying widths. Pure 60fps text reshaping.'}
       </p>
 
       {mode === 'drag' && preparedText && <DragReflowMode preparedText={preparedText} />}
       {mode === 'magnetic' && preparedText && <MagneticCursorMode key="magnetic" preparedText={preparedText} />}
       {mode === 'gravity' && preparedText && <GravityWellsMode key="gravity" preparedText={preparedText} />}
+      {mode === 'circle' && preparedText && <CircularFlowMode key="circle" preparedText={preparedText} />}
+      {mode === 'wave' && preparedText && <WaveReflowMode key="wave" preparedText={preparedText} />}
     </div>
   );
 }
