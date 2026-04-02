@@ -18,7 +18,7 @@ const BOOT_LINES = [
   { text: '', delay: 1900 },
 ];
 
-const HELP_TEXT = `╔══════════════════════════════════════════════════════════════╗
+const HELP_TEXT_FULL = `╔══════════════════════════════════════════════════════════════╗
 ║                    AVAILABLE COMMANDS                        ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
@@ -46,6 +46,32 @@ const HELP_TEXT = `╔═══════════════════�
 ║    help               Show this help message                  ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝`;
+
+const HELP_TEXT_COMPACT = `── COMMANDS ──────────────
+
+ NAVIGATION
+  ls skills    — List skills
+  ls plugins   — List plugins
+  cat <name>   — Show details
+  cd <page>    — Navigate
+
+ SYSTEM
+  status       — System stats
+  whoami       — User info
+  uptime       — Uptime
+  neofetch     — System info
+
+ PLUGINS
+  connect <p>  — Connect
+  disconnect   — Disconnect
+  connections  — List active
+
+ UTILITIES
+  echo <text>  — Print text
+  clear        — Clear screen
+  history      — Past commands
+  help         — This help
+──────────────────────────`;
 
 const NEOFETCH = `
         ██████╗     adam@neural-core
@@ -84,9 +110,18 @@ export default function TerminalEmulator() {
   const [cmdHistory, setCmdHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [connections, setConnections] = useState({});
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
   const router = useRouter();
+
+  // Detect mobile
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth <= 768); }
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Load persisted state
   useEffect(() => {
@@ -156,7 +191,7 @@ export default function TerminalEmulator() {
 
     switch (command) {
       case 'help':
-        addLine(HELP_TEXT, 'system');
+        addLine(isMobile ? HELP_TEXT_COMPACT : HELP_TEXT_FULL, 'system');
         break;
 
       case 'clear':
@@ -450,13 +485,14 @@ export default function TerminalEmulator() {
 
   return (
     <div
+      className="terminal-shell"
       style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         background: '#000',
         fontFamily: '"Courier New", monospace',
-        fontSize: '14px',
+        fontSize: isMobile ? '11px' : '14px',
       }}
       onClick={() => inputRef.current?.focus()}
     >
@@ -495,7 +531,7 @@ export default function TerminalEmulator() {
             gap: '8px',
           }}
         >
-          <span style={{ color: '#228B22', whiteSpace: 'nowrap' }}>adam@neural-core:~$</span>
+          <span style={{ color: '#228B22', whiteSpace: 'nowrap', fontSize: isMobile ? '10px' : '14px' }}>{isMobile ? '$' : 'adam@neural-core:~$'}</span>
           <input
             ref={inputRef}
             type="text"
@@ -510,7 +546,7 @@ export default function TerminalEmulator() {
               outline: 'none',
               color: '#e0e0e0',
               fontFamily: '"Courier New", monospace',
-              fontSize: '14px',
+              fontSize: isMobile ? '11px' : '14px',
               caretColor: '#228B22',
             }}
             spellCheck="false"

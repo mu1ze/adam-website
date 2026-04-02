@@ -1,7 +1,7 @@
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
-import ThemeToggle from "@/components/ThemeToggle";
 import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
   title: "ADAM - AI Assistant",
@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <ThemeToggle />
+          <Sidebar />
           <Navbar />
           {children}
         </ThemeProvider>

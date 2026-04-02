@@ -92,22 +92,9 @@ nav a {
 nav a:hover { color: var(--primary); border-color: var(--primary); }
 
 @media (max-width: 768px) {
-    nav { 
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        transform: translateX(-100%);
-    }
-    nav.mobile-open { transform: translateX(0); }
-    nav ul { flex-direction: column; gap: 15px; }
-    nav a { font-size: 18px; padding: 12px 24px; }
-    .hamburger { display: flex; align-items: center; justify-content: center; }
+    /* Sidebar handles navigation on mobile — hide desktop nav */
+    nav { display: none !important; }
+    .hamburger { display: none !important; }
 }
 
 /* Scroll Animations */
@@ -420,11 +407,173 @@ footer { text-align: center; padding: 40px 20px; color: var(--text-dim); font-si
 
 /* Touch-friendly */
 @media (max-width: 768px) {
-    .theme-toggle { top: auto; bottom: 20px; }
-    .hamburger { top: auto; bottom: 20px; }
-    body { padding-bottom: 80px; }
+    .theme-toggle { display: none; }
+    .hamburger { display: none; }
+    body { padding-bottom: 20px; }
     .demo-stats { grid-template-columns: 1fr; }
     .alert-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar-hook {
+    position: fixed;
+    left: 0;
+    z-index: 1050;
+    width: 28px;
+    height: 56px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--primary);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: var(--primary);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    user-select: none;
+    transition: background 0.2s;
+    transform: translateY(-50%);
+}
+.sidebar-hook:hover { background: var(--primary); color: var(--bg); }
+
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1098;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    max-width: 75vw;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--primary);
+    z-index: 1099;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+}
+.sidebar-panel.sidebar-open { transform: translateX(0); }
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+.sidebar-close:hover { color: var(--primary); }
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.sidebar-nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.sidebar-nav a:hover {
+    background: rgba(0, 255, 136, 0.08);
+    color: var(--primary);
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+}
+
+.sidebar-theme-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    text-align: left;
+    transition: all 0.2s;
+}
+.sidebar-theme-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+/* On desktop, hide the sidebar hook by default but keep it accessible */
+@media (min-width: 769px) {
+    .sidebar-hook {
+        opacity: 0.4;
+        width: 20px;
+        height: 44px;
+        font-size: 14px;
+    }
+    .sidebar-hook:hover { opacity: 1; }
+}
+
+/* ═══ MOBILE TEXT SCALING ═══ */
+@media (max-width: 768px) {
+    /* Ask Adam page - scale chat text to fit */
+    .detail-section div[style*="fontFamily"] {
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+    }
+    .detail-section input[type="text"] {
+        font-size: 12px !important;
+        padding: 10px !important;
+    }
+    .detail-section button[type="submit"] {
+        padding: 0 14px !important;
+        font-size: 12px !important;
+    }
+
+    /* ASCII art headers - prevent overflow */
+    .ascii-art {
+        font-size: 5px !important;
+        line-height: 1.1 !important;
+        overflow-x: auto;
+    }
+    .page-header .ascii-art {
+        font-size: 4.5px !important;
+    }
 }
 
 /* Hero SVG animations for detail pages */
