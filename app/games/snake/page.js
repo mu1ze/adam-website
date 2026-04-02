@@ -27,6 +27,7 @@ export default function SnakePage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const stateRef = useRef({
     snake: [...INITIAL_SNAKE],
@@ -215,12 +216,14 @@ export default function SnakePage() {
   // Swipe controls for mobile
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {
+    e.preventDefault(); // Prevent page scroll
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
     };
   };
   const handleTouchEnd = (e) => {
+    e.preventDefault(); // Prevent page scroll
     if (!touchStartRef.current || gameState !== 'PLAYING') return;
     
     const touchEndX = e.changedTouches[0].clientX;
@@ -243,12 +246,20 @@ export default function SnakePage() {
   };
 
   const handleFullscreen = () => {
-    if (canvasRef.current && canvasRef.current.parentElement) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
+    const el = canvasRef.current?.parentElement;
+    if (!el) return;
+
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       } else {
-        canvasRef.current.parentElement.requestFullscreen();
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else alert("Fullscreen API not supported on this browser.");
       }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
     }
   };
 
@@ -286,7 +297,7 @@ export default function SnakePage() {
           <span className="game-title">SNAKE</span>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <span className="game-player-name" onClick={handleFullscreen}>
+          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
           <span className="game-player-name" onClick={changeName}>
@@ -304,13 +315,13 @@ export default function SnakePage() {
       </div>
 
       {/* Canvas Area */}
-      <div className="game-canvas-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div className="game-canvas-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }}>
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           className="game-canvas"
-          style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1' }}
+          style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1', touchAction: 'none' }}
         />
 
         {/* UI Overlays */}
@@ -343,7 +354,7 @@ export default function SnakePage() {
         )}
       </div>
 
-      {/* Leaderboard Section */}
+      {/* Leaderboard Section (Desktop) */}
       <div className="game-bottom">
         {!isMobile && (
           <div className="game-controls-hint">
@@ -354,7 +365,22 @@ export default function SnakePage() {
         )}
         <LeaderboardUI scores={scores} newRank={newRank} gameId="snake" />
       </div>
+
+      {/* Mobile Leaderboard Toggle */}
+      <button
+        className="leaderboard-toggle-btn"
+        onClick={() => setShowLeaderboard(true)}
+      >
+        🏆 SCORES
+      </button>
+
+      {/* Mobile Leaderboard Overlay */}
+      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
+        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
+          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
+          <LeaderboardUI scores={scores} newRank={newRank} gameId="snake" />
+        </div>
+      </div>
     </div>
   );
 }
-

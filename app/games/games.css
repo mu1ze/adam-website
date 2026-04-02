@@ -635,13 +635,150 @@
   }
 
   .game-canvas-wrapper {
-    padding: 10px;
+    padding: 4px;
   }
 
   .games-grid {
     grid-template-columns: 1fr;
     padding: 0 16px;
   }
+
+  /* ═══ MOBILE: VIEWPORT-LOCKED GAME MODE ═══ */
+  .game-page {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    touch-action: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+  }
+
+  /* Compact the top bar */
+  .game-top-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .game-back-link { font-size: 11px; }
+  .game-title { font-size: 13px; letter-spacing: 2px; }
+  .game-player-name { font-size: 10px; }
+
+  /* Hide fullscreen button on mobile — we ARE fullscreen */
+  .game-fullscreen-btn { display: none !important; }
+
+  /* HUD compact */
+  .game-hud {
+    padding: 8px 12px;
+  }
+  .hud-label { font-size: 9px; letter-spacing: 1px; }
+  .hud-value { font-size: 16px; }
+
+  /* Canvas fills ALL remaining space */
+  .game-canvas-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 2px;
+  }
+
+  .game-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    border-width: 1px;
+  }
+
+  /* Hide the bottom section (leaderboard) on mobile — accessed via overlay */
+  .game-bottom {
+    display: none;
+  }
+
+  /* Overlay titles smaller */
+  .game-overlay-title { font-size: 22px; letter-spacing: 2px; }
+  .game-overlay-sub { font-size: 12px; margin-bottom: 16px; }
+  .game-overlay-score { font-size: 36px; margin-bottom: 16px; }
+  .game-overlay-btn { padding: 12px 28px; font-size: 13px; }
+
+  /* Scanline overlay smaller inset */
+  .game-canvas-wrapper::after {
+    inset: 2px;
+  }
+}
+
+/* ═══ LEADERBOARD OVERLAY (Mobile) ═══ */
+.leaderboard-toggle-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .leaderboard-toggle-btn {
+    display: block;
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    z-index: 2010;
+    background: var(--bg-secondary);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+  }
+
+  .leaderboard-toggle-btn:active {
+    background: var(--primary);
+    color: #000;
+  }
+}
+
+.leaderboard-overlay {
+  display: none;
+}
+
+.leaderboard-overlay.show {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 2050;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.leaderboard-overlay-inner {
+  width: 92%;
+  max-width: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.leaderboard-overlay-close {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.leaderboard-overlay-close:hover {
+  color: var(--primary);
 }
 
 /* ── Scanline Effect on Game Canvas ── */

@@ -24,6 +24,7 @@ export default function SpaceInvadersPage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const stateRef = useRef({
     shipX: GAME_WIDTH / 2 - SHIP_WIDTH / 2,
@@ -301,12 +302,20 @@ export default function SpaceInvadersPage() {
   };
 
   const handleFullscreen = () => {
-    if (canvasRef.current && canvasRef.current.parentElement) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
+    const el = canvasRef.current?.parentElement;
+    if (!el) return;
+
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       } else {
-        canvasRef.current.parentElement.requestFullscreen();
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else alert("Fullscreen API not supported on this browser.");
       }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
     }
   };
 
@@ -344,7 +353,7 @@ export default function SpaceInvadersPage() {
           <span className="game-title">ALIEN INVADER</span>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <span className="game-player-name" onClick={handleFullscreen}>
+          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
           <span className="game-player-name" onClick={changeName}>
@@ -368,7 +377,7 @@ export default function SpaceInvadersPage() {
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           className="game-canvas"
-          style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1' }}
+          style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1', touchAction: 'none' }}
         />
 
         {/* UI Overlays */}
@@ -438,7 +447,7 @@ export default function SpaceInvadersPage() {
         </div>
       )}
 
-      {/* Leaderboard Section */}
+      {/* Leaderboard Section (Desktop) */}
       <div className="game-bottom">
         {!isMobile && (
           <div className="game-controls-hint">
@@ -447,6 +456,22 @@ export default function SpaceInvadersPage() {
           </div>
         )}
         <LeaderboardUI scores={scores} newRank={newRank} gameId="space-invaders" />
+      </div>
+
+      {/* Mobile Leaderboard Toggle */}
+      <button
+        className="leaderboard-toggle-btn"
+        onClick={() => setShowLeaderboard(true)}
+      >
+        🏆 SCORES
+      </button>
+
+      {/* Mobile Leaderboard Overlay */}
+      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
+        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
+          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
+          <LeaderboardUI scores={scores} newRank={newRank} gameId="space-invaders" />
+        </div>
       </div>
     </div>
   );

@@ -29,6 +29,7 @@ export default function PongPage() {
   const [score, setScore] = useState({ left: 0, right: 0, currentMatch: 0 });
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // Game specific state refs to avoid closure stale state in rAF
   const stateRef = useRef({
@@ -266,7 +267,12 @@ export default function PongPage() {
   }, [gameState]);
 
   // Touch controls
+  const handleTouchStart = (e) => {
+    e.preventDefault(); // Prevent page scroll
+  };
+
   const handleTouchMove = (e) => {
+    e.preventDefault(); // Prevent page scroll
     if (gameState !== 'PLAYING') return;
     const rect = canvasRef.current.getBoundingClientRect();
     const touchY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -281,12 +287,20 @@ export default function PongPage() {
   };
 
   const handleFullscreen = () => {
-    if (canvasRef.current && canvasRef.current.parentElement) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
+    const el = canvasRef.current?.parentElement;
+    if (!el) return;
+
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       } else {
-        canvasRef.current.parentElement.requestFullscreen();
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else alert("Fullscreen API not supported on this browser.");
       }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
     }
   };
 
@@ -324,7 +338,7 @@ export default function PongPage() {
           <span className="game-title">PONG</span>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <span className="game-player-name" onClick={handleFullscreen}>
+          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
           <span className="game-player-name" onClick={changeName}>
@@ -348,10 +362,12 @@ export default function PongPage() {
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           className="game-canvas"
+          onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onMouseMove={handleTouchMove}
           onMouseLeave={handleTouchEnd}
+          style={{ touchAction: 'none' }}
         />
 
         {/* UI Overlays */}
@@ -384,7 +400,7 @@ export default function PongPage() {
         )}
       </div>
 
-      {/* Leaderboard Section */}
+      {/* Leaderboard Section (Desktop) */}
       <div className="game-bottom">
         {!isMobile && (
           <div className="game-controls-hint">
@@ -394,6 +410,22 @@ export default function PongPage() {
           </div>
         )}
         <LeaderboardUI scores={scores} newRank={newRank} gameId="pong" />
+      </div>
+
+      {/* Mobile Leaderboard Toggle */}
+      <button
+        className="leaderboard-toggle-btn"
+        onClick={() => setShowLeaderboard(true)}
+      >
+        🏆 SCORES
+      </button>
+
+      {/* Mobile Leaderboard Overlay */}
+      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
+        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
+          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
+          <LeaderboardUI scores={scores} newRank={newRank} gameId="pong" />
+        </div>
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
  * The visual leaderboard table.
  */
 export function LeaderboardDisplay({ scores, newRank, gameId }) {
-  const title = gameId === 'pong' ? 'PONG' : 'SNAKE';
+  const title = gameId.toUpperCase().replace('-', ' ');
 
   return (
     <div className="leaderboard">
