@@ -77,6 +77,7 @@ export default function Sidebar() {
           <Link href="/skills" onClick={close}>⚡ Skills</Link>
           <Link href="/plugins" onClick={close}>🔌 Plugins</Link>
           <Link href="/ask-adam" onClick={close}>💬 Ask Adam</Link>
+          <Link href="/games" onClick={close}>🎮 Games</Link>
           <Link href="/terminal" onClick={close}>🖥️ Terminal</Link>
           <Link href="/docs" onClick={close}>📐 Docs</Link>
         </nav>
