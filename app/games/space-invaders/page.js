@@ -78,16 +78,14 @@ export default function SpaceInvadersPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      const rank = submitScore(name, finalScore);
-      setFinalRank(rank);
+      submitScore(name, finalScore).then(rank => setFinalRank(rank));
     }
   };
 
   const handleWin = (finalScore) => {
     setGameState('WIN');
     if (name) {
-      const rank = submitScore(name, finalScore);
-      setFinalRank(rank);
+      submitScore(name, finalScore).then(rank => setFinalRank(rank));
     }
   };
 

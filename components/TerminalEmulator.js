@@ -416,28 +416,32 @@ export default function TerminalEmulator() {
         addLine(`  Callsign: ${playerName}`);
         addLine('  ══════════════════════════════════', 'system');
         
-        ['pong', 'snake', 'space-invaders'].forEach(game => {
-          addLine(`  [ ${game.toUpperCase().replace('-', ' ')} ]`, 'success');
-          try {
-            const board = JSON.parse(localStorage.getItem(`adam_leaderboard_${game}`) || '[]');
-            if (board.length === 0) {
-              addLine('    No scores recorded.');
-            } else {
-              board.slice(0, 5).forEach((s, i) => {
-                addLine(`    #${i + 1} ${s.name.padEnd(16)} ${s.score.toString().padStart(6)}`);
-              });
-              
-              const personalScores = board.filter(s => s.name === playerName);
-              if (personalScores.length > 0) {
-                const best = Math.max(...personalScores.map(s => s.score));
-                addLine(`  > Personal Best: ${best}`, 'system');
+        (async () => {
+          for (const game of ['pong', 'snake', 'space-invaders']) {
+            addLine(`  [ ${game.toUpperCase().replace('-', ' ')} ]`, 'success');
+            try {
+              const res = await fetch(`/api/scores?game=${game}`);
+              const data = await res.json();
+              const board = data.success ? data.scores : [];
+              if (board.length === 0) {
+                addLine('    No scores recorded.');
+              } else {
+                board.slice(0, 5).forEach((s, i) => {
+                  addLine(`    #${i + 1} ${s.name.padEnd(16)} ${s.score.toString().padStart(6)}`);
+                });
+                
+                const personalScores = board.filter(s => s.name === playerName);
+                if (personalScores.length > 0) {
+                  const best = Math.max(...personalScores.map(s => s.score));
+                  addLine(`  > Personal Best: ${best}`, 'system');
+                }
               }
+            } catch {
+              addLine('    Error reading scores.');
             }
-          } catch {
-            addLine('    Error reading scores.');
+            addLine('');
           }
-          addLine('');
-        });
+        })();
         break;
       }
 

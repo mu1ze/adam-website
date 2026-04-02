@@ -77,8 +77,7 @@ export default function SnakePage() {
   const handleGameOver = () => {
     setGameState('GAMEOVER');
     if (name) {
-      const rank = submitScore(name, score);
-      setFinalRank(rank);
+      submitScore(name, score).then(rank => setFinalRank(rank));
     }
   };
 

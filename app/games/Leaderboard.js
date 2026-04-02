@@ -14,44 +14,40 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
   const [scores, setScores] = useState([]);
   const [newRank, setNewRank] = useState(-1);
 
-  const storageKey = `adam_leaderboard_${gameId}`;
-
   // Load scores
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      setScores(stored);
-    } catch {
-      setScores([]);
-    }
-  }, [storageKey]);
+    fetch(`/api/scores?game=${gameId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setScores(data.scores);
+        }
+      })
+      .catch((err) => console.error("Failed to load scores", err));
+  }, [gameId]);
 
   /**
-   * Submit a new score. Returns the rank (0-indexed) or -1 if not top 10.
+   * Submit a new score. Returns a promise for the rank (0-indexed) or -1 if not top 50.
    */
-  const submitScore = useCallback((name, score) => {
+  const submitScore = useCallback(async (name, score) => {
     try {
-      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      stored.push({
-        name: name.substring(0, 16),
-        score,
-        date: new Date().toISOString().split('T')[0],
+      const res = await fetch('/api/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ game: gameId, name, score: Math.round(score) })
       });
-      stored.sort((a, b) => b.score - a.score);
-      const top10 = stored.slice(0, 10);
-      localStorage.setItem(storageKey, JSON.stringify(top10));
-      setScores(top10);
-
-      const rank = top10.findIndex(
-        (s) => s.name === name.substring(0, 16) && s.score === score
-      );
-      setNewRank(rank);
-      setTimeout(() => setNewRank(-1), 3000);
-      return rank;
+      const data = await res.json();
+      if (data.success) {
+        setScores(data.scores);
+        setNewRank(data.rank);
+        setTimeout(() => setNewRank(-1), 3000);
+        return data.rank;
+      }
+      return -1;
     } catch {
       return -1;
     }
-  }, [storageKey]);
+  }, [gameId]);
 
   return { scores, submitScore, newRank, LeaderboardUI: LeaderboardDisplay, setScores };
 }

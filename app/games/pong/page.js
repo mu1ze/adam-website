@@ -81,8 +81,7 @@ export default function PongPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      const rank = submitScore(name, finalScore);
-      setFinalRank(rank);
+      submitScore(name, finalScore).then(rank => setFinalRank(rank));
     }
   };
 

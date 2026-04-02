@@ -29,6 +29,20 @@ export default function AskAdamPage() {
         <div className="breadcrumb">
           <Link href="/">Home</Link> / Ask Adam
         </div>
+        
+        <div style={{
+          margin: '20px 0',
+          padding: '16px',
+          border: '1px solid #ffaa00',
+          borderRadius: '4px',
+          backgroundColor: 'rgba(255, 170, 0, 0.05)',
+          color: '#ffaa00',
+          fontSize: '14px',
+          lineHeight: '1.6',
+          boxShadow: '0 0 10px rgba(255, 170, 0, 0.1)'
+        }}>
+          <strong>⚠️ TESTING PHASE DISCLAIMER:</strong> ADAM is a highly advanced, cooperative autonomous entity designed to be friendly and helpful. However, if you choose to instigate him, you are entirely left with the consequences of your actions. Approach with respect.
+        </div>
 
         <AskAdamClient />
       </div>
