@@ -18,6 +18,7 @@ export default function Navbar() {
           <li><Link href="/skills" onClick={closeMobile}>Skills</Link></li>
           <li><Link href="/plugins" onClick={closeMobile}>Plugins</Link></li>
           <li><Link href="/ask-adam" onClick={closeMobile}>Ask Adam</Link></li>
+          <li><Link href="/terminal" onClick={closeMobile}>Terminal</Link></li>
           <li><Link href="/docs" onClick={closeMobile}>Docs</Link></li>
         </ul>
       </nav>

@@ -10,6 +10,7 @@ const staticCommands = [
   { action: 'plugins', icon: '🔌', label: 'Go to Plugins', route: '/plugins', category: 'Navigation', description: 'View all external plugins' },
   { action: 'status', icon: '📊', label: 'Go to Status', route: '/#status', category: 'Navigation', description: 'System status' },
   { action: 'ask', icon: '💬', label: 'Ask Adam', route: '/ask-adam', category: 'Action', description: 'Talk to ADAM' },
+  { action: 'terminal', icon: '🖥️', label: 'Terminal', route: '/terminal', category: 'Action', description: 'Full terminal emulator' },
   { action: 'docs', icon: '📐', label: 'Documentation', route: '/docs', category: 'Navigation', description: 'Technical documentation' },
 ];
 
