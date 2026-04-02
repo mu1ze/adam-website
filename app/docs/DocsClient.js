@@ -101,20 +101,24 @@ function DragReflowMode({ preparedText }) {
 
   function startDrag(e) {
     dragging.current = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const rect = containerRef.current.getBoundingClientRect();
     dragOffset.current = {
-      x: e.clientX - rect.left - obstacleRef.current.x,
-      y: e.clientY - rect.top - obstacleRef.current.y,
+      x: clientX - rect.left - obstacleRef.current.x,
+      y: clientY - rect.top - obstacleRef.current.y,
     };
-    e.preventDefault();
+    if (!e.touches) e.preventDefault();
   }
 
   useEffect(() => {
     function onMove(e) {
       if (!dragging.current || !containerRef.current) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const rect = containerRef.current.getBoundingClientRect();
-      obstacleRef.current.x = Math.max(0, Math.min(e.clientX - rect.left - dragOffset.current.x, rect.width - 150));
-      obstacleRef.current.y = Math.max(0, e.clientY - rect.top - dragOffset.current.y);
+      obstacleRef.current.x = Math.max(0, Math.min(clientX - rect.left - dragOffset.current.x, rect.width - 150));
+      obstacleRef.current.y = Math.max(0, clientY - rect.top - dragOffset.current.y);
       // Move the obstacle element directly for smooth dragging
       const el = document.getElementById('drag-obstacle');
       if (el) {
@@ -125,10 +129,14 @@ function DragReflowMode({ preparedText }) {
     }
     function onUp() { dragging.current = false; }
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
     return () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
       window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
     };
   }, [reflow]);
 
@@ -151,6 +159,7 @@ function DragReflowMode({ preparedText }) {
       <div
         id="drag-obstacle"
         onMouseDown={startDrag}
+        onTouchStart={startDrag}
         style={{
           position: 'absolute',
           left: obstacleRef.current.x,
@@ -162,6 +171,7 @@ function DragReflowMode({ preparedText }) {
           borderRadius: '8px',
           zIndex: 10,
           cursor: 'grab',
+          touchAction: 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -1,14 +1,16 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { skills } from '@/data/skills';
+import { plugins } from '@/data/plugins';
 
-const commands = [
-  { action: 'about', icon: '📖', label: 'Go to About', route: '/#about' },
-  { action: 'skills', icon: '⚡', label: 'Go to Skills', route: '/skills' },
-  { action: 'plugins', icon: '🔌', label: 'Go to Plugins', route: '/plugins' },
-  { action: 'status', icon: '📊', label: 'Go to Status', route: '/#status' },
-  { action: 'ask', icon: '💬', label: 'Ask Adam', route: '/ask-adam' },
-  { action: 'docs', icon: '📐', label: 'Documentation', route: '/docs' },
+const staticCommands = [
+  { action: 'about', icon: '📖', label: 'Go to About', route: '/#about', category: 'Navigation', description: 'About ADAM' },
+  { action: 'skills', icon: '⚡', label: 'Go to Skills', route: '/skills', category: 'Navigation', description: 'View all core skills' },
+  { action: 'plugins', icon: '🔌', label: 'Go to Plugins', route: '/plugins', category: 'Navigation', description: 'View all external plugins' },
+  { action: 'status', icon: '📊', label: 'Go to Status', route: '/#status', category: 'Navigation', description: 'System status' },
+  { action: 'ask', icon: '💬', label: 'Ask Adam', route: '/ask-adam', category: 'Action', description: 'Talk to ADAM' },
+  { action: 'docs', icon: '📐', label: 'Documentation', route: '/docs', category: 'Navigation', description: 'Technical documentation' },
 ];
 
 export default function CommandPalette() {
@@ -18,9 +20,37 @@ export default function CommandPalette() {
   const inputRef = useRef(null);
   const router = useRouter();
 
-  const filteredCommands = commands.filter(cmd =>
-    cmd.label.toLowerCase().includes(query.toLowerCase())
-  );
+  const allCommands = useMemo(() => {
+    const dynamicSkills = skills.map(s => ({
+      action: `skill_${s.slug}`,
+      icon: s.icon,
+      label: s.title,
+      route: `/skills/${s.slug}`,
+      category: `Skill: ${s.category}`,
+      description: s.shortDescription || s.tagline
+    }));
+
+    const dynamicPlugins = plugins.map(p => ({
+      action: `plugin_${p.slug}`,
+      icon: p.icon,
+      label: p.title,
+      route: `/plugins/${p.slug}`,
+      category: `Plugin: ${p.category}`,
+      description: p.tagline
+    }));
+
+    return [...staticCommands, ...dynamicSkills, ...dynamicPlugins];
+  }, []);
+
+  const filteredCommands = useMemo(() => {
+    if (!query) return allCommands;
+    const lowerQuery = query.toLowerCase();
+    return allCommands.filter(cmd => 
+      cmd.label.toLowerCase().includes(lowerQuery) ||
+      (cmd.description && cmd.description.toLowerCase().includes(lowerQuery)) ||
+      (cmd.category && cmd.category.toLowerCase().includes(lowerQuery))
+    );
+  }, [query, allCommands]);
 
   const close = useCallback(() => {
     setActive(false);
@@ -74,6 +104,8 @@ export default function CommandPalette() {
       e.preventDefault();
       if (selectedIndex >= 0 && filteredCommands[selectedIndex]) {
         executeAction(filteredCommands[selectedIndex]);
+      } else if (filteredCommands.length > 0) {
+          executeAction(filteredCommands[0]);
       }
     }
   }
@@ -89,7 +121,7 @@ export default function CommandPalette() {
             ref={inputRef}
             type="text"
             className="cmd-input"
-            placeholder="Type a command or search..."
+            placeholder="Type a command or search skills/plugins..."
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedIndex(-1); }}
             onKeyDown={handleKeyDown}
@@ -101,12 +133,28 @@ export default function CommandPalette() {
                 className={`cmd-result${i === selectedIndex ? ' selected' : ''}`}
                 onClick={() => executeAction(cmd)}
                 onMouseEnter={() => setSelectedIndex(i)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
-                <span>{cmd.icon}</span>
-                <span>{cmd.label}</span>
-                <kbd>↵</kbd>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>{cmd.icon}</span>
+                  <span style={{ fontWeight: 'bold' }}>{cmd.label}</span>
+                  {cmd.category && (
+                    <span style={{ fontSize: '10px', color: 'var(--text-dim)', background: 'var(--bg)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                      {cmd.category.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   {cmd.description && <span style={{ fontSize: '12px', color: 'var(--primary-dim)' }}>{cmd.description.length > 40 ? cmd.description.substring(0,40) + '...' : cmd.description}</span>}
+                  <kbd>↵</kbd>
+                </div>
               </div>
             ))}
+            {filteredCommands.length === 0 && (
+                <div className="cmd-result" style={{ color: 'var(--text-dim)', justifyContent: 'center' }}>
+                    No matching commands found.
+                </div>
+            )}
           </div>
         </div>
       </div>

@@ -131,6 +131,7 @@ export default function MasonryLayout() {
     width: '200px',
     cursor: 'pointer',
     accentColor: 'var(--primary)',
+    touchAction: 'none',
   };
 
   return (

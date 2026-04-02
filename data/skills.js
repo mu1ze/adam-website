@@ -23,6 +23,7 @@ Model:      sonar-deep-research
 Freshness:  day
 Max Results: 10`,
     features: ['Search', 'Fact Check', 'Synthesis'],
+    category: 'Intelligence',
     asciiIcon: `  _______________    _____________________
  \\             /    |                   |
   \\           /     |    WEB RESEARCH    |
@@ -55,6 +56,7 @@ Max Results: 10`,
 > create: product description for new app
 > summarize: condense this 10-page report`,
     features: ['Emails', 'Docs', 'Creative'],
+    category: 'Creation',
     asciiIcon: `       ╔═══════════════════╗
        ║   CONTENT CREATOR ║
        ╠═══════════════════╣
@@ -92,6 +94,7 @@ Best Practices: strict`,
 Ruby, PHP, Swift, Kotlin, Scala, R, MATLAB, Julia,
 SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
     features: ['Write', 'Review', 'Debug'],
+    category: 'Development',
     asciiIcon: `    ┌─────────────────┐
     │  </> CODE  >/< │
     │─────────────────│
@@ -123,6 +126,7 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
 > chart: create bar chart of monthly data
 > report: summarize key metrics from JSON`,
     features: ['CSV', 'SQL', 'Charts'],
+    category: 'Data Management',
     asciiIcon: `    ┌────────────────────┐
     │    DATA ENGINE    │
     │────────────────────│
@@ -154,6 +158,7 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
 > list: all tasks due this week
 > priority: reschedule by importance`,
     features: ['Tasks', 'Reminders', 'Scheduling'],
+    category: 'Operations',
     asciiIcon: `      ┌──────────────────────┐
       │  TASK MANAGER v1.0   │
       │──────────────────────│
@@ -184,6 +189,7 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
 > uptime: report last 7 days
 > logs: find errors in last hour`,
     features: ['Health', 'Security', 'Alerts'],
+    category: 'System',
     asciiIcon: `    ┌──────────────────────────┐
     │    SYSTEM MONITOR       │
     │─────────────────────────│
@@ -214,6 +220,7 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
 > fill: form on "example.com/contact" with details
 > screenshot: "example.com/dashboard"`,
     features: ['Scrape', 'Forms', 'Screenshots'],
+    category: 'Automation',
     asciiIcon: `      ╭─────────────────────────╮
       │  🌐  WEB AUTOMATION  🌐 │
       │─────────────────────────│
@@ -243,6 +250,7 @@ SQL, HTML, CSS, Bash, PowerShell, and 30+ more...`,
 > delete: directory "temp_files"
 > git commit: "add new feature"`,
     features: ['CRUD', 'Search', 'Git'],
+    category: 'File System',
     asciiIcon: `      ╭───────────────────────────╮
       │     FILE MANAGER         │
       │───────────────────────────│

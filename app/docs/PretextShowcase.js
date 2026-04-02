@@ -18,6 +18,7 @@ export default function PretextShowcase() {
   const [animating, setAnimating] = useState(false);
   const [searchState, setSearchState] = useState(null); // { lo, hi, mid, iteration, history }
   const animRef = useRef(null);
+  const containerRef = useRef(null);
 
   const preparedText = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -27,7 +28,7 @@ export default function PretextShowcase() {
   const computeLayout = useCallback((targetMaxLines) => {
     if (!preparedText) return;
     const t0 = performance.now();
-    const maxContainerWidth = 800;
+    const maxContainerWidth = containerRef.current ? containerRef.current.clientWidth : 800;
 
     let lo = 50, hi = maxContainerWidth;
     while (lo < hi) {
@@ -54,7 +55,7 @@ export default function PretextShowcase() {
   function startAnimation() {
     if (!preparedText) return;
     setAnimating(true);
-    const maxContainerWidth = 800;
+    const maxContainerWidth = containerRef.current ? containerRef.current.clientWidth : 800;
     let lo = 50;
     let hi = maxContainerWidth;
     let iteration = 0;
@@ -103,7 +104,7 @@ export default function PretextShowcase() {
   }
 
   return (
-    <div className="detail-section" style={{ marginTop: '40px' }}>
+    <div className="detail-section" style={{ marginTop: '40px' }} ref={containerRef}>
       <h2 style={{ marginBottom: '5px' }}>[ ALGORITHMIC BALANCING ]</h2>
       <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '20px' }}>
         Binary search for ideal &quot;balanced&quot; text width — computed entirely out-of-DOM.
@@ -117,7 +118,7 @@ export default function PretextShowcase() {
           value={maxLines}
           onChange={(e) => { if (!animating) setMaxLines(parseInt(e.target.value)); }}
           disabled={animating}
-          style={{ width: '200px', cursor: animating ? 'not-allowed' : 'pointer', accentColor: 'var(--primary)' }}
+          style={{ width: '200px', cursor: animating ? 'not-allowed' : 'pointer', accentColor: 'var(--primary)', touchAction: 'none' }}
         />
         <div style={{ fontSize: '13px', color: 'var(--primary)' }}>
           Max Lines: <strong>{maxLines}</strong>
@@ -239,6 +240,7 @@ export default function PretextShowcase() {
           border: '1px dashed var(--primary)',
           borderRadius: '4px',
           width: optimalWidth + 'px',
+          maxWidth: '100%',
           padding: '10px 0',
           transition: animating ? 'width 0.3s ease' : 'width 0.1s linear',
           overflow: 'hidden',

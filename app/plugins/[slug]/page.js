@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { plugins } from '@/data/plugins';
-import FooterSimple from '@/components/FooterSimple';
+import DetailLayout from '@/components/DetailLayout';
 
 export function generateStaticParams() {
   return plugins.map(plugin => ({ slug: plugin.slug }));
@@ -11,7 +10,14 @@ export async function generateMetadata(props) {
   const params = await props.params;
   const plugin = plugins.find(p => p.slug === params.slug);
   if (!plugin) return {};
-  return { title: `${plugin.title} - ADAM Plugins` };
+  return { 
+    title: `${plugin.title} - ADAM Plugins`,
+    description: plugin.description,
+    openGraph: {
+      title: `${plugin.title} - ADAM Plugins`,
+      description: plugin.description,
+    }
+  };
 }
 
 function PluginHeroSVG({ slug }) {
@@ -73,43 +79,19 @@ export default async function PluginDetailPage(props) {
   if (!plugin) notFound();
 
   return (
-    <>
-      <div className="page-header">
-        <PluginHeroSVG slug={plugin.slug} />
-        <h1 style={{ color: 'var(--primary)', fontSize: '28px' }}>
-          {plugin.icon} {plugin.title.toUpperCase()}
-        </h1>
-        <p style={{ color: 'var(--text-dim)' }}>{plugin.tagline}</p>
-      </div>
-
-      <div className="detail-container">
-        <div className="breadcrumb">
-          <Link href="/">Home</Link> / <Link href="/plugins">Plugins</Link> / {plugin.title}
-        </div>
-
-        <div className="detail-section">
-          <h2>// Overview</h2>
-          <p>
-            The {plugin.title} plugin integrates with your {plugin.title} account.{' '}
-            {plugin.description}
-          </p>
-          <p style={{ marginTop: '15px' }}><span className="status-badge">ACTIVE</span></p>
-        </div>
-
-        <div className="detail-section">
-          <h2>// Capabilities</h2>
-          <ul className="feature-list">
-            {plugin.capabilities.map(cap => <li key={cap}>{cap}</li>)}
-          </ul>
-        </div>
-
-        <div className="detail-section">
-          <h2>// Example Usage</h2>
-          <div className="code-block">{plugin.exampleUsage}</div>
-        </div>
-      </div>
-
-      <FooterSimple />
-    </>
+    <DetailLayout
+      title={plugin.title}
+      icon={plugin.icon}
+      tagline={plugin.tagline}
+      description={plugin.description}
+      capabilities={plugin.capabilities}
+      exampleUsage={plugin.exampleUsage}
+      category={plugin.category}
+      hero={<PluginHeroSVG slug={plugin.slug} />}
+      breadcrumbs={[
+        { label: 'Plugins', href: '/plugins' },
+        { label: plugin.title }
+      ]}
+    />
   );
 }

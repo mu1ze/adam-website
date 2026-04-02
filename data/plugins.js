@@ -13,6 +13,7 @@ export const plugins = [
       'Manage project boards and milestones',
       'Access GitHub API for custom operations',
     ],
+    category: 'Development',
     exampleUsage: `> github: list my open pull requests
 > github: create issue "Bug found in login" on repo X
 > github: review PR #123 for repo Y
@@ -32,6 +33,7 @@ export const plugins = [
       'Create templates',
       'Sync across devices',
     ],
+    category: 'Productivity',
     exampleUsage: `> obsidian: create note "Meeting Notes"
 > obsidian: search for notes about "AI"
 > obsidian: link note A to note B
@@ -51,6 +53,7 @@ export const plugins = [
       'Draft management',
       'Thread organization',
     ],
+    category: 'Communication',
     exampleUsage: `> gmail: check unread emails
 > gmail: send email to john@example.com
 > gmail: search for "invoice" emails
@@ -70,6 +73,7 @@ export const plugins = [
       'Calendar sharing',
       'Time zone handling',
     ],
+    category: 'Productivity',
     exampleUsage: `> calendar: schedule meeting tomorrow at 3pm
 > calendar: what's on my schedule today?
 > calendar: create recurring weekly standup
@@ -89,6 +93,7 @@ export const plugins = [
       'Channel management',
       'Notification configuration',
     ],
+    category: 'Communication',
     exampleUsage: `> telegram: send "Hello!" to @user
 > telegram: check new messages
 > telegram: post to channel "updates"
@@ -108,6 +113,7 @@ export const plugins = [
       'Template management',
       'Workspace organization',
     ],
+    category: 'Productivity',
     exampleUsage: `> notion: create page "Sprint Planning"
 > notion: query database "Tasks" where status = "In Progress"
 > notion: add row to "Projects" database
@@ -127,6 +133,7 @@ export const plugins = [
       'Location-based queries',
       'UV index and air quality',
     ],
+    category: 'Information',
     exampleUsage: `> weather: current conditions in New York
 > weather: 5-day forecast for London
 > weather: will it rain tomorrow?
@@ -146,6 +153,7 @@ export const plugins = [
       'View listening history',
       'Control playback devices',
     ],
+    category: 'Entertainment',
     exampleUsage: `> spotify: play "Bohemian Rhapsody"
 > spotify: create playlist "Work Focus"
 > spotify: what's playing now?
@@ -165,6 +173,7 @@ export const plugins = [
       'Dependency audit',
       'Configuration review',
     ],
+    category: 'Security',
     exampleUsage: `> healthcheck: scan system for vulnerabilities
 > healthcheck: check SSL cert expiry
 > healthcheck: audit npm dependencies
@@ -184,6 +193,7 @@ export const plugins = [
       'Usage analytics',
       'Model comparison',
     ],
+    category: 'Intelligence',
     exampleUsage: `> clawrouter: route to cheapest model for summarization
 > clawrouter: compare GPT-4 vs Claude for this task
 > clawrouter: show usage stats this month
@@ -203,6 +213,7 @@ export const plugins = [
       'Batch generation',
       'Resolution control',
     ],
+    category: 'Intelligence',
     exampleUsage: `> imagegen: create "a cyberpunk cityscape at sunset"
 > imagegen: edit image to add rain effect
 > imagegen: generate logo for tech startup
@@ -222,6 +233,7 @@ export const plugins = [
       'News aggregation',
       'Trend analysis',
     ],
+    category: 'Intelligence',
     exampleUsage: `> websearch: latest news on AI regulation
 > websearch: verify "claim about X"
 > websearch: deep research on quantum computing

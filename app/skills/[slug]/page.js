@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { skills } from '@/data/skills';
-import FooterSimple from '@/components/FooterSimple';
+import DetailLayout from '@/components/DetailLayout';
 import SkillDetailClient from './SkillDetailClient';
 
 export function generateStaticParams() {
@@ -12,7 +11,14 @@ export async function generateMetadata(props) {
   const params = await props.params;
   const skill = skills.find(s => s.slug === params.slug);
   if (!skill) return {};
-  return { title: `${skill.title} - ADAM Skills` };
+  return { 
+    title: `${skill.title} - ADAM Skills`,
+    description: skill.description,
+    openGraph: {
+      title: `${skill.title} - ADAM Skills`,
+      description: skill.description,
+    }
+  };
 }
 
 function HeroSVG({ slug }) {
@@ -126,57 +132,26 @@ export default async function SkillDetailPage(props) {
   if (!skill) notFound();
 
   return (
-    <>
-      <div className="page-header">
-        <HeroSVG slug={skill.slug} />
-        <h1 style={{ color: 'var(--primary)', fontSize: '28px' }}>
-          {skill.icon} {skill.title.toUpperCase()}
-        </h1>
-        <p style={{ color: 'var(--text-dim)' }}>{skill.tagline}</p>
-      </div>
-
-      <div className="detail-container">
-        <div className="breadcrumb">
-          <Link href="/">Home</Link> / <Link href="/skills">Skills</Link> / {skill.title}
-        </div>
-
-        <div className="detail-section">
-          <h2>// Overview</h2>
-          <p>{skill.description}</p>
-          <p style={{ marginTop: '15px' }}><span className="status-badge">ACTIVE</span></p>
-        </div>
-
-        <div className="detail-section">
-          <h2>// Capabilities</h2>
-          <ul className="feature-list">
-            {skill.capabilities.map(cap => <li key={cap}>{cap}</li>)}
-          </ul>
-        </div>
-
-        {skill.slug === 'code' && skill.supportedLanguages && (
-          <div className="detail-section">
-            <h2>// Supported Languages</h2>
-            <div className="code-block">{skill.supportedLanguages}</div>
-          </div>
-        )}
-
-        <div className="detail-section">
-          <h2>// Example Usage</h2>
-          <div className="code-block">{skill.exampleUsage}</div>
-        </div>
-
-        {/* Interactive Demos - rendered client-side */}
-        <SkillDetailClient slug={skill.slug} />
-
-        {skill.config && (
-          <div className="detail-section">
-            <h2>// Configuration</h2>
-            <div className="code-block">{skill.config}</div>
-          </div>
-        )}
-      </div>
-
-      <FooterSimple />
-    </>
+    <DetailLayout
+      title={skill.title}
+      icon={skill.icon}
+      tagline={skill.tagline}
+      description={skill.description}
+      capabilities={[
+        ...skill.capabilities,
+        ...(skill.slug === 'code' && skill.supportedLanguages ? [`// Supported: ${skill.supportedLanguages}`] : [])
+      ]}
+      exampleUsage={skill.exampleUsage}
+      config={skill.config}
+      category={skill.category}
+      hero={<HeroSVG slug={skill.slug} />}
+      breadcrumbs={[
+        { label: 'Skills', href: '/skills' },
+        { label: skill.title }
+      ]}
+    >
+      {/* Interactive Demo */}
+      <SkillDetailClient slug={skill.slug} />
+    </DetailLayout>
   );
 }
