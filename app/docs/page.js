@@ -3,6 +3,7 @@ import PretextShowcase from './PretextShowcase';
 import MasonryLayout from '@/components/pretext/MasonryLayout';
 import FooterSimple from '@/components/FooterSimple';
 import Link from 'next/link';
+import '@/app/games/games.css';
 
 export const metadata = {
   title: 'ADAM - Documentation',
@@ -12,21 +13,25 @@ export const metadata = {
 export default function DocsPage() {
   return (
     <>
-      <header className="page-header">
-        <div className="ascii-art">
+      <header className="games-header">
+        <div className="games-ascii">
 {`╔═══════════════════════════════════════════════════════════════╗
-║           ___   ____   ____  _____                            ║
-║          / _ \\ / __ \\ / ___||  ___|                           ║
-║         | | | | |  | | |    | |__                             ║
-║         | | | | |  | | |    |  __|                            ║
-║         | |_| | |__| | |____| |___                            ║
-║          \\___/ \\____/ \\_____|_____|                            ║
 ║                                                               ║
-║              ARCHITECTURE    DOCUMENTATION                    ║
+║    ██████╗  ██████╗  ██████╗ ███████╗                        ║
+║    ██╔══██╗██╔═══██╗██╔════╝ ██╔════╝                        ║
+║    ██║  ██║██║   ██║██║      ███████╗                        ║
+║    ██║  ██║██║   ██║██║      ╚════██║                        ║
+║    ██████╔╝╚██████╔╝╚██████╗ ███████║                        ║
+║    ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝                        ║
+║                                                               ║
+║              PreText DOM-Free Rendering Engine                ║
+║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝`}
         </div>
-        <h1>[ ADAM ARCHITECTURE ]</h1>
-        <p>Interactive DOM-Free Documentation powered by PreText</p>
+        <p className="games-subtitle">
+          Interactive documentation powered by PreText. Every layout below is computed
+          without triggering a single browser layout reflow. Pure JavaScript arithmetic.
+        </p>
       </header>
 
       <main className="container" style={{ maxWidth: '1100px' }}>

@@ -99,6 +99,67 @@ export default function GamesPage() {
             <span className="game-card-arrow">PLAY NOW →</span>
           </div>
         </Link>
+
+        {/* Tetris Card */}
+        <Link href="/games/tetris" className="game-card">
+          <div className="game-card-preview" style={{ color: '#00f0f0' }}>
+            <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
+              ████████
+              ████████
+            </div>
+          </div>
+          <div className="game-card-body">
+            <h2 className="game-card-title"><span>TETRIS</span></h2>
+            <p className="game-card-desc">
+              Classic block-stacking puzzle. Clear lines, level up, and beat the high score. Speed increases as you progress.
+            </p>
+            <div className="game-card-tags">
+              <span className="game-tag">High Score</span>
+              <span className="game-tag">Hard Drop</span>
+            </div>
+            <span className="game-card-arrow">PLAY NOW →</span>
+          </div>
+        </Link>
+
+        {/* Flappy Bird Card */}
+        <Link href="/games/flappy-bird" className="game-card">
+          <div className="game-card-preview" style={{ color: '#00ff88' }}>
+            <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
+              {'   🐦\n |  |'}
+            </div>
+          </div>
+          <div className="game-card-body">
+            <h2 className="game-card-title"><span>FLAPPY BIRD</span></h2>
+            <p className="game-card-desc">
+              Tap to fly through endless pipes. Deceptively simple but incredibly addictive. How far can you go?
+            </p>
+            <div className="game-card-tags">
+              <span className="game-tag">High Score</span>
+              <span className="game-tag">One-Tap</span>
+            </div>
+            <span className="game-card-arrow">PLAY NOW →</span>
+          </div>
+        </Link>
+
+        {/* 2048 Card */}
+        <Link href="/games/2048" className="game-card">
+          <div className="game-card-preview" style={{ color: '#edc22e' }}>
+            <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
+              {'  2   4\n  8  16'}
+            </div>
+          </div>
+          <div className="game-card-body">
+            <h2 className="game-card-title"><span>2048</span></h2>
+            <p className="game-card-desc">
+              Join the tiles and reach 2048. Swipe to merge matching numbers. Strategic puzzle with endless replayability.
+            </p>
+            <div className="game-card-tags">
+              <span className="game-tag">High Score</span>
+              <span className="game-tag">Puzzle</span>
+            </div>
+            <span className="game-card-arrow">PLAY NOW →</span>
+          </div>
+        </Link>
       </div>
     </main>
   );

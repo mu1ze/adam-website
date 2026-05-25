@@ -7,7 +7,7 @@ export default function ScorecardImage({ gameId, gameTitle, score, rank, playerN
   const [copying, setCopying] = useState(false);
   const [shared, setShared] = useState(false);
 
-  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'ALIEN INVADER' };
+  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'ALIEN INVADER', tetris: 'TETRIS', 'flappy-bird': 'FLAPPY BIRD', '2048': '2048' };
   const title = gameTitle || gameNames[gameId] || gameId.toUpperCase();
   const rankNum = rank >= 0 ? rank + 1 : null;
 
