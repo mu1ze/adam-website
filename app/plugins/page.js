@@ -4,7 +4,8 @@ import FooterSimple from '@/components/FooterSimple';
 import { PluginConnectionDot } from '@/components/PluginConnectionButton';
 
 export const metadata = {
-  title: 'Plugins - ADAM',
+  title: 'Plugins - ADAM OS',
+  description: 'Connect ADAM to GitHub, Gmail, Obsidian, Telegram, Notion, and other services for powerful automation.',
 };
 
 export default function PluginsPage() {

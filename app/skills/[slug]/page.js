@@ -17,6 +17,7 @@ export async function generateMetadata(props) {
     openGraph: {
       title: `${skill.title} - ADAM Skills`,
       description: skill.description,
+      images: [{ url: `/api/og?title=${encodeURIComponent(skill.title)}&description=${encodeURIComponent(skill.shortDescription || skill.description.substring(0, 120))}&subtitle=ADAM+Skill` }],
     }
   };
 }

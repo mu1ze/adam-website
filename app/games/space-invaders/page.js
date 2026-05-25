@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
+import ScorecardImage from '@/components/ScorecardImage';
+import GameStructuredData from '@/components/GameStructuredData';
 import '../games.css';
 
 const GAME_WIDTH = 600;
@@ -423,6 +425,7 @@ export default function SpaceInvadersPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} />
           </div>
         )}
 
@@ -439,6 +442,7 @@ export default function SpaceInvadersPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>NEXT WAVE</button>
+            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} />
           </div>
         )}
       </div>
@@ -471,6 +475,11 @@ export default function SpaceInvadersPage() {
           <LeaderboardUI scores={scores} newRank={newRank} gameId="space-invaders" />
         </div>
       </div>
+      <GameStructuredData
+        name="Alien Invader"
+        description="Defend Earth from alien invaders in this classic arcade shoot-em-up. Destroy waves of aliens before they reach the bottom. Retro terminal-styled with global leaderboards."
+        url="/games/space-invaders"
+      />
     </div>
   );
 }

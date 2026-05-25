@@ -3,6 +3,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
+import ScorecardImage from '@/components/ScorecardImage';
+import GameStructuredData from '@/components/GameStructuredData';
 import '../games.css';
 
 const GRID_SIZE = 20; // 20x20 grid
@@ -350,6 +352,7 @@ export default function SnakePage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+            <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} />
           </div>
         )}
       </div>
@@ -381,6 +384,11 @@ export default function SnakePage() {
           <LeaderboardUI scores={scores} newRank={newRank} gameId="snake" />
         </div>
       </div>
+      <GameStructuredData
+        name="Snake"
+        description="Classic Snake arcade game. Navigate the grid, eat food, and grow longer. Avoid walls and your own tail in this retro terminal-styled version with global leaderboards."
+        url="/games/snake"
+      />
     </div>
   );
 }

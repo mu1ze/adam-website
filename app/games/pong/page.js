@@ -5,6 +5,8 @@ import { prepare, layout, prepareWithSegments, layoutWithLines } from '@chenglou
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import { getRotatingChar, getSmoothColor, getCurrentLanguage, getLanguageColor } from '../textLanguages';
+import ScorecardImage from '@/components/ScorecardImage';
+import GameStructuredData from '@/components/GameStructuredData';
 import '../games.css';
 
 const FONT = 'bold 24px "Courier New", monospace';
@@ -396,6 +398,7 @@ export default function PongPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+            <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} />
           </div>
         )}
       </div>
@@ -427,6 +430,11 @@ export default function PongPage() {
           <LeaderboardUI scores={scores} newRank={newRank} gameId="pong" />
         </div>
       </div>
+      <GameStructuredData
+        name="Pong"
+        description="Classic PreText arcade Pong. The AI gets faster as you score. Play against the machine in this retro terminal-styled version of the arcade classic with global leaderboards."
+        url="/games/pong"
+      />
     </div>
   );
 }

@@ -3,6 +3,16 @@ import ParallaxBackground from '@/components/ParallaxBackground';
 import CommandPalette from '@/components/CommandPalette';
 import Footer from '@/components/Footer';
 import HomeClient from './HomeClient';
+import LiveLeaderboard from '@/components/LiveLeaderboard';
+
+export const metadata = {
+  title: 'ADAM OS - Retro Terminal Arcade & AI Assistant',
+  description: 'Play Pong, Snake, and Space Invaders with global leaderboards. Explore the autonomous digital assistant mind in a cyberpunk terminal interface.',
+  openGraph: {
+    title: 'ADAM OS - Retro Terminal Arcade & AI Assistant',
+    description: 'Play Pong, Snake, and Space Invaders with global leaderboards. Explore the autonomous digital assistant mind in a cyberpunk terminal interface.',
+  },
+};
 
 export default function HomePage() {
   return (
@@ -124,6 +134,24 @@ export default function HomePage() {
               <h3>📁 File Operations</h3>
               <p>Read, write, edit files with precision. Support for text, images, and PDFs.</p>
               <span className="arrow">→ View details</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Global Leaderboard Section */}
+      <section id="leaderboard">
+        <div className="container">
+          <h2>&gt; Global Leaderboard</h2>
+          <p style={{ color: 'var(--text-dim)', marginBottom: '20px' }}>
+            Top players across all arcade games. Updated live every 15 seconds.
+          </p>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <LiveLeaderboard />
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <Link href="/games" style={{ color: 'var(--primary)', fontSize: '14px', textDecoration: 'none' }}>
+              &gt; PLAY_ARCADE [ENTER HUB]
             </Link>
           </div>
         </div>

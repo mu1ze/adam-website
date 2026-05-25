@@ -16,6 +16,7 @@ export async function generateMetadata(props) {
     openGraph: {
       title: `${plugin.title} - ADAM Plugins`,
       description: plugin.description,
+      images: [{ url: `/api/og?title=${encodeURIComponent(plugin.title)}&description=${encodeURIComponent(plugin.tagline || plugin.description.substring(0, 120))}&subtitle=ADAM+Plugin` }],
     }
   };
 }

@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  allowedDevOrigins: ['192.168.2.41', 'localhost:3001', 'localhost:3000'],
+  allowedDevOrigins: ['192.168.2.41', 'localhost:3369'],
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;

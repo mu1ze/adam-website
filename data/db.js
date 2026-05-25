@@ -1,21 +1,25 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import { createClient } from '@libsql/client';
 
-// Store the database file in the robust data directory
-const dbPath = path.resolve(process.cwd(), 'data', 'adam-scores.db');
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL'); // Performance optimization
+let schemaReady = null;
 
-// Initialize the SQLite schema if it does not exist
-db.exec(`
-  CREATE TABLE IF NOT EXISTS scores (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    game TEXT NOT NULL,
-    name TEXT NOT NULL,
-    score INTEGER NOT NULL,
-    date TEXT NOT NULL
-  )
-`);
+export async function ensureSchema() {
+  if (!schemaReady) {
+    schemaReady = client.execute(`
+      CREATE TABLE IF NOT EXISTS scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        game TEXT NOT NULL,
+        name TEXT NOT NULL,
+        score INTEGER NOT NULL,
+        date TEXT NOT NULL
+      )
+    `);
+  }
+  return schemaReady;
+}
 
-export default db;
+export default client;

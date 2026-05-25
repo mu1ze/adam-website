@@ -2,8 +2,8 @@ import Link from 'next/link';
 import './games.css';
 
 export const metadata = {
-  title: 'ADAM - Arcade',
-  description: 'Multilingual PreText rendering arcade games.',
+  title: 'ADAM Arcade - Pong, Snake & Space Invaders',
+  description: 'Play classic arcade games with global leaderboards. Compete worldwide in Pong, Snake, and Space Invaders with retro terminal aesthetics.',
 };
 
 export default function GamesPage() {

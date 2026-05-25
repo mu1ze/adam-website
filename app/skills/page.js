@@ -4,7 +4,8 @@ import FooterSimple from '@/components/FooterSimple';
 import SkillsClient from './SkillsClient';
 
 export const metadata = {
-  title: 'Skills - ADAM',
+  title: 'Skills - ADAM OS',
+  description: 'Explore ADAM\'s capabilities including research, content creation, code development, data management, and more.',
 };
 
 export default function SkillsPage() {
