@@ -75,7 +75,7 @@ export default function TetrisPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, LeaderboardUI } = Leaderboard({ gameId: 'tetris' });
+  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'tetris' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -112,7 +112,7 @@ export default function TetrisPage() {
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
-    if (name) submitScore(name, score).then(rank => setFinalRank(rank));
+    if (name) submitScore(name, score).then(result => setFinalRank(result.rank));
   };
 
   useEffect(() => {
@@ -359,7 +359,7 @@ export default function TetrisPage() {
               <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
       </div>

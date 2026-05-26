@@ -24,7 +24,7 @@ export default function LiveLeaderboard() {
   }, []);
 
   const top5 = scores.slice(0, 5);
-  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'INVADER' };
+  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'INVADER', tetris: 'TETRIS', 'flappy-bird': 'BIRD', '2048': '2048' };
 
   return (
     <div className="live-leaderboard">

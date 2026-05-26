@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 
-export default function ScorecardImage({ gameId, gameTitle, score, rank, playerName, topScores }) {
+export default function ScorecardImage({ gameId, gameTitle, score, rank, playerName, topScores, scoreId, challengeId }) {
   const canvasRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
   const [copying, setCopying] = useState(false);
@@ -191,22 +191,44 @@ export default function ScorecardImage({ gameId, gameTitle, score, rank, playerN
   };
 
   const shareText = `I scored ${score} in ${title} on ADAM OS! Can you beat me?`;
-  const shareUrl = `${window.location.origin}/games/${gameId}`;
+  const permalink = scoreId ? `${window.location.origin}/scorecard/${scoreId}` : `${window.location.origin}/games/${gameId}`;
+  const challengeUrl = challengeId ? `${window.location.origin}/games/${gameId}?challenge=${challengeId}` : `${window.location.origin}/games/${gameId}`;
+  const challengeText = `Beat my ${score} in ${title} on ADAM OS! ${challengeUrl}`;
 
   const handleTweet = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    const url = scoreId
+      ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(permalink)}`
+      : `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(challengeUrl)}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const handleChallengeTweet = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(challengeText)}`;
     window.open(url, '_blank', 'width=600,height=400');
   };
 
   const handleNativeShare = async () => {
     if (typeof navigator.share === 'function') {
       try {
-        await navigator.share({ title: `ADAM OS - ${title}`, text: shareText, url: shareUrl });
+        await navigator.share({ title: `ADAM OS - ${title}`, text: shareText, url: permalink });
       } catch {}
     } else {
-      // Fallback: copy link
       try {
-        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        await navigator.clipboard.writeText(`${shareText} ${permalink}`);
+        setShared(true);
+        setTimeout(() => setShared(false), 2500);
+      } catch {}
+    }
+  };
+
+  const handleChallengeShare = async () => {
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: `Beat my ${title} score!`, text: challengeText, url: challengeUrl });
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(challengeText);
         setShared(true);
         setTimeout(() => setShared(false), 2500);
       } catch {}
@@ -229,9 +251,19 @@ export default function ScorecardImage({ gameId, gameTitle, score, rank, playerN
           𝕏 SHARE ON X
         </button>
         <button className="share-btn share-btn-native" onClick={handleNativeShare}>
-          📤 SHARE LINK
+          📤 SHARE SCORECARD
         </button>
       </div>
+      {challengeId && (
+        <div className="share-buttons share-buttons-social">
+          <button className="share-btn share-btn-twitter" onClick={handleChallengeTweet}>
+            ⚔️ CHALLENGE ON X
+          </button>
+          <button className="share-btn share-btn-native" onClick={handleChallengeShare}>
+            📤 CHALLENGE LINK
+          </button>
+        </div>
+      )}
       <p className="share-hint">Share your score with the world</p>
     </div>
   );

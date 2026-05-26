@@ -23,7 +23,7 @@ export default function SnakePage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
+  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -80,7 +80,7 @@ export default function SnakePage() {
   const handleGameOver = () => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, score).then(rank => setFinalRank(rank));
+      submitScore(name, score).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -352,7 +352,7 @@ export default function SnakePage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
       </div>

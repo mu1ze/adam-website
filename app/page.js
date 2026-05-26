@@ -4,6 +4,7 @@ import CommandPalette from '@/components/CommandPalette';
 import Footer from '@/components/Footer';
 import HomeClient from './HomeClient';
 import LiveLeaderboard from '@/components/LiveLeaderboard';
+import LiveActivityFeed from '@/components/LiveActivityFeed';
 
 export const metadata = {
   title: 'ADAM OS - Retro Terminal Arcade & AI Assistant',
@@ -148,6 +149,9 @@ export default function HomePage() {
           </p>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <LiveLeaderboard />
+          </div>
+          <div style={{ maxWidth: '600px', margin: '12px auto 0' }}>
+            <LiveActivityFeed />
           </div>
           <div style={{ textAlign: 'center', marginTop: '16px' }}>
             <Link href="/games" style={{ color: 'var(--primary)', fontSize: '14px', textDecoration: 'none' }}>

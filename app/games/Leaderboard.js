@@ -13,8 +13,9 @@ import { useState, useEffect, useCallback } from 'react';
 export default function Leaderboard({ gameId, currentScore, playerName }) {
   const [scores, setScores] = useState([]);
   const [newRank, setNewRank] = useState(-1);
+  const [scoreId, setScoreId] = useState(null);
+  const [challengeId, setChallengeId] = useState(null);
 
-  // Load scores
   useEffect(() => {
     fetch(`/api/scores?game=${gameId}`)
       .then(res => res.json())
@@ -26,9 +27,6 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
       .catch((err) => console.error("Failed to load scores", err));
   }, [gameId]);
 
-  /**
-   * Submit a new score. Returns a promise for the rank (0-indexed) or -1 if not top 50.
-   */
   const submitScore = useCallback(async (name, score) => {
     try {
       const res = await fetch('/api/scores', {
@@ -40,16 +38,18 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
       if (data.success) {
         setScores(data.scores);
         setNewRank(data.rank);
+        setScoreId(data.id || null);
+        setChallengeId(data.challengeId || null);
         setTimeout(() => setNewRank(-1), 3000);
-        return data.rank;
+        return { rank: data.rank, id: data.id, challengeId: data.challengeId };
       }
-      return -1;
+      return { rank: -1, id: null, challengeId: null };
     } catch {
-      return -1;
+      return { rank: -1, id: null, challengeId: null };
     }
   }, [gameId]);
 
-  return { scores, submitScore, newRank, LeaderboardUI: LeaderboardDisplay, setScores };
+  return { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI: LeaderboardDisplay, setScores };
 }
 
 /**

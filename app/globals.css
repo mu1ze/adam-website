@@ -671,6 +671,95 @@ footer { text-align: center; padding: 40px 20px; color: var(--text-dim); font-si
   color: var(--text-dim);
 }
 
+/* ── Live Activity Feed ── */
+.live-activity-feed {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.live-activity-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  background: rgba(0, 255, 136, 0.04);
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.live-activity-title {
+  color: var(--primary);
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.live-activity-subtitle {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.live-activity-empty {
+  color: var(--text-dim);
+  padding: 24px 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.live-activity-list {
+  padding: 4px 0;
+}
+
+.live-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  transition: background 0.3s;
+}
+
+.live-activity-row:hover {
+  background: rgba(0, 255, 136, 0.02);
+}
+
+.live-activity-indicator {
+  color: var(--primary);
+  font-size: 10px;
+}
+
+.live-activity-name {
+  color: var(--text);
+  font-weight: bold;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-activity-action {
+  color: var(--text-dim);
+}
+
+.live-activity-score {
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.live-activity-game {
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.live-activity-time {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-left: auto;
+}
+
 /* ── Scorecard Image (Game Over Share) ── */
 .share-section {
   margin-top: 20px;

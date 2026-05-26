@@ -20,7 +20,7 @@ export default function SpaceInvadersPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
+  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -83,14 +83,14 @@ export default function SpaceInvadersPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, finalScore).then(rank => setFinalRank(rank));
+      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
     }
   };
 
   const handleWin = (finalScore) => {
     setGameState('WIN');
     if (name) {
-      submitScore(name, finalScore).then(rank => setFinalRank(rank));
+      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -425,7 +425,7 @@ export default function SpaceInvadersPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
 
@@ -442,7 +442,7 @@ export default function SpaceInvadersPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>NEXT WAVE</button>
-            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
       </div>

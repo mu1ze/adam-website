@@ -48,15 +48,17 @@ function addTile(board) {
 
 function slide(row) {
   let arr = row.filter(v => v);
+  let gained = 0;
   for (let i = 0; i < arr.length - 1; i++) {
     if (arr[i] === arr[i + 1]) {
+      gained += arr[i] * 2;
       arr[i] *= 2;
       arr[i + 1] = 0;
     }
   }
   arr = arr.filter(v => v);
   while (arr.length < SIZE) arr.push(0);
-  return arr;
+  return { result: arr, gained };
 }
 
 function moveBoard(board, direction) {
@@ -66,24 +68,25 @@ function moveBoard(board, direction) {
 
   if (direction === 'left' || direction === 'right') {
     for (let r = 0; r < SIZE; r++) {
-      let row = newBoard[r];
+      let row = [...newBoard[r]];
       if (direction === 'right') row = row.reverse();
-      const slided = slide(row);
+      const { result: slided, gained } = slide(row);
       const expected = direction === 'right' ? slided.reverse() : slided;
       if (newBoard[r].some((v, i) => v !== expected[i])) moved = true;
-      scoreGain += slided.reduce((a, b) => a + (b > 0 ? b : 0), 0) - row.reduce((a, b) => a + (b > 0 ? b : 0), 0);
+      scoreGain += gained;
       newBoard[r] = expected;
     }
   } else {
     for (let c = 0; c < SIZE; c++) {
       let col = newBoard.map(r => r[c]);
       if (direction === 'down') col = col.reverse();
-      const slided = slide(col);
+      const { result: slided, gained } = slide(col);
       const expected = direction === 'down' ? slided.reverse() : slided;
       for (let r = 0; r < SIZE; r++) {
         if (newBoard[r][c] !== expected[r]) moved = true;
         newBoard[r][c] = expected[r];
       }
+      scoreGain += gained;
     }
   }
 
@@ -104,7 +107,7 @@ export default function TwoZeroFourEightPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, LeaderboardUI } = Leaderboard({ gameId: '2048' });
+  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: '2048' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -147,7 +150,7 @@ export default function TwoZeroFourEightPage() {
     if (!state.hasWon && state.board.some(r => r.some(v => v >= 2048))) {
       state.hasWon = true;
       setGameState('WIN');
-      if (name) submitScore(name, state.score).then(rank => setFinalRank(rank));
+      if (name) submitScore(name, state.score).then(result => setFinalRank(result.rank));
     }
 
     if (!hasMoves(state.board)) {
@@ -162,7 +165,7 @@ export default function TwoZeroFourEightPage() {
     const state = stateRef.current;
     if (name) {
       const finalScore = state.score || score;
-      submitScore(name, finalScore).then(rank => setFinalRank(rank));
+      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -304,7 +307,7 @@ export default function TwoZeroFourEightPage() {
               <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={() => setGameState('PLAYING')}>CONTINUE</button>
-            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
 
@@ -317,7 +320,7 @@ export default function TwoZeroFourEightPage() {
               <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
       </div>

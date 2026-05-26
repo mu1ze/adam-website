@@ -25,7 +25,7 @@ export default function PongPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const { name, showPrompt, promptComponent, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
+  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
 
   const [gameState, setGameState] = useState('READY'); // READY, PLAYING, GAMEOVER
   const [score, setScore] = useState({ left: 0, right: 0, currentMatch: 0 });
@@ -84,7 +84,7 @@ export default function PongPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, finalScore).then(rank => setFinalRank(rank));
+      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -398,7 +398,7 @@ export default function PongPage() {
             )}
             
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} />
+            <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
       </div>
