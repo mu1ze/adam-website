@@ -22,6 +22,23 @@ export async function ensureSchema() {
       try {
         await client.execute(`ALTER TABLE scores ADD COLUMN challenge_id TEXT`);
       } catch {}
+      await client.execute(`
+        CREATE TABLE IF NOT EXISTS players (
+          name TEXT PRIMARY KEY,
+          password_hash TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
+      `);
+      await client.execute(`
+        CREATE TABLE IF NOT EXISTS achievements (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          achievement_id TEXT NOT NULL,
+          game TEXT,
+          date TEXT NOT NULL,
+          UNIQUE(name, achievement_id)
+        )
+      `);
     })();
   }
   return schemaReady;

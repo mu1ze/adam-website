@@ -19,8 +19,8 @@ const BULLET_HEIGHT = 15;
 export default function SpaceInvadersPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
+  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -83,14 +83,14 @@ export default function SpaceInvadersPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
     }
   };
 
   const handleWin = (finalScore) => {
     setGameState('WIN');
     if (name) {
-      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
     }
   };
 

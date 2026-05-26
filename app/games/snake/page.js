@@ -22,8 +22,8 @@ const INITIAL_DIRECTION = { x: 0, y: -1 };
 export default function SnakePage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
+  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -80,7 +80,7 @@ export default function SnakePage() {
   const handleGameOver = () => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, score).then(result => setFinalRank(result.rank));
+      submitScore(name, score, password).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -268,29 +268,7 @@ export default function SnakePage() {
   return (
     <div className="game-page">
       {/* Name Prompt Modal */}
-      {showPrompt && (
-        <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
-          <div className="name-prompt-box">
-            <h3 className="name-prompt-title">&gt; IDENTIFY_USER</h3>
-            <p className="name-prompt-sub">Enter your callsign for the leaderboard</p>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              setName(formData.get('playername') || 'Guest');
-            }}>
-              <input
-                name="playername"
-                className="name-prompt-input"
-                placeholder="Callsign (max 16 char)"
-                maxLength={16}
-                autoFocus
-                defaultValue={name}
-              />
-              <button type="submit" className="name-prompt-btn">INITIALIZE</button>
-            </form>
-          </div>
-        </div>
-      )}
+      {promptComponent}
 
       {/* Top Bar */}
       <div className="game-top-bar">
@@ -348,6 +326,14 @@ export default function SnakePage() {
             {finalRank >= 0 && (
               <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
                 NEW HIGH SCORE! RANK #{finalRank + 1}
+              </div>
+            )}
+            
+            {awards.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                {awards.map(a => (
+                  <div key={a} className="badge-unlock">{getBadgeEmoji(a)} {getBadgeName(a)} UNLOCKED</div>
+                ))}
               </div>
             )}
             

@@ -24,8 +24,8 @@ const BALL_SPEED_Y = 5;
 export default function PongPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, showPrompt, promptComponent, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
+  const { name, password, showPrompt, promptComponent, setName, changeName } = usePlayerName();
+  const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
 
   const [gameState, setGameState] = useState('READY'); // READY, PLAYING, GAMEOVER
   const [score, setScore] = useState({ left: 0, right: 0, currentMatch: 0 });
@@ -84,7 +84,7 @@ export default function PongPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
     }
   };
 

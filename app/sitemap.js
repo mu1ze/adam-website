@@ -19,6 +19,7 @@ export default function sitemap() {
     { url: '/terminal', lastModified: today, changeFrequency: 'monthly', priority: 0.7 },
     { url: '/docs', lastModified: today, changeFrequency: 'monthly', priority: 0.7 },
     { url: '/ask-adam', lastModified: today, changeFrequency: 'monthly', priority: 0.7 },
+    { url: '/achievements', lastModified: today, changeFrequency: 'weekly', priority: 0.7 },
   ];
 
   const skillRoutes = skills.map(skill => ({

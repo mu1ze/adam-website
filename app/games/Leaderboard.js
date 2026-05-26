@@ -15,6 +15,7 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
   const [newRank, setNewRank] = useState(-1);
   const [scoreId, setScoreId] = useState(null);
   const [challengeId, setChallengeId] = useState(null);
+  const [awards, setAwards] = useState([]);
 
   useEffect(() => {
     fetch(`/api/scores?game=${gameId}`)
@@ -27,12 +28,14 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
       .catch((err) => console.error("Failed to load scores", err));
   }, [gameId]);
 
-  const submitScore = useCallback(async (name, score) => {
+  const submitScore = useCallback(async (name, score, password) => {
     try {
+      const body = { game: gameId, name, score: Math.round(score) };
+      if (password) body.password = password;
       const res = await fetch('/api/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ game: gameId, name, score: Math.round(score) })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (data.success) {
@@ -40,16 +43,20 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
         setNewRank(data.rank);
         setScoreId(data.id || null);
         setChallengeId(data.challengeId || null);
+        setAwards(data.awards || []);
+        if (data.awards?.length > 0) {
+          setTimeout(() => setAwards([]), 6000);
+        }
         setTimeout(() => setNewRank(-1), 3000);
-        return { rank: data.rank, id: data.id, challengeId: data.challengeId };
+        return { rank: data.rank, id: data.id, challengeId: data.challengeId, awards: data.awards };
       }
-      return { rank: -1, id: null, challengeId: null };
+      return { rank: -1, id: null, challengeId: null, awards: [] };
     } catch {
-      return { rank: -1, id: null, challengeId: null };
+      return { rank: -1, id: null, challengeId: null, awards: [] };
     }
   }, [gameId]);
 
-  return { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI: LeaderboardDisplay, setScores };
+  return { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI: LeaderboardDisplay, setScores };
 }
 
 /**

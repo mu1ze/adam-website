@@ -106,8 +106,8 @@ function hasMoves(board) {
 export default function TwoZeroFourEightPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: '2048' });
+  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: '2048' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -150,7 +150,7 @@ export default function TwoZeroFourEightPage() {
     if (!state.hasWon && state.board.some(r => r.some(v => v >= 2048))) {
       state.hasWon = true;
       setGameState('WIN');
-      if (name) submitScore(name, state.score).then(result => setFinalRank(result.rank));
+      if (name) submitScore(name, state.score, password).then(result => setFinalRank(result.rank));
     }
 
     if (!hasMoves(state.board)) {
@@ -165,7 +165,7 @@ export default function TwoZeroFourEightPage() {
     const state = stateRef.current;
     if (name) {
       const finalScore = state.score || score;
-      submitScore(name, finalScore).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
     }
   };
 

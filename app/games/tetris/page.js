@@ -74,8 +74,8 @@ function clearLines(board) {
 export default function TetrisPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, showPrompt, setName, changeName } = usePlayerName();
-  const { scores, submitScore, newRank, scoreId, challengeId, LeaderboardUI } = Leaderboard({ gameId: 'tetris' });
+  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'tetris' });
 
   const [gameState, setGameState] = useState('READY');
   const [score, setScore] = useState(0);
@@ -112,7 +112,7 @@ export default function TetrisPage() {
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
-    if (name) submitScore(name, score).then(result => setFinalRank(result.rank));
+    if (name) submitScore(name, score, password).then(result => setFinalRank(result.rank));
   };
 
   useEffect(() => {
