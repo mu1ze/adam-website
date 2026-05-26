@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function TerminalPage() {
   return (
-    <div style={{ background: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ padding: '20px 20px 0', textAlign: 'center', borderBottom: '1px solid #228B22' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ padding: '20px 20px 0', textAlign: 'center', borderBottom: '1px solid var(--primary)' }}>
         <div className="ascii-art">
 {`╔═══════════════════════════════════════════════════════════════╗
 ║  █████╗ ███████╗██╗  ██╗    █████╗ ██████╗ █████╗ ███╗   ███╗║

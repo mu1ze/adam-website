@@ -141,17 +141,17 @@ export default function AskAdamClient() {
         }}>
           <div style={{
             background: 'var(--bg-secondary)',
-            border: '1px solid #ffaa00',
+            border: '1px solid var(--warning)',
             borderRadius: '12px',
             padding: '32px',
             maxWidth: '460px',
             width: '90%',
             textAlign: 'center',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 170, 0, 0.08)',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 170, 0, 0.1)',
             fontFamily: '"Courier New", monospace',
           }}>
             <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
-            <h3 style={{ color: '#ffaa00', fontSize: '16px', letterSpacing: '2px', marginBottom: '16px' }}>
+            <h3 style={{ color: 'var(--warning)', fontSize: '16px', letterSpacing: '2px', marginBottom: '16px' }}>
               TESTING PHASE
             </h3>
             <p style={{
@@ -168,8 +168,8 @@ export default function AskAdamClient() {
             <button
               onClick={dismissDisclaimer}
               style={{
-                background: '#ffaa00',
-                color: '#000',
+                background: 'var(--warning)',
+                color: 'var(--bg)',
                 border: 'none',
                 padding: '12px 36px',
                 borderRadius: '6px',

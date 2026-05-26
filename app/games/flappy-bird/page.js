@@ -5,6 +5,7 @@ import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
+import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
 import '../games.css';
 
 const GAME_WIDTH = 400;
@@ -25,6 +26,8 @@ export default function FlappyBirdPage() {
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'flappy-bird' });
 
   const [gameState, setGameState] = useState('READY');
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
@@ -198,6 +201,20 @@ export default function FlappyBirdPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        return;
+      }
+      if (e.key === 'p') {
+        e.preventDefault();
+        const gs = gameStateRef.current;
+        if (gs === 'PLAYING') setGameState('PAUSED');
+        else if (gs === 'PAUSED') setGameState('PLAYING');
+        return;
+      }
       if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); flap(); }
       if (e.key === 'r' && gameState !== 'PLAYING') startGame();
     };
@@ -206,6 +223,12 @@ export default function FlappyBirdPage() {
   }, [gameState]);
 
   const handleTouch = (e) => { e.preventDefault(); flap(); };
+
+  const handlePause = () => {
+    const gs = gameStateRef.current;
+    if (gs === 'PLAYING') setGameState('PAUSED');
+    else if (gs === 'PAUSED') setGameState('PLAYING');
+  };
 
   const handleFullscreen = () => {
     const el = canvasRef.current?.parentElement;
@@ -222,7 +245,7 @@ export default function FlappyBirdPage() {
   };
 
   return (
-    <div className="game-page">
+    <div className="game-page" data-theme="dark">
       {showPrompt && (
         <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
           <div className="name-prompt-box">
@@ -239,14 +262,15 @@ export default function FlappyBirdPage() {
       <div className="game-top-bar">
         <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
         <div className="game-title-bar"><span className="game-title">FLAPPY BIRD</span></div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PauseButton onClick={() => handlePause()} />
           <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>[FULLSCREEN]</span>
           <span className="game-player-name" onClick={changeName}>&gt; {name || 'GUEST'} [CHANGE]</span>
         </div>
       </div>
 
       <div className="game-hud">
-        <div className="hud-item"><div className="hud-label">PIPES PASSED</div><div className="hud-value" style={{ color: '#00ff88' }}>{score}</div></div>
+        <div className="hud-item"><div className="hud-label">PIPES PASSED</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
       </div>
 
       <div className="game-canvas-wrapper" onTouchStart={handleTouch} style={{ touchAction: 'none' }}>
@@ -266,15 +290,37 @@ export default function FlappyBirdPage() {
 
         {gameState === 'GAMEOVER' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#ff4444' }}>BIRD_DOWN</div>
+            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>BIRD_DOWN</div>
             <div className="game-overlay-sub">You hit a pipe.</div>
-            <div className="game-overlay-score" style={{ color: '#00ff88' }}>{score}</div>
+            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
             <ScorecardImage gameId="flappy-bird" gameTitle="FLAPPY BIRD" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
+        )}
+
+        {gameState === 'PAUSED' && (
+          <GamePauseMenu
+            isPaused={true}
+            onResume={() => setGameState('PLAYING')}
+            onFullscreen={handleFullscreen}
+            gameTitle="FLAPPY BIRD"
+            playerName={name}
+            hudItems={[
+              { label: 'PIPES PASSED', value: score, color: 'var(--accent)' },
+            ]}
+            controls={[
+              { keys: ['Space'], desc: 'Flap' },
+              { keys: ['↑'], desc: 'Flap' },
+              { keys: ['R'], desc: 'Restart' },
+            ]}
+            LeaderboardUI={LeaderboardUI}
+            scores={scores}
+            newRank={newRank}
+            gameId="flappy-bird"
+          />
         )}
       </div>
 

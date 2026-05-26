@@ -91,7 +91,7 @@ export default function usePlayerName() {
         <form onSubmit={handleSubmit}>
           <input name="playername" className="name-prompt-input" placeholder="Callsign (max 16 char)" maxLength={16} autoFocus defaultValue={name} />
           <input name="playerpass" className="name-prompt-input" type="password" placeholder="Password (4+ chars)" maxLength={64} style={{ marginTop: '8px' }} />
-          {error && <p style={{ color: '#ff4444', fontSize: '12px', marginTop: '6px' }}>{error}</p>}
+          {error && <p style={{ color: 'var(--error)', fontSize: '12px', marginTop: '6px' }}>{error}</p>}
           <button type="submit" className="name-prompt-btn" style={{ marginTop: '12px' }}>INITIALIZE</button>
         </form>
       </div>

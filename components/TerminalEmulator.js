@@ -530,7 +530,7 @@ export default function TerminalEmulator() {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        background: '#000',
+        background: 'var(--code-bg)',
         fontFamily: '"Courier New", monospace',
         fontSize: isMobile ? '11px' : '14px',
       }}
@@ -571,7 +571,7 @@ export default function TerminalEmulator() {
             gap: '8px',
           }}
         >
-          <span style={{ color: '#228B22', whiteSpace: 'nowrap', fontSize: isMobile ? '10px' : '14px' }}>{isMobile ? '$' : 'adam@neural-core:~$'}</span>
+          <span style={{ color: 'var(--primary)', whiteSpace: 'nowrap', fontSize: isMobile ? '10px' : '14px' }}>{isMobile ? '$' : 'adam@neural-core:~$'}</span>
           <input
             ref={inputRef}
             type="text"
@@ -584,10 +584,10 @@ export default function TerminalEmulator() {
               background: 'transparent',
               border: 'none',
               outline: 'none',
-              color: '#e0e0e0',
+              color: 'var(--text)',
               fontFamily: '"Courier New", monospace',
               fontSize: isMobile ? '11px' : '14px',
-              caretColor: '#228B22',
+              caretColor: 'var(--primary)',
             }}
             spellCheck="false"
             autoComplete="off"

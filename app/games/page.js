@@ -41,7 +41,7 @@ export default function GamesPage() {
           <div className="game-card-body">
             <h2 className="game-card-title">
               <span>PONG</span>
-              <span className="game-lang-badge" style={{ color: '#00ff88', borderColor: '#00ff88' }}>
+              <span className="game-lang-badge" style={{ color: 'var(--accent)', borderColor: 'var(--accent)' }}>
                 EN
               </span>
             </h2>
@@ -58,7 +58,7 @@ export default function GamesPage() {
 
         {/* Snake Card */}
         <Link href="/games/snake" className="game-card">
-          <div className="game-card-preview" style={{ color: '#00ff88' }}>
+          <div className="game-card-preview" style={{ color: 'var(--accent)' }}>
             <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
               █████◉  ◆
             </div>
@@ -80,7 +80,7 @@ export default function GamesPage() {
 
         {/* Alien Invader Card */}
         <Link href="/games/space-invaders" className="game-card">
-          <div className="game-card-preview" style={{ color: '#ff4444' }}>
+          <div className="game-card-preview" style={{ color: 'var(--error)' }}>
             <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
               {'👾👾👾\n 🚀 '}
             </div>
@@ -102,7 +102,7 @@ export default function GamesPage() {
 
         {/* Tetris Card */}
         <Link href="/games/tetris" className="game-card">
-          <div className="game-card-preview" style={{ color: '#00f0f0' }}>
+          <div className="game-card-preview" style={{ color: 'var(--info)' }}>
             <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
               ████████
               ████████
@@ -123,7 +123,7 @@ export default function GamesPage() {
 
         {/* Flappy Bird Card */}
         <Link href="/games/flappy-bird" className="game-card">
-          <div className="game-card-preview" style={{ color: '#00ff88' }}>
+          <div className="game-card-preview" style={{ color: 'var(--accent)' }}>
             <div className="game-card-preview-text" style={{ fontFamily: 'monospace' }}>
               {'   🐦\n |  |'}
             </div>

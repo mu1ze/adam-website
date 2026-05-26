@@ -5,6 +5,7 @@ import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
+import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
 import '../games.css';
 
 const SIZE = 4;
@@ -110,6 +111,8 @@ export default function TwoZeroFourEightPage() {
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: '2048' });
 
   const [gameState, setGameState] = useState('READY');
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
@@ -216,6 +219,20 @@ export default function TwoZeroFourEightPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        return;
+      }
+      if (e.key === 'p') {
+        e.preventDefault();
+        const gs = gameStateRef.current;
+        if (gs === 'PLAYING') setGameState('PAUSED');
+        else if (gs === 'PAUSED') setGameState('PLAYING');
+        return;
+      }
       e.preventDefault();
       if (e.key === 'ArrowLeft') doMove('left');
       else if (e.key === 'ArrowRight') doMove('right');
@@ -241,6 +258,12 @@ export default function TwoZeroFourEightPage() {
     touchStartRef.current = null;
   };
 
+  const handlePause = () => {
+    const gs = gameStateRef.current;
+    if (gs === 'PLAYING') setGameState('PAUSED');
+    else if (gs === 'PAUSED') setGameState('PLAYING');
+  };
+
   const handleFullscreen = () => {
     const el = canvasRef.current?.parentElement;
     if (!el) return;
@@ -256,7 +279,7 @@ export default function TwoZeroFourEightPage() {
   };
 
   return (
-    <div className="game-page">
+    <div className="game-page" data-theme="dark">
       {showPrompt && (
         <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
           <div className="name-prompt-box">
@@ -273,7 +296,8 @@ export default function TwoZeroFourEightPage() {
       <div className="game-top-bar">
         <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
         <div className="game-title-bar"><span className="game-title">2048</span></div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PauseButton onClick={() => handlePause()} />
           <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>[FULLSCREEN]</span>
           <span className="game-player-name" onClick={changeName}>&gt; {name || 'GUEST'} [CHANGE]</span>
         </div>
@@ -304,7 +328,7 @@ export default function TwoZeroFourEightPage() {
             <div className="game-overlay-sub">You reached 2048! Keep going for a higher score.</div>
             <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={() => setGameState('PLAYING')}>CONTINUE</button>
             <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
@@ -313,15 +337,36 @@ export default function TwoZeroFourEightPage() {
 
         {gameState === 'GAMEOVER' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#ff4444' }}>GRIDLOCK</div>
+            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>GRIDLOCK</div>
             <div className="game-overlay-sub">No valid moves remaining.</div>
             <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
             )}
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
             <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
+        )}
+
+        {gameState === 'PAUSED' && (
+          <GamePauseMenu
+            isPaused={true}
+            onResume={() => setGameState('PLAYING')}
+            onFullscreen={handleFullscreen}
+            gameTitle="2048"
+            playerName={name}
+            hudItems={[
+              { label: 'SCORE', value: score, color: '#edc22e' },
+            ]}
+            controls={[
+              { keys: ['←', '↑', '↓', '→'], desc: 'Slide Tiles' },
+              { keys: ['R'], desc: 'Restart' },
+            ]}
+            LeaderboardUI={LeaderboardUI}
+            scores={scores}
+            newRank={newRank}
+            gameId="2048"
+          />
         )}
       </div>
 

@@ -154,7 +154,7 @@ export default function PretextShowcase() {
               <> | Lines at mid({searchState.mid}px): <strong>{searchState.count}</strong>
                 {searchState.count <= maxLines
                   ? <span style={{ color: 'var(--primary)' }}> ✓ fits</span>
-                  : <span style={{ color: '#ff4444' }}> ✗ overflow</span>
+                  : <span style={{ color: 'var(--error)' }}> ✗ overflow</span>
                 }
               </>
             )}
@@ -165,7 +165,7 @@ export default function PretextShowcase() {
           <div style={{
             position: 'relative',
             height: '30px',
-            background: '#000',
+            background: 'var(--code-bg)',
             border: '1px solid var(--border)',
             borderRadius: '4px',
             overflow: 'hidden',
@@ -217,7 +217,7 @@ export default function PretextShowcase() {
               overflowY: 'auto',
               fontSize: '11px',
               fontFamily: '"Courier New", monospace',
-              background: '#000',
+              background: 'var(--code-bg)',
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid var(--border)',

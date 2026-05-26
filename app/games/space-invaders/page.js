@@ -5,6 +5,7 @@ import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
+import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
 import '../games.css';
 
 const GAME_WIDTH = 600;
@@ -23,6 +24,8 @@ export default function SpaceInvadersPage() {
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
 
   const [gameState, setGameState] = useState('READY');
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
@@ -272,6 +275,20 @@ export default function SpaceInvadersPage() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const state = stateRef.current;
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        return;
+      }
+      if (e.key === 'p') {
+        e.preventDefault();
+        const gs = gameStateRef.current;
+        if (gs === 'PLAYING') setGameState('PAUSED');
+        else if (gs === 'PAUSED') setGameState('PLAYING');
+        return;
+      }
       if (e.key === 'ArrowLeft' || e.key === 'a') state.keys.ArrowLeft = true;
       if (e.key === 'ArrowRight' || e.key === 'd') state.keys.ArrowRight = true;
       if (e.key === ' ' || e.key === 'Spacebar') {
@@ -317,6 +334,12 @@ export default function SpaceInvadersPage() {
     stateRef.current.touchTargetX = null;
   };
 
+  const handlePause = () => {
+    const gs = gameStateRef.current;
+    if (gs === 'PLAYING') setGameState('PAUSED');
+    else if (gs === 'PAUSED') setGameState('PLAYING');
+  };
+
   const handleFullscreen = () => {
     const el = canvasRef.current?.parentElement;
     if (!el) return;
@@ -336,7 +359,7 @@ export default function SpaceInvadersPage() {
   };
 
   return (
-    <div className="game-page">
+    <div className="game-page" data-theme="dark">
       {/* Name Prompt Modal */}
       {showPrompt && (
         <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
@@ -368,7 +391,8 @@ export default function SpaceInvadersPage() {
         <div className="game-title-bar">
           <span className="game-title">ALIEN INVADER</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PauseButton onClick={() => handlePause()} />
           <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
@@ -382,7 +406,7 @@ export default function SpaceInvadersPage() {
       <div className="game-hud">
         <div className="hud-item">
           <div className="hud-label">CURRENT SCORE</div>
-          <div className="hud-value" style={{ color: '#00ff88' }}>{score}</div>
+          <div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div>
         </div>
       </div>
 
@@ -414,12 +438,12 @@ export default function SpaceInvadersPage() {
 
         {gameState === 'GAMEOVER' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#ff4444' }}>SHIP_DESTROYED</div>
+            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>SHIP_DESTROYED</div>
             <div className="game-overlay-sub">Earth falls.</div>
-            <div className="game-overlay-score" style={{ color: '#00ff88' }}>{score}</div>
+            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
             
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
                 NEW HIGH SCORE! RANK #{finalRank + 1}
               </div>
             )}
@@ -431,12 +455,12 @@ export default function SpaceInvadersPage() {
 
         {gameState === 'WIN' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#00ff88' }}>SECTOR_CLEARED</div>
+            <div className="game-overlay-title" style={{ color: 'var(--accent)' }}>SECTOR_CLEARED</div>
             <div className="game-overlay-sub">Threat neutralized.</div>
-            <div className="game-overlay-score" style={{ color: '#00ff88' }}>{score}</div>
+            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
             
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
                 NEW HIGH SCORE! RANK #{finalRank + 1}
               </div>
             )}
@@ -445,9 +469,28 @@ export default function SpaceInvadersPage() {
             <ScorecardImage gameId="space-invaders" gameTitle="ALIEN INVADER" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
         )}
+
+        {gameState === 'PAUSED' && (
+          <GamePauseMenu
+            isPaused={true}
+            onResume={() => setGameState('PLAYING')}
+            onFullscreen={handleFullscreen}
+            gameTitle="ALIEN INVADER"
+            playerName={name}
+            hudItems={[
+              { label: 'SCORE', value: score, color: 'var(--accent)' },
+            ]}
+            controls={[
+              { keys: ['Arrows'], desc: 'Move' },
+              { keys: ['Space'], desc: 'Shoot' },
+            ]}
+            LeaderboardUI={LeaderboardUI}
+            scores={scores}
+            newRank={newRank}
+            gameId="space-invaders"
+          />
+        )}
       </div>
-
-
 
       {/* Leaderboard Section (Desktop) */}
       <div className="game-bottom">

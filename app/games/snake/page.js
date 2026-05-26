@@ -5,6 +5,7 @@ import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
+import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
 import '../games.css';
 
 const GRID_SIZE = 20; // 20x20 grid
@@ -26,6 +27,8 @@ export default function SnakePage() {
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
 
   const [gameState, setGameState] = useState('READY');
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
@@ -91,6 +94,7 @@ export default function SnakePage() {
       return;
     }
 
+    const state = stateRef.current;
     const update = () => {
       const now = Date.now();
       const state = stateRef.current;
@@ -207,6 +211,16 @@ export default function SnakePage() {
       } else if (e.key === ' ' && gameState === 'READY') {
         startGame();
         e.preventDefault();
+      } else if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+      } else if (e.key === 'p') {
+        e.preventDefault();
+        const gs = gameStateRef.current;
+        if (gs === 'PLAYING') setGameState('PAUSED');
+        else if (gs === 'PAUSED') setGameState('PLAYING');
       } else if (e.key === 'r') {
         startGame();
       }
@@ -247,6 +261,12 @@ export default function SnakePage() {
     touchStartRef.current = null;
   };
 
+  const handlePause = () => {
+    const gs = gameStateRef.current;
+    if (gs === 'PLAYING') setGameState('PAUSED');
+    else if (gs === 'PAUSED') setGameState('PLAYING');
+  };
+
   const handleFullscreen = () => {
     const el = canvasRef.current?.parentElement;
     if (!el) return;
@@ -266,7 +286,7 @@ export default function SnakePage() {
   };
 
   return (
-    <div className="game-page">
+    <div className="game-page" data-theme="dark">
       {/* Name Prompt Modal */}
       {promptComponent}
 
@@ -276,7 +296,8 @@ export default function SnakePage() {
         <div className="game-title-bar">
           <span className="game-title">SNAKE</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PauseButton onClick={() => handlePause()} />
           <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
@@ -290,7 +311,7 @@ export default function SnakePage() {
       <div className="game-hud">
         <div className="hud-item">
           <div className="hud-label">CURRENT SCORE</div>
-          <div className="hud-value" style={{ color: '#00ff88' }}>{score}</div>
+          <div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div>
         </div>
       </div>
 
@@ -319,12 +340,12 @@ export default function SnakePage() {
 
         {gameState === 'GAMEOVER' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#ff4444' }}>CRITICAL_CRASH</div>
+            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>CRITICAL_CRASH</div>
             <div className="game-overlay-sub">Collision detected.</div>
-            <div className="game-overlay-score" style={{ color: '#00ff88' }}>{score}</div>
+            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
             
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
                 NEW HIGH SCORE! RANK #{finalRank + 1}
               </div>
             )}
@@ -340,6 +361,28 @@ export default function SnakePage() {
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
             <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
+        )}
+
+        {gameState === 'PAUSED' && (
+          <GamePauseMenu
+            isPaused={true}
+            onResume={() => setGameState('PLAYING')}
+            onFullscreen={handleFullscreen}
+            gameTitle="SNAKE"
+            playerName={name}
+            hudItems={[
+              { label: 'SCORE', value: score, color: 'var(--accent)' },
+            ]}
+            controls={[
+              { keys: ['W', 'A', 'S', 'D'], desc: 'Move' },
+              { keys: ['Arrows'], desc: 'Move' },
+              { keys: ['R'], desc: 'Restart' },
+            ]}
+            LeaderboardUI={LeaderboardUI}
+            scores={scores}
+            newRank={newRank}
+            gameId="snake"
+          />
         )}
       </div>
 

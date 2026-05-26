@@ -6,6 +6,7 @@ import Leaderboard from '../Leaderboard';
 import { getRotatingChar, getSmoothColor, getCurrentLanguage, getLanguageColor } from '../textLanguages';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
+import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
 import '../games.css';
 
 const FONT = 'bold 24px "Courier New", monospace';
@@ -26,7 +27,9 @@ export default function PongPage() {
   const { name, password, showPrompt, promptComponent, setName, changeName } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
 
-  const [gameState, setGameState] = useState('READY'); // READY, PLAYING, GAMEOVER
+  const [gameState, setGameState] = useState('READY'); // READY, PLAYING, PAUSED, GAMEOVER
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
   const [score, setScore] = useState({ left: 0, right: 0, currentMatch: 0 });
   const [finalRank, setFinalRank] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
@@ -67,6 +70,12 @@ export default function PongPage() {
     };
     setScore({ left: 0, right: 0, currentMatch: 0 });
     setGameState('PLAYING');
+  };
+
+  const handlePause = () => {
+    const gs = gameStateRef.current;
+    if (gs === 'PLAYING') setGameState('PAUSED');
+    else if (gs === 'PAUSED') setGameState('PLAYING');
   };
 
   const handleGameOver = (finalScore) => {
@@ -232,6 +241,20 @@ export default function PongPage() {
   // Input Handling
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        return;
+      }
+      if (e.key === 'p') {
+        e.preventDefault();
+        const gs = gameStateRef.current;
+        if (gs === 'PLAYING') setGameState('PAUSED');
+        else if (gs === 'PAUSED') setGameState('PLAYING');
+        return;
+      }
       if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
         stateRef.current.keys[e.key] = true;
@@ -295,7 +318,7 @@ export default function PongPage() {
   };
 
   return (
-    <div className="game-page">
+    <div className="game-page" data-theme="dark">
       {/* Name Prompt Modal */}
       {showPrompt && (
         <div className="name-prompt-overlay">
@@ -327,7 +350,8 @@ export default function PongPage() {
         <div className="game-title-bar">
           <span className="game-title">PONG</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <PauseButton onClick={() => handlePause()} />
           <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
           </span>
@@ -375,12 +399,12 @@ export default function PongPage() {
 
         {gameState === 'GAMEOVER' && (
           <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#ff4444' }}>SYSTEM_FAILURE</div>
+            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>SYSTEM_FAILURE</div>
             <div className="game-overlay-sub">You missed the ball.</div>
             <div className="game-overlay-score" style={{ color: getSmoothColor() }}>{score.right}</div>
             
             {finalRank >= 0 && (
-              <div style={{ color: '#00ff88', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
+              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
                 NEW HIGH SCORE! RANK #{finalRank + 1}
               </div>
             )}
@@ -388,6 +412,28 @@ export default function PongPage() {
             <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
             <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
           </div>
+        )}
+
+        {gameState === 'PAUSED' && (
+          <GamePauseMenu
+            isPaused={true}
+            onResume={() => setGameState('PLAYING')}
+            onFullscreen={handleFullscreen}
+            gameTitle="PONG"
+            playerName={name}
+            hudItems={[
+              { label: 'SCORE', value: score.right, color: 'var(--accent)' },
+            ]}
+            controls={[
+              { keys: ['↑', '↓'], desc: 'Move Paddle' },
+              { keys: ['Mouse'], desc: 'Hover to Follow' },
+              { keys: ['R'], desc: 'Restart' },
+            ]}
+            LeaderboardUI={LeaderboardUI}
+            scores={scores}
+            newRank={newRank}
+            gameId="pong"
+          />
         )}
       </div>
 

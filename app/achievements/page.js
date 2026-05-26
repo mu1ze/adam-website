@@ -86,7 +86,7 @@ export default function AchievementsPage() {
           />
           <button type="submit" style={{
             background: 'var(--primary)',
-            color: '#000',
+            color: 'var(--bg)',
             border: 'none',
             padding: '10px 20px',
             fontFamily: 'inherit',
