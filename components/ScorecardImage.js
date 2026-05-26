@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
+import { GAME_NAMES } from '@/data/games';
 
 export default function ScorecardImage({ gameId, gameTitle, score, rank, playerName, topScores, scoreId, challengeId }) {
   const canvasRef = useRef(null);
@@ -7,8 +8,7 @@ export default function ScorecardImage({ gameId, gameTitle, score, rank, playerN
   const [copying, setCopying] = useState(false);
   const [shared, setShared] = useState(false);
 
-  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'ALIEN INVADER', tetris: 'TETRIS', 'flappy-bird': 'FLAPPY BIRD', '2048': '2048' };
-  const title = gameTitle || gameNames[gameId] || gameId.toUpperCase();
+  const title = gameTitle || GAME_NAMES[gameId] || gameId.toUpperCase();
   const rankNum = rank >= 0 ? rank + 1 : null;
 
   const drawScorecard = () => {

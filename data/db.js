@@ -22,6 +22,9 @@ export async function ensureSchema() {
       try {
         await client.execute(`ALTER TABLE scores ADD COLUMN challenge_id TEXT`);
       } catch {}
+      try {
+        await client.execute(`ALTER TABLE scores ADD COLUMN created_at TEXT`);
+      } catch {}
       await client.execute(`
         CREATE TABLE IF NOT EXISTS players (
           name TEXT PRIMARY KEY,

@@ -89,8 +89,8 @@ export async function POST(request) {
     }
     
     const insertResult = await client.execute({
-      sql: 'INSERT INTO scores (game, name, score, date, challenge_id) VALUES (?, ?, ?, ?, ?)',
-      args: [game, sanitizedName, score, dateStr, challengeId],
+      sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
     });
     const id = insertResult.lastInsertRowid;
     

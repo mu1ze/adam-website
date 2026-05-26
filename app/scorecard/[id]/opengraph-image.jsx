@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import client, { ensureSchema } from '@/data/db';
+import { GAME_NAMES } from '@/data/games';
 
 export const runtime = 'edge';
 export const alt = 'ADAM OS Scorecard';
@@ -19,8 +20,7 @@ export default async function Image({ params }) {
     if (result.rows.length === 0) throw new Error('Not found');
     const score = result.rows[0];
 
-    const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'ALIEN INVADER', tetris: 'TETRIS', 'flappy-bird': 'FLAPPY BIRD', '2048': '2048' };
-    const title = gameNames[score.game] || score.game.toUpperCase();
+    const title = GAME_NAMES[score.game] || score.game.toUpperCase();
 
     return new ImageResponse(
       (

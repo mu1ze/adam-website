@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { GAME_NAMES_COMPACT as GAME_NAMES } from '@/data/games';
 
 export default function LiveLeaderboard() {
   const [scores, setScores] = useState([]);
@@ -24,7 +25,6 @@ export default function LiveLeaderboard() {
   }, []);
 
   const top5 = scores.slice(0, 5);
-  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'INVADER', tetris: 'TETRIS', 'flappy-bird': 'BIRD', '2048': '2048' };
 
   return (
     <div className="live-leaderboard">
@@ -46,7 +46,7 @@ export default function LiveLeaderboard() {
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
               </div>
               <div className="live-col-player">{s.name}</div>
-              <div className="live-col-game">{gameNames[s.game] || s.game}</div>
+              <div className="live-col-game">{GAME_NAMES[s.game] || s.game}</div>
               <div className="live-col-score">{s.score.toLocaleString()}</div>
             </div>
           ))

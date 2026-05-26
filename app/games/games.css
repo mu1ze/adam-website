@@ -116,6 +116,77 @@
   z-index: 1;
 }
 
+/* ── Fullscreen Mode ── */
+.game-page:fullscreen {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.game-page:fullscreen .game-top-bar {
+  padding: 6px 14px;
+  background: rgba(10, 10, 10, 0.98);
+}
+
+.game-page:fullscreen .game-title { font-size: 13px; }
+.game-page:fullscreen .game-player-name { font-size: 10px; }
+.game-page:fullscreen .game-back-link { font-size: 11px; }
+
+.game-page:fullscreen .game-hud {
+  padding: 6px 14px;
+  gap: 20px;
+}
+
+.game-page:fullscreen .hud-label { font-size: 8px; }
+.game-page:fullscreen .hud-value { font-size: 16px; }
+
+.game-page:fullscreen .game-canvas-wrapper {
+  flex: 1;
+  padding: 0;
+  align-items: stretch;
+}
+
+.game-page:fullscreen .game-canvas {
+  border-radius: 0;
+  border: none;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  object-fit: contain;
+}
+
+.game-page:fullscreen .game-bottom,
+.game-page:fullscreen .leaderboard-toggle-btn,
+.game-page:fullscreen .game-controls-hint,
+.game-page:fullscreen .game-fullscreen-btn {
+  display: none;
+}
+
+.game-page:fullscreen .game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.92);
+}
+
+/* WebKit fullscreen */
+.game-page:-webkit-full-screen {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.game-page:-webkit-full-screen .game-top-bar { padding: 6px 14px; }
+.game-page:-webkit-full-screen .game-canvas-wrapper { flex: 1; padding: 0; align-items: stretch; }
+.game-page:-webkit-full-screen .game-canvas { border-radius: 0; border: none; width: 100% !important; height: 100% !important; max-width: 100% !important; object-fit: contain; }
+.game-page:-webkit-full-screen .game-bottom,
+.game-page:-webkit-full-screen .leaderboard-toggle-btn,
+.game-page:-webkit-full-screen .game-controls-hint,
+.game-page:-webkit-full-screen .game-fullscreen-btn { display: none; }
+
 .game-card-body {
   padding: 20px 24px 24px;
 }

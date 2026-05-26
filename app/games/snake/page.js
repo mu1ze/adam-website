@@ -332,7 +332,7 @@ export default function SnakePage() {
             {awards.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 {awards.map(a => (
-                  <div key={a} className="badge-unlock">{getBadgeEmoji(a)} {getBadgeName(a)} UNLOCKED</div>
+                  <div key={a} className="badge-unlock">🏅 {a.replace(/_/g, ' ').toUpperCase()} UNLOCKED</div>
                 ))}
               </div>
             )}

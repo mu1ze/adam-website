@@ -1,4 +1,5 @@
 import client, { ensureSchema } from '@/data/db';
+import { GAME_NAMES } from '@/data/games';
 
 export default async function ScorecardPage({ params }) {
   const { id } = await params;
@@ -45,8 +46,7 @@ export default async function ScorecardPage({ params }) {
     );
   }
 
-  const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'ALIEN INVADER', tetris: 'TETRIS', 'flappy-bird': 'FLAPPY BIRD', '2048': '2048' };
-  const gameTitle = gameNames[score.game] || score.game.toUpperCase();
+  const gameTitle = GAME_NAMES[score.game] || score.game.toUpperCase();
   const rankNum = rank + 1;
   const medal = rankNum === 1 ? '🥇' : rankNum === 2 ? '🥈' : rankNum === 3 ? '🥉' : `#${rankNum}`;
 

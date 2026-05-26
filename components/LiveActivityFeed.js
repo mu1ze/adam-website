@@ -1,12 +1,23 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { GAME_NAMES_COMPACT as GAME_NAMES } from '@/data/games';
 
-const gameNames = { pong: 'PONG', snake: 'SNAKE', 'space-invaders': 'INVADER', tetris: 'TETRIS', 'flappy-bird': 'BIRD', '2048': '2048' };
+function timeAgo(isoString) {
+  if (!isoString) return '';
+  const diff = Date.now() - new Date(isoString).getTime();
+  const sec = Math.floor(diff / 1000);
+  if (sec < 10) return 'just now';
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr / 24)}d ago`;
+}
 
 export default function LiveActivityFeed() {
   const [activities, setActivities] = useState([]);
   const [playerCount, setPlayerCount] = useState(0);
-  const prevRef = useRef([]);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -50,10 +61,7 @@ export default function LiveActivityFeed() {
       </div>
       <div className="live-activity-list">
         {latest.map((a, i) => {
-          const game = gameNames[a.game] || a.game.toUpperCase();
-          const minutes = Math.floor((Date.now() - (a.id * 1000 || Date.now())) / 60000);
-          const timeAgo = minutes < 1 ? 'just now' : minutes === 1 ? '1m ago' : `${Math.min(minutes, 59)}m ago`;
-
+          const game = GAME_NAMES[a.game] || a.game.toUpperCase();
           return (
             <div key={`${a.id || i}-${a.name}`} className="live-activity-row">
               <span className="live-activity-indicator">◈</span>
@@ -62,7 +70,7 @@ export default function LiveActivityFeed() {
               <span className="live-activity-score">{a.score.toLocaleString()}</span>
               <span className="live-activity-action">in</span>
               <span className="live-activity-game">{game}</span>
-              <span className="live-activity-time">{timeAgo}</span>
+              <span className="live-activity-time">{timeAgo(a.created_at)}</span>
             </div>
           );
         })}

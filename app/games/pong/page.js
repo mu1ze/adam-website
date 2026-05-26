@@ -1,7 +1,6 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { prepare, layout, prepareWithSegments, layoutWithLines } from '@chenglou/pretext';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import { getRotatingChar, getSmoothColor, getCurrentLanguage, getLanguageColor } from '../textLanguages';
@@ -47,24 +46,13 @@ export default function PongPage() {
     startTime: Date.now()
   });
 
-  // PreText measurements cache
-  const measureRef = useRef({});
+  // PreText measurements cache — removed (dead code)
 
   useEffect(() => {
     setIsMobile(window.innerWidth <= 768);
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const measureTextElement = useCallback((text, font, cacheKey) => {
-    if (!measureRef.current[cacheKey]) {
-      const prepared = prepare(text, font);
-      const { height } = layout(prepared, 1000, parseInt(font.match(/\d+px/)[0]));
-      // Note: width would require layoutWithLines or simple measureText, but pretext handles height!
-      measureRef.current[cacheKey] = { prepared, height };
-    }
-    return measureRef.current[cacheKey];
   }, []);
 
   const startGame = () => {
