@@ -1,9 +1,6 @@
+'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Achievements - ADAM Arcade',
-  description: 'View all ADAM arcade achievements and badges.',
-};
 
 const ALL_BADGES = [
   { id: 'first_score', name: 'FIRST_BLOOD', desc: 'Submit your first score', emoji: '🩸' },
@@ -20,39 +17,134 @@ const ALL_BADGES = [
 ];
 
 export default function AchievementsPage() {
+  const [name, setName] = useState('');
+  const [earned, setEarned] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('adam_player_name');
+    if (stored) {
+      setName(stored);
+      fetchBadges(stored);
+    }
+  }, []);
+
+  const fetchBadges = async (playerName) => {
+    if (!playerName) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/achievements?name=${encodeURIComponent(playerName)}`);
+      const data = await res.json();
+      if (data.success) {
+        setEarned(data.earned);
+      }
+    } catch {}
+    setLoading(false);
+    setSearched(true);
+  };
+
+  const handleLookup = (e) => {
+    e.preventDefault();
+    const input = e.target.playername.value.trim();
+    if (input) {
+      setName(input);
+      fetchBadges(input);
+    }
+  };
+
+  const earnedSet = new Set(earned);
+  const unlockedCount = earned.length;
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: '"Courier New", monospace', padding: '40px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <Link href="/" style={{ color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px' }}>← RETURN_TO_HUB</Link>
         
-        <h1 style={{ color: 'var(--primary)', fontSize: '28px', marginTop: '20px', marginBottom: '8px' }}>&gt; ACHIEVEMENTS &amp; BADGES</h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px' }}>
-          Earn badges by playing games and reaching milestones. Badges appear on your scorecard and are verified server-side.
+        <h1 style={{ color: 'var(--primary)', fontSize: '28px', marginTop: '20px', marginBottom: '8px' }}>&gt; BADGE_VAULT</h1>
+        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '16px' }}>
+          Earn badges by playing games and reaching milestones. Search any player to see their collection.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
-          {ALL_BADGES.map(badge => (
-            <div key={badge.id} style={{
+        <form onSubmit={handleLookup} style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+          <input
+            name="playername"
+            placeholder="Enter player name..."
+            maxLength={16}
+            defaultValue={name}
+            style={{
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              transition: 'all 0.3s',
-            }}>
-              <div style={{ fontSize: '32px', width: '50px', textAlign: 'center' }}>{badge.emoji}</div>
-              <div>
-                <div style={{ color: 'var(--primary)', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>{badge.name}</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '12px', marginTop: '4px' }}>{badge.desc}</div>
+              color: 'var(--text)',
+              padding: '10px 14px',
+              fontFamily: 'inherit',
+              fontSize: '14px',
+              borderRadius: '4px',
+              flex: 1,
+              maxWidth: '280px',
+            }}
+          />
+          <button type="submit" style={{
+            background: 'var(--primary)',
+            color: '#000',
+            border: 'none',
+            padding: '10px 20px',
+            fontFamily: 'inherit',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            letterSpacing: '1px',
+          }}>
+            {loading ? '...' : 'LOOKUP'}
+          </button>
+        </form>
+
+        {searched && (
+          <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginBottom: '20px' }}>
+            &gt; {name}: {unlockedCount}/{ALL_BADGES.length} badges earned
+          </p>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' }}>
+          {ALL_BADGES.map(badge => {
+            const unlocked = earnedSet.has(badge.id);
+            return (
+              <div key={badge.id} style={{
+                background: unlocked ? 'var(--bg-secondary)' : 'rgba(255,255,255,0.02)',
+                border: unlocked ? '1px solid var(--primary)' : '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                opacity: unlocked ? 1 : 0.4,
+                filter: unlocked ? 'none' : 'grayscale(1)',
+                transition: 'all 0.3s',
+              }}>
+                <div style={{ fontSize: '28px', width: '44px', textAlign: 'center' }}>
+                  {unlocked ? badge.emoji : '🔒'}
+                </div>
+                <div>
+                  <div style={{
+                    color: unlocked ? 'var(--primary)' : 'var(--text-dim)',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                  }}>
+                    {unlocked ? badge.name : 'LOCKED'}
+                  </div>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '11px', marginTop: '2px' }}>
+                    {unlocked ? badge.desc : badge.desc}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginTop: '40px', textAlign: 'center' }}>
-          &gt; Badges are awarded automatically when you submit scores. No registration required — your name + password identifies you.
+        <p style={{ color: 'var(--text-dim)', fontSize: '12px', marginTop: '40px', textAlign: 'center' }}>
+          &gt; Badges are awarded automatically when you submit scores. Search any player&apos;s name above.
         </p>
       </div>
     </main>
