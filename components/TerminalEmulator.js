@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { skills } from '@/data/skills';
 import { plugins } from '@/data/plugins';
+import { GAME_NAMES } from '@/data/games';
 
 const BOOT_LINES = [
   { text: 'ADAM Terminal v3.2.1 — Autonomous Digital Assistant Mind', delay: 0 },
@@ -25,9 +26,12 @@ const HELP_TEXT_FULL = `╔═════════════════�
 ║  NAVIGATION                                                  ║
 ║    ls skills          List all installed skills               ║
 ║    ls plugins         List all connected plugins             ║
+║    ls games           List all arcade games                  ║
 ║    cat <name>         Show details of a skill or plugin       ║
-║    cd <page>          Navigate to a page (home/docs/ask/games)║
-║    leaderboard        Show arcade high scores                 ║
+║    cd <page>          Navigate (home/skills/plugins/docs/    ║
+║                       ask/terminal/games/achievements)       ║
+║    leaderboard [game] Show arcade high scores                 ║
+║    badges [name]      List achievements or check player       ║
 ║                                                              ║
 ║  SYSTEM                                                      ║
 ║    status             Show system status & metrics            ║
@@ -44,6 +48,8 @@ const HELP_TEXT_FULL = `╔═════════════════�
 ║    echo <text>        Print text to terminal                  ║
 ║    clear              Clear terminal output                   ║
 ║    history            Show command history                    ║
+║    player [name]      Show or set your callsign               ║
+║    theme [light|dark] Show or switch color theme              ║
 ║    help               Show this help message                  ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝`;
@@ -51,28 +57,32 @@ const HELP_TEXT_FULL = `╔═════════════════�
 const HELP_TEXT_COMPACT = `── COMMANDS ──────────────
 
  NAVIGATION
-  ls skills    — List skills
-  ls plugins   — List plugins
-  cat <name>   — Show details
-  cd <page>    — Navigate
-  leaderboard  — High scores
+  ls skills      — List skills
+  ls plugins     — List plugins
+  ls games       — List games
+  cat <name>     — Show details
+  cd <page>      — Navigate
+  leaderboard    — High scores
+  badges [name]  — Achievements
 
  SYSTEM
-  status       — System stats
-  whoami       — User info
-  uptime       — Uptime
-  neofetch     — System info
+  status         — System stats
+  whoami         — User info
+  uptime         — Uptime
+  neofetch       — System info
 
  PLUGINS
-  connect <p>  — Connect
-  disconnect   — Disconnect
-  connections  — List active
+  connect <p>    — Connect
+  disconnect     — Disconnect
+  connections    — List active
 
  UTILITIES
-  echo <text>  — Print text
-  clear        — Clear screen
-  history      — Past commands
-  help         — This help
+  echo <text>    — Print text
+  clear          — Clear screen
+  history        — Past commands
+  player [name]  — Callsign
+  theme [l|d]    — Color theme
+  help           — This help
 ──────────────────────────`;
 
 const NEOFETCH = `
@@ -222,8 +232,17 @@ export default function TerminalEmulator() {
           });
           addLine('');
           addLine(`  Total: ${plugins.length} plugins (${Object.keys(connections).length} connected).`, 'success');
+        } else if (target === 'games') {
+          addLine('');
+          addLine('  INSTALLED GAMES', 'system');
+          addLine('  ════════════════════════════════════════', 'system');
+          Object.entries(GAME_NAMES).forEach(([slug, title]) => {
+            addLine(`  🎮  ${title.padEnd(16)} [${slug}]`);
+          });
+          addLine('');
+          addLine(`  Total: ${Object.keys(GAME_NAMES).length} games loaded.`, 'success');
         } else {
-          addLine('Usage: ls skills | ls plugins');
+          addLine('Usage: ls skills | ls plugins | ls games');
         }
         break;
       }
@@ -269,11 +288,13 @@ export default function TerminalEmulator() {
           'ask': '/ask-adam', 'ask-adam': '/ask-adam',
           'terminal': '/terminal',
           'games': '/games',
+          'achievements': '/achievements',
+          'badges': '/achievements',
         };
 
         if (!page || !routes[page]) {
           addLine(`cd: ${page || '?'}: No such directory`, 'error');
-          addLine(`  Available: home, skills, plugins, docs, ask, terminal, games`);
+          addLine(`  Available: home, skills, plugins, docs, ask, terminal, games, achievements`);
         } else {
           addLine(`Navigating to ${page}...`, 'success');
           setTimeout(() => router.push(routes[page]), 600);
@@ -411,14 +432,23 @@ export default function TerminalEmulator() {
       case 'leaderboard':
       case 'games': {
         const playerName = localStorage.getItem('adam_player_name') || 'GUEST';
+        const specificGame = args[0]?.toLowerCase();
+        const gameKeys = Object.keys(GAME_NAMES);
+        const gamesToFetch = specificGame ? (gameKeys.includes(specificGame) ? [specificGame] : null) : gameKeys;
+
+        if (!gamesToFetch) {
+          addLine(`leaderboard: ${specificGame}: Unknown game. Available: ${gameKeys.join(', ')}`, 'error');
+          break;
+        }
+
         addLine('');
         addLine('  ARCADE LEADERBOARDS', 'system');
         addLine(`  Callsign: ${playerName}`);
         addLine('  ══════════════════════════════════', 'system');
-        
+
         (async () => {
-          for (const game of ['pong', 'snake', 'space-invaders']) {
-            addLine(`  [ ${game.toUpperCase().replace('-', ' ')} ]`, 'success');
+          for (const game of gamesToFetch) {
+            addLine(`  [ ${GAME_NAMES[game]} ]`, 'success');
             try {
               const res = await fetch(`/api/scores?game=${game}`);
               const data = await res.json();
@@ -429,7 +459,7 @@ export default function TerminalEmulator() {
                 board.slice(0, 5).forEach((s, i) => {
                   addLine(`    #${i + 1} ${s.name.padEnd(16)} ${s.score.toString().padStart(6)}`);
                 });
-                
+
                 const personalScores = board.filter(s => s.name === playerName);
                 if (personalScores.length > 0) {
                   const best = Math.max(...personalScores.map(s => s.score));
@@ -461,9 +491,94 @@ export default function TerminalEmulator() {
         }, 1200);
         break;
 
+      case 'player':
+      case 'name': {
+        if (args.length > 0) {
+          const newName = args.join(' ').substring(0, 16).toUpperCase();
+          localStorage.setItem('adam_player_name', newName);
+          addLine(`  Callsign updated: ${newName}`, 'success');
+        } else {
+          const current = localStorage.getItem('adam_player_name') || 'GUEST';
+          addLine(`  Current callsign: ${current}`);
+          addLine(`  Use "player {name}" to set a new callsign.`);
+        }
+        break;
+      }
+
+      case 'theme': {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        if (args.length > 0) {
+          const newTheme = args[0].toLowerCase();
+          if (newTheme === 'dark' || newTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            addLine(`  Theme set to ${newTheme}.`, 'success');
+          } else {
+            addLine(`theme: ${newTheme}: Unknown theme. Use "light" or "dark".`, 'error');
+          }
+        } else {
+          addLine(`  Current theme: ${currentTheme}`);
+          addLine(`  Use "theme light" or "theme dark" to switch.`);
+        }
+        break;
+      }
+
       case 'sudo':
         addLine('  Nice try. You already have root access.', 'system');
         break;
+
+      case 'badges':
+      case 'achievements': {
+        const ALL_BADGES = [
+          { id: 'first_score', name: 'FIRST_BLOOD', desc: 'Submit your first score' },
+          { id: 'score_100', name: 'CENTURY', desc: 'Score ≥100 in any game' },
+          { id: 'score_1000', name: 'KILO', desc: 'Score ≥1,000 in any game' },
+          { id: 'score_10000', name: 'DECA_KILO', desc: 'Score ≥10,000 in any game' },
+          { id: 'total_5', name: 'ROOKIE', desc: 'Play 5 total games' },
+          { id: 'total_25', name: 'VETERAN', desc: 'Play 25 total games' },
+          { id: 'total_100', name: 'LEGEND', desc: 'Play 100 total games' },
+          { id: 'pong_1000', name: 'PADDLE_MASTER', desc: 'Score ≥1,000 in Pong' },
+          { id: 'tetris_10000', name: 'STACK_KING', desc: 'Score ≥10,000 in Tetris' },
+          { id: 'bird_20', name: 'AERIAL_ACE', desc: 'Pass 20 pipes in Flappy Bird' },
+          { id: 'merge_512', name: 'TILE_ADEPT', desc: 'Score ≥1,000 in 2048' },
+        ];
+        const badgeName = args.join(' ').toLowerCase();
+        const playerName = badgeName || localStorage.getItem('adam_player_name') || 'GUEST';
+        addLine('');
+
+        if (!badgeName) {
+          addLine('  ALL ACHIEVEMENTS', 'system');
+          addLine('  ════════════════════════════════════════', 'system');
+          ALL_BADGES.forEach(b => {
+            addLine(`  ${b.name.padEnd(16)} ${b.desc}`);
+          });
+          addLine('');
+          addLine(`  Total: ${ALL_BADGES.length} achievements available.`, 'success');
+          addLine(`  Use "badges <name>" to check earned badges for a player.`);
+          break;
+        }
+
+        addLine(`  Fetching badges for ${playerName}...`, 'system');
+        (async () => {
+          try {
+            const res = await fetch(`/api/achievements?name=${encodeURIComponent(playerName)}`);
+            const data = await res.json();
+            const earned = data.success ? (data.earned || []) : [];
+            addLine('');
+            addLine(`  BADGES — ${playerName}`, 'system');
+            addLine('  ════════════════════════════════════════', 'system');
+            ALL_BADGES.forEach(b => {
+              const isEarned = earned.includes(b.id);
+              addLine(`  ${isEarned ? '●' : '○'} ${b.name.padEnd(16)} ${b.desc}`, isEarned ? 'success' : 'output');
+            });
+            addLine('');
+            addLine(`  Earned: ${earned.length}/${ALL_BADGES.length}`, earned.length > 0 ? 'success' : 'output');
+          } catch {
+            addLine('  Error fetching achievements.', 'error');
+          }
+        })();
+        break;
+      }
 
       case 'exit':
         addLine('  Closing terminal session...', 'system');
@@ -507,7 +622,7 @@ export default function TerminalEmulator() {
       e.preventDefault();
       // Basic tab completion
       const partial = input.toLowerCase();
-      const allCommands = ['help', 'clear', 'ls', 'cat', 'cd', 'status', 'whoami', 'uptime', 'neofetch', 'connect', 'disconnect', 'connections', 'echo', 'history', 'date', 'ping', 'leaderboard', 'exit'];
+      const allCommands = ['help', 'clear', 'ls', 'cat', 'cd', 'status', 'whoami', 'uptime', 'neofetch', 'connect', 'disconnect', 'connections', 'echo', 'history', 'date', 'ping', 'leaderboard', 'games', 'badges', 'achievements', 'player', 'name', 'theme', 'sudo', 'exit'];
       const match = allCommands.find(c => c.startsWith(partial));
       if (match) setInput(match + ' ');
     }

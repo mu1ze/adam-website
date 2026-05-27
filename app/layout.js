@@ -3,6 +3,11 @@ import ThemeProvider from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'http://localhost:3000'),
   title: "ADAM OS - Autonomous Digital Assistant Mind",
