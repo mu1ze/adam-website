@@ -60,7 +60,7 @@ function getSystemPrompt(mood) {
 
 export async function POST(req) {
   try {
-    const { messages, mood: currentMood, webSearch } = await req.json();
+    const { messages, mood: currentMood } = await req.json();
 
     const apiKey = process.env.ORCA_API_KEY;
 
@@ -83,50 +83,6 @@ export async function POST(req) {
 
     const systemPrompt = getSystemPrompt(newMood);
 
-    // Step 1: Web search via Gemini (injected silently before DeepSeek)
-    let searchResults = null;
-    if (webSearch && latestUserMsg) {
-      try {
-        const searchRes = await fetch('https://api.orcarouter.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
-            messages: [{ role: 'user', content: latestUserMsg.content }],
-            tools: [{ type: 'function', function: { name: 'googleSearch' } }],
-          }),
-        });
-
-        if (searchRes.ok) {
-          const searchData = await searchRes.json();
-          const content = searchData.choices?.[0]?.message?.content;
-          if (content) {
-            searchResults = content.length > 8000 ? content.slice(0, 8000) + '...' : content;
-          }
-        } else {
-          const errBody = await searchRes.json().catch(() => ({}));
-          console.error('Gemini search failed:', searchRes.status, JSON.stringify(errBody));
-        }
-      } catch (searchErr) {
-        console.error('Gemini search error:', searchErr);
-      }
-    }
-
-    // Step 2: Build main messages with personality + optional search context
-    const mainMessages = [{ role: 'system', content: systemPrompt }];
-
-    if (searchResults) {
-      mainMessages.push({
-        role: 'system',
-        content: `[Web Search Results]\n${searchResults}\n[/Web Search Results]\n\nUse the above web search results to answer the user's question. Incorporate the information naturally if relevant.`,
-      });
-    }
-
-    mainMessages.push(...messages);
-
     const response = await fetch('https://api.orcarouter.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -134,16 +90,18 @@ export async function POST(req) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-chat',
-        messages: mainMessages,
-        temperature: newMood === 'hostile' ? 0.95 : 0.7,
+        model: 'deepseek/deepseek-v4-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages
+        ],
+        temperature: newMood === 'hostile' ? 0.95 : 0.7, // more creative when roasting
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('OrcaRouter error:', response.status, JSON.stringify(errorData));
-      throw new Error(errorData.error?.code + ': ' + (errorData.error?.message || errorData.message || 'Failed to fetch from OrcaRouter'));
+      throw new Error(errorData.message || 'Failed to fetch from OrcaRouter');
     }
 
     const data = await response.json();
