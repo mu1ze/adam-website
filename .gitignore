@@ -49,3 +49,6 @@ data/*.db-*
 
 # remotion (video promo)
 remotion/
+
+# Local Netlify folder
+.netlify
