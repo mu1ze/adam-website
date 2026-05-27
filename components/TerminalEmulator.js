@@ -6,7 +6,7 @@ import { plugins } from '@/data/plugins';
 import { GAME_NAMES } from '@/data/games';
 
 const BOOT_LINES = [
-  { text: 'ADAM Terminal v3.2.1 — Autonomous Digital Assistant Mind', delay: 0 },
+  { text: 'ADAM Terminal v2.0 — Autonomous Digital Assistant Mind', delay: 0 },
   { text: 'Copyright (c) 2026 ADAM Systems. All rights reserved.', delay: 100 },
   { text: '', delay: 200 },
   { text: '> Initializing kernel modules...', delay: 300 },
@@ -88,7 +88,7 @@ const HELP_TEXT_COMPACT = `── COMMANDS ────────────�
 const NEOFETCH = `
         ██████╗     adam@neural-core
        ██╔═══██╗    ──────────────────
-       ██║   ██║    OS:      ADAM OS v3.2.1
+        ██║   ██║    OS:      ADAM OS v2.0
        ██║   ██║    Host:    Neural Core Mk.IV
        ██║▄▄▄██║    Kernel:  cortex-6.1.0-pretext
        ╚██████╔╝    Uptime:  {UPTIME}

@@ -90,7 +90,7 @@ export default function Sidebar() {
         </button>
 
         <div className="sidebar-footer">
-          <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>ADAM v3.2.1</span>
+          <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>ADAM v2.0</span>
         </div>
       </aside>
     </>

@@ -85,7 +85,22 @@ export default function AskAdamClient() {
         return;
     }
 
-    const userMessage = { role: 'user', content: input };
+    // Detect /search command
+    const trimmedInput = input.trim();
+    const searchInputMatch = trimmedInput.match(/^\/search\s+(.+)/is);
+    const searchOnlyCommand = /^\/search\s*$/i.test(trimmedInput);
+
+    if (searchOnlyCommand) {
+        const usageMsg = { role: 'assistant', content: '> Usage: /search <query>\n> Example: /search latest AI news 2026' };
+        setMessages(prev => [...prev, usageMsg]);
+        setInput('');
+        return;
+    }
+
+    const userContent = searchInputMatch ? searchInputMatch[1] : trimmedInput;
+    const webSearch = !!searchInputMatch;
+
+    const userMessage = { role: 'user', content: userContent };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -99,7 +114,7 @@ export default function AskAdamClient() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: conversation, mood })
+        body: JSON.stringify({ messages: conversation, mood, webSearch })
       });
 
       const data = await res.json();
@@ -221,7 +236,7 @@ export default function AskAdamClient() {
             MOOD: {isHostile ? '⚠ HOSTILE' : '● COOPERATIVE'}
           </div>
           <span style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
-            type <span style={{ color: currentAccent }}>/clear</span> to reset
+            <span style={{ color: currentAccent }}>/search</span> for web &nbsp;|&nbsp; <span style={{ color: currentAccent }}>/clear</span> to reset
           </span>
         </div>
 
