@@ -62,11 +62,11 @@ export async function POST(req) {
   try {
     const { messages, mood: currentMood } = await req.json();
 
-    const apiKey = process.env.mistral_api_key || process.env.MISTRAL_API_KEY;
+    const apiKey = process.env.ORCA_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Mistral API key not configured in .env' },
+        { error: 'OrcaRouter API key not configured in .env' },
         { status: 500 }
       );
     }
@@ -83,14 +83,14 @@ export async function POST(req) {
 
     const systemPrompt = getSystemPrompt(newMood);
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetch('https://api.orcarouter.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-small-latest',
+        model: 'deepseek/deepseek-chat',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
@@ -101,7 +101,7 @@ export async function POST(req) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch from Mistral API');
+      throw new Error(errorData.message || 'Failed to fetch from OrcaRouter');
     }
 
     const data = await response.json();
