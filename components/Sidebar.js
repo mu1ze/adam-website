@@ -80,7 +80,8 @@ export default function Sidebar() {
           <Link href="/games" onClick={close}>🎮 Games</Link>
           <Link href="/achievements" onClick={close}>🏅 Badges</Link>
           <Link href="/terminal" onClick={close}>🖥️ Terminal</Link>
-          <Link href="/docs" onClick={close}>📐 Docs</Link>
+          <Link href="/docx" onClick={close}>📐 Docs</Link>
+          <Link href="/docs" onClick={close}>📏 PreText Demo</Link>
         </nav>
 
         <div className="sidebar-divider" />

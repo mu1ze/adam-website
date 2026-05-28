@@ -1,0 +1,286 @@
+/* ── Content container ── */
+.docx-content {
+  max-width: 900px;
+  padding: 40px 48px;
+  font-family: Averta, sans-serif, sans-serif;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* ── ASCII title header ── */
+.docx-ascii-header {
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--primary);
+  margin-bottom: 40px;
+  padding: 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.docx-ascii-title {
+  display: inline-block;
+  text-align: left;
+  font-size: 9px;
+  line-height: 1.05;
+  color: var(--primary);
+  white-space: pre;
+  margin: 24px auto;
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0;
+}
+
+/* ── On-page anchor TOC ── */
+.docx-onpage-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px 16px;
+  margin-bottom: 32px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.docx-onpage-toc a {
+  display: inline-block;
+  padding: 4px 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.docx-onpage-toc a:hover {
+  color: var(--primary);
+  background: rgba(0, 255, 136, 0.06);
+}
+
+/* ── Section headings ── */
+.docx-content h2 {
+  font-size: 24px;
+  color: var(--primary);
+  margin: 48px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0;
+}
+
+.docx-content h2:first-of-type {
+  margin-top: 0;
+}
+
+.docx-content h3 {
+  font-size: 18px;
+  color: var(--text);
+  margin: 36px 0 12px;
+  letter-spacing: 0;
+}
+
+.docx-content h4 {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin: 28px 0 10px;
+}
+
+.docx-content p {
+  margin: 14px 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.docx-content strong {
+  color: var(--primary);
+}
+
+.docx-content ul,
+.docx-content ol {
+  margin: 10px 0 18px 24px;
+  font-size: 15px;
+}
+
+.docx-content li {
+  margin: 5px 0;
+}
+
+.docx-content a {
+  color: var(--primary-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.docx-content a:hover {
+  color: var(--primary);
+}
+
+.docx-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 36px 0;
+}
+
+/* ── Code blocks ── */
+.docx-content pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 16px 0;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.docx-content pre code {
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.docx-content :not(pre) > code {
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--primary);
+}
+
+/* ── Tables ── */
+.docx-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.docx-content th,
+.docx-content td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.docx-content th {
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  background: var(--bg-secondary);
+}
+
+.docx-content td {
+  color: var(--text);
+}
+
+.docx-content tr:hover td {
+  background: rgba(0, 255, 136, 0.03);
+}
+
+/* ── Media placeholders ── */
+.docx-media-slot {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 48px 24px;
+  margin: 24px 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.docx-media-slot:hover {
+  border-color: var(--primary-dim);
+  background: rgba(0, 255, 136, 0.02);
+}
+
+.docx-media-slot .media-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.docx-media-slot .media-label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+.docx-media-slot img,
+.docx-media-slot video {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* ── Feature grid ── */
+.docx-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.docx-feature-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+
+.docx-feature-card:hover {
+  border-color: var(--primary-dim);
+}
+
+.docx-feature-card h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.docx-feature-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ── Badge table ── */
+.badge-unlocked { color: var(--primary); }
+.badge-locked { color: var(--text-dim); }
+
+/* ── Inline tags ── */
+.docx-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  font-family: 'Courier New', Courier, monospace;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  margin: 1px;
+}
+
+.docx-tag-green {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 800px) {
+  .docx-content {
+    padding: 24px 16px;
+  }
+  .docx-ascii-title {
+    font-size: 5px;
+    margin: 16px auto;
+  }
+  .docx-content h2 { font-size: 20px; }
+  .docx-content h3 { font-size: 16px; }
+  .docx-content p { font-size: 14px; }
+  .docx-content li { font-size: 14px; }
+}

@@ -21,7 +21,7 @@ export default function Navbar() {
           <li><Link href="/games" onClick={closeMobile}>Games</Link></li>
           <li><Link href="/achievements" onClick={closeMobile}>Badges</Link></li>
           <li><Link href="/terminal" onClick={closeMobile}>Terminal</Link></li>
-          <li><Link href="/docs" onClick={closeMobile}>Docs</Link></li>
+          <li><Link href="/docx" onClick={closeMobile}>Docs</Link></li>
         </ul>
       </nav>
     </>

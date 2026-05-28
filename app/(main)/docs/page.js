@@ -3,7 +3,7 @@ import PretextShowcase from './PretextShowcase';
 import MasonryLayout from '@/components/pretext/MasonryLayout';
 import FooterSimple from '@/components/FooterSimple';
 import Link from 'next/link';
-import '@/app/games/games.css';
+import '@/app/(main)/games/games.css';
 
 export const metadata = {
   title: 'ADAM - Documentation',
