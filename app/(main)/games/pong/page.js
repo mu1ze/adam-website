@@ -324,11 +324,33 @@ export default function PongPage() {
         <div className="name-prompt-overlay">
           <div className="name-prompt-box">
             <h3 className="name-prompt-title">&gt; IDENTIFY_USER</h3>
-            <p className="name-prompt-sub">Enter your callsign for the leaderboard</p>
-            <form onSubmit={(e) => {
+            <p className="name-prompt-sub">Register a callsign for the leaderboard. Returning? Use the same name + password.</p>
+            <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.target);
-              setName(formData.get('playername') || 'Guest');
+              const newName = (formData.get('playername') || 'Guest').trim().substring(0, 16);
+              const newPass = (formData.get('playerpass') || '').trim();
+              if (!newName || !newPass || newPass.length < 4) {
+                alert('Name and password (4+ chars) required');
+                return;
+              }
+              try {
+                let res = await fetch('/api/register', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: newName, password: newPass }),
+                });
+                let data = await res.json();
+                if (!data.success && data.error !== 'NAME_TAKEN') {
+                  alert(data.error || 'Registration failed');
+                  return;
+                }
+                localStorage.setItem('adam_player_name', newName);
+                localStorage.setItem('adam_player_pass', newPass);
+                setName(newName, newPass);
+              } catch {
+                alert('Connection error. Try again.');
+              }
             }}>
               <input
                 name="playername"
@@ -338,7 +360,15 @@ export default function PongPage() {
                 autoFocus
                 defaultValue={name}
               />
-              <button type="submit" className="name-prompt-btn">INITIALIZE</button>
+              <input
+                name="playerpass"
+                className="name-prompt-input"
+                type="password"
+                placeholder="Password (4+ chars)"
+                maxLength={64}
+                style={{ marginTop: '8px' }}
+              />
+              <button type="submit" className="name-prompt-btn" style={{ marginTop: '12px' }}>INITIALIZE</button>
             </form>
           </div>
         </div>

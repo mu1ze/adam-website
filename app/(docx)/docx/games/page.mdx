@@ -1,0 +1,111 @@
+import { AsciiTitle, MediaSlot } from '../_shared'
+import { GAMES, BADGES } from '../_data'
+import { HashScroll } from '../_components'
+import DocxPagination from '../../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{`  ____    _    __  __ _____ ____  
+ / ___|  / \\  |  \\/  | ____/ ___| 
+| |  _  / _ \\ | |\\/| |  _| \\___ \\ 
+| |_| |/ ___ \\| |  | | |___ ___) |
+ \\____/_/   \\_\\_|  |_|_____|____/ `}</AsciiTitle>
+
+<h2 id="arcade">Arcade</h2>
+
+The **Arcade** section hosts six canvas-rendered games with shared infrastructure for leaderboards, scorecards, and player identity. Each game supports keyboard and touch controls.
+
+<MediaSlot id="media-arcade-grid" label="Game grid / arcade hub screenshot" />
+
+<h3 id="arcade-games">Games</h3>
+
+<table>
+  <thead><tr><th>Game</th><th>Description</th><th>Controls</th><th>Highlights</th></tr></thead>
+  <tbody>
+    {GAMES.map(([game, desc, controls, highlights]) => (
+      <tr key={game}>
+        <td><strong>{game}</strong></td>
+        <td>{desc}</td>
+        <td><code>{controls}</code></td>
+        <td>{highlights}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<MediaSlot id="media-arcade-pong" label="Pong gameplay GIF" />
+<MediaSlot id="media-arcade-tetris" label="Tetris gameplay GIF" />
+<MediaSlot id="media-arcade-snake" label="Snake gameplay GIF" />
+<MediaSlot id="media-arcade-invaders" label="Space Invaders gameplay GIF" />
+<MediaSlot id="media-arcade-flappy" label="Flappy Bird gameplay GIF" />
+<MediaSlot id="media-arcade-2048" label="2048 gameplay GIF" />
+
+<h3 id="arcade-shared">Shared Game Features</h3>
+
+<table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td><strong>Pause</strong></td><td>Press <code>P</code> to pause/resume. Shows HUD and controls overlay.</td></tr><tr><td><strong>Fullscreen</strong></td><td>Press <code>Escape</code> to enter/exit fullscreen mode.</td></tr><tr><td><strong>Restart</strong></td><td>Press <code>R</code> to restart the current game.</td></tr><tr><td><strong>Leaderboard</strong></td><td>Each game posts scores to a shared leaderboard API. Top scores displayed after each game.</td></tr><tr><td><strong>Scorecard</strong></td><td>After each game, a shareable scorecard is generated with player name, score, rank, and medal.</td></tr><tr><td><strong>Challenge</strong></td><td>Scorecards include a unique challenge ID — share the link and others can try to beat your score.</td></tr></tbody></table>
+
+<h2 id="achievements">Achievements &amp; Badges</h2>
+
+The **Badge Vault** tracks 11 achievements across games. Badges are automatically awarded when you submit a score that meets the criteria. Visit `/achievements` and search for any player name to view their badges.
+
+<MediaSlot id="media-achievements" label="Badge vault interface screenshot" />
+
+<table>
+  <thead><tr><th>Badge</th><th>Title</th><th>Requirement</th></tr></thead>
+  <tbody>
+    {BADGES.map(([id, title, req]) => (
+      <tr key={id}>
+        <td><span className="badge-unlocked">{id}</span></td>
+        <td>{title}</td>
+        <td>{req}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<h2 id="scorecards">Scorecards</h2>
+
+After finishing a game, a **scorecard** is generated as a shareable PNG image. Scorecards display the player name, score, global rank (with medal), and a mini top-5 leaderboard for that game.
+
+<MediaSlot id="media-scorecard" label="Scorecard share card screenshot" />
+
+### Sharing
+
+Each scorecard includes multiple sharing options:
+
+- **Download** — save the scorecard as a PNG image
+- **Copy to clipboard** — paste into any app
+- **Share / Tweet** — post directly to social media
+- **Challenge link** — each score has a unique permalink at `/scorecard/:id`
+
+<h2 id="leaderboard">Leaderboard &amp; Embed</h2>
+
+### Global Leaderboard
+
+The home page displays a **live leaderboard** showing the top 5 scores across all games, refreshing every 15 seconds. Each game also has its own per-game leaderboard accessible from the game over screen or via the terminal (`leaderboard <game>`).
+
+<MediaSlot id="media-leaderboard" label="Leaderboard display screenshot" />
+
+### Live Activity Feed
+
+A real-time activity feed shows recent score submissions every 5 seconds, displaying player name, score, game, and relative time.
+
+### Embeddable Widget
+
+The `/embed/leaderboard` endpoint returns a complete, self-contained HTML page suitable for embedding in external sites via `<iframe>`. Supports dark and light theme via `?theme=dark|light` query parameter. Auto-refreshes every 15 seconds.
+
+```html
+<iframe
+  src="https://adam.dvlli.com/embed/leaderboard?theme=dark"
+  width="400"
+  height="500"
+  frameborder="0"
+></iframe>
+```
+
+<MediaSlot id="media-embed" label="Embedded leaderboard on external site screenshot" />
+
+<DocxPagination />
+</div>

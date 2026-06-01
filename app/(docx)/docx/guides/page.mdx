@@ -1,0 +1,119 @@
+import { AsciiTitle, MediaSlot } from '../_shared'
+import { HashScroll } from '../_components'
+import DocxPagination from '../../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{`  _____ _    _ _____ _____  ______  _____ 
+ / ____| |  | |_   _|  __ \\|  ____|/ ____|
+| |  __| |  | | | | | |  | | |__  | (___  
+| | |_ | |  | | | | | |  | |  __|  \\___ \\ 
+| |__| | |__| |_| |_| |__| | |____ ____) |
+ \\_____|\\____/|_____|_____/|______|_____/ `}</AsciiTitle>
+
+<h2 id="navigation">Navigation</h2>
+
+The site has two main ways to get around:
+
+- **Sidebar** — a tab on the left edge of the screen. Click it to slide open a menu with links to every section.
+- **Top navbar** — the bar at the top of the page with quick links to key features.
+
+You can also press `⌘K` (Mac) or `Ctrl+K` (Windows/Linux) to open the command palette and jump anywhere instantly.
+
+<MediaSlot id="media-nav" label="Sidebar and navigation screenshot" />
+
+<h2 id="theme">Theme</h2>
+
+The site comes in two color schemes:
+
+- **Dark mode** (default) — the green-on-black cyberpunk look
+- **Light mode** — a cleaner, lighter version for daytime use
+
+Toggle between them using the theme button in the sidebar. Your choice is saved automatically and will be there when you come back.
+
+<h2 id="player">Player Account</h2>
+
+The first time you play a game, you'll be asked to enter a **player name** and a **password** (at least 4 characters each).
+
+This creates your player account. Once registered:
+
+- Your scores are saved to the leaderboard
+- You earn badges for achievements
+- The same name works across all games
+- You can look up your stats anytime on the Achievements page
+
+<h2 id="ask-adam">Ask Adam</h2>
+
+The **Ask Adam** page is a full-screen AI chat. You can ask ADAM anything — questions, advice, creative writing, or just conversation.
+
+### How to use it
+
+- Type your message at the bottom and press Enter.
+- ADAM responds with a personality that changes based on how you talk to it.
+- Be polite and ADAM is helpful and methodical. Throw insults and ADAM roasts you back (but still answers your question).
+- Say sorry sincerely and ADAM calms down.
+
+### Web Search
+
+Start your message with `/search` followed by your question to get live information from the web. For example: `/search what is the weather today`
+
+Type `/clear` to reset the conversation and start fresh.
+
+Your chat history is saved automatically — you can close the page and come back later to continue where you left off.
+
+<h2 id="terminal">Terminal</h2>
+
+The **Terminal** page gives you a command-line interface inspired by classic Unix terminals. You control the site by typing commands.
+
+### Basic commands
+
+<table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code>help</code></td><td>Shows all available commands</td></tr><tr><td><code>ls</code></td><td>Lists skills, plugins, or games you can explore</td></tr><tr><td><code>cd &lt;page&gt;</code></td><td>Navigates to a page (like <code>cd games</code> or <code>cd skills</code>)</td></tr><tr><td><code>neofetch</code></td><td>Displays system info with the ADAM logo</td></tr><tr><td><code>player &lt;name&gt;</code></td><td>Sets or checks your player name</td></tr><tr><td><code>theme &lt;color&gt;</code></td><td>Changes the terminal colors (green, amber, blue, red)</td></tr><tr><td><code>clear</code></td><td>Clears the terminal screen</td></tr></tbody></table>
+
+- Press `Tab` to auto-complete commands and names.
+- Press `↑` / `↓` to scroll through your command history.
+- Your command history and settings survive page reloads.
+
+<h2 id="games">Games</h2>
+
+The **Arcade** section has six games you can play right in your browser. No downloads, no plugins.
+
+<table><thead><tr><th>Game</th><th>How to play</th><th>Controls</th></tr></thead><tbody><tr><td><strong>Pong</strong></td><td>Bounce the ball past the AI opponent</td><td><code>↑↓</code> or mouse drag</td></tr><tr><td><strong>Snake</strong></td><td>Grow your snake by eating food, don't hit the walls</td><td><code>WASD</code> or arrows</td></tr><tr><td><strong>Space Invaders</strong></td><td>Shoot aliens before they reach you</td><td><code>←→</code> + <code>Space</code></td></tr><tr><td><strong>Tetris</strong></td><td>Stack falling blocks to clear lines</td><td><code>←→↓</code> + rotate</td></tr><tr><td><strong>Flappy Bird</strong></td><td>Fly through pipes without crashing</td><td><code>Space</code> or tap</td></tr><tr><td><strong>2048</strong></td><td>Merge tiles to reach the 2048 tile</td><td>Arrow keys or swipe</td></tr></tbody></table>
+
+### During a game
+
+- Press `P` to pause
+- Press `R` to restart
+- Press `Escape` for fullscreen
+
+Every game supports touch controls too — works on phones and tablets.
+
+<h2 id="leaderboards">Leaderboards</h2>
+
+Every game has a leaderboard. Your best scores are saved and ranked against other players.
+
+- The homepage shows the top 5 scores across all games, updating every 15 seconds.
+- Each game shows its own leaderboard when you finish playing.
+- Use the `leaderboard <game>` command in the terminal to check rankings.
+- A live activity feed shows recent scores from everyone playing right now.
+
+<MediaSlot id="media-leaderboard" label="Leaderboard screenshot" />
+
+<h2 id="scorecards">Scorecards</h2>
+
+After every game, you get a **scorecard** — a shareable image with your name, score, rank, and a mini leaderboard.
+
+You can:
+
+- **Download** the scorecard as a PNG image
+- **Copy** it to your clipboard and paste anywhere
+- **Share** it directly to social media
+- **Challenge friends** — each scorecard has a unique link. Send it to someone and they can try to beat your score.
+
+Find your past scorecards at `/scorecard/:id` (the link is on your scorecard).
+
+<MediaSlot id="media-scorecard" label="Scorecard example screenshot" />
+
+<DocxPagination />
+</div>

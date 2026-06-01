@@ -1,0 +1,45 @@
+import { AsciiTitle, MediaSlot } from './_shared'
+import { SECTIONS } from './_data'
+import { HashScroll } from './_components'
+import DocxPagination from '../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{` ____   ___   ____ _   _ __  __ _____ _   _ _____  _  _____ ___ ___  _   _ 
+|  _ \\ / _ \\ / ___| | | |  \\/  | ____| \\ | |_   _|/ \\|_   _|_ _/ _ \\| \\ | |
+| | | | | | | |   | | | | |\\/| |  _| |  \\| | | | / _ \\ | |  | | | | |  \\| |
+| |_| | |_| | |___| |_| | |  | | |___| |\\  | | |/ ___ \\| |  | | |_| | |\\  |
+|____/ \\___/ \\____|\\___/|_|  |_|_____|_| \\_| |_/_/   \\_\\_| |___\\___/|_| \\_|`}</AsciiTitle>
+
+## Overview
+
+**ADAM** (Autonomous Digital Assistant Mind) is an AI-powered web platform built on **Next.js 16**. It combines a cyberpunk terminal aesthetic with modern web capabilities — real-time multiplayer arcade games, an AI chat assistant with dynamic personality modulation, a full command-line terminal emulator, skill and plugin management, achievement tracking, and shareable scorecards.
+
+<MediaSlot id="media-overview" label="Architecture diagram or landing page screenshot" />
+
+### Core Principles
+
+- **Verify before implementing** — every operation validates before execution
+- **Never hallucinate** — responses are grounded in available data
+- **Task decomposition** — complex operations are broken into verifiable steps
+- **Privacy-first** — chat history and game state stored locally in your browser
+
+### Technology Stack
+
+<table><thead><tr><th>Layer</th><th>Technology</th></tr></thead><tbody><tr><td>Frontend</td><td>Next.js 16, React, Turbopack</td></tr><tr><td>Database</td><td>Turso (libSQL) — edge-hosted SQLite</td></tr><tr><td>AI Backend</td><td>OrcaRouter Gateway (DeepSeek + Gemini)</td></tr><tr><td>Text Engine</td><td>PreText — DOM-free text measurement</td></tr><tr><td>Deployment</td><td>Netlify (static generation + SSR)</td></tr></tbody></table>
+
+## Browse Documentation
+
+<div className="docx-feature-grid">
+  {SECTIONS.slice(1).map(s => (
+    <a key={s.href} href={s.href} className="docx-feature-card" style={{ textDecoration: 'none' }}>
+      <h4>{s.label}</h4>
+      <p>{s.desc}</p>
+    </a>
+  ))}
+</div>
+
+<DocxPagination />
+</div>

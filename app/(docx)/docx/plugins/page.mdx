@@ -1,0 +1,32 @@
+import { AsciiTitle, MediaSlot } from '../_shared'
+import { PLUGINS } from '../_data'
+import { HashScroll } from '../_components'
+import DocxPagination from '../../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{` ____  _    _   _  ____ ___ _   _ ____  
+|  _ \\| |  | | | |/ ___|_ _| \\ | / ___| 
+| |_) | |  | | | | |  _ | ||  \\| \\___ \\ 
+|  __/| |__| |_| | |_| || || |\\  |___) |
+|_|   |_____\\___/ \\____|___|_| \\_|____/ `}</AsciiTitle>
+
+## Plugins
+
+**12 plugins** extend ADAM's capabilities across development, productivity, communication, and intelligence domains. Plugins can be connected/disconnected from the terminal or plugin detail pages.
+
+<div className="docx-feature-grid">
+  {PLUGINS.map(([emoji, name, desc]) => (
+    <div key={name} className="docx-feature-card">
+      <h4>{emoji} {name}</h4>
+      <p>{desc}</p>
+<DocxPagination />
+</div>
+  ))}
+</div>
+
+<MediaSlot id="media-plugins-connect" label="Plugin connection flow GIF" />
+
+</div>

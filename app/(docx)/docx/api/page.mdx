@@ -1,0 +1,98 @@
+import { AsciiTitle } from '../_shared'
+import { API_ENDPOINTS } from '../_data'
+import { HashScroll } from '../_components'
+import DocxPagination from '../../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{`    _    ____ ___ 
+   / \\  |  _ \\_ _|
+  / _ \\ | |_) | | 
+ / ___ \\|  __/| | 
+/_/   \\_\\_|  |___|`}</AsciiTitle>
+
+<h2 id="api">API Reference</h2>
+
+All API endpoints are served from `/api/*` on the same domain. They accept and return JSON. Authentication is handled server-side via environment variables.
+
+<table>
+  <thead><tr><th>Endpoint</th><th>Description</th><th>Request → Response</th></tr></thead>
+  <tbody>
+    {API_ENDPOINTS.map(([endpoint, desc, spec]) => (
+      <tr key={endpoint}>
+        <td><code>{endpoint}</code></td>
+        <td>{desc}</td>
+        <td><code>{spec}</code></td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+<h3 id="api-chat">Chat Completion</h3>
+
+```json
+POST /api/chat
+Content-Type: application/json
+
+{
+  "messages": [{ "role": "user", "content": "Hello ADAM" }],
+  "mood": "nice",
+  "webSearch": false
+}
+
+→ { "reply": { "role": "assistant", "content": "..." }, "mood": "nice" }
+```
+
+<h3 id="api-scores">Scores</h3>
+
+```json
+GET /api/scores?game=pong&limit=5
+
+POST /api/scores
+Content-Type: application/json
+
+{
+  "game": "tetris",
+  "name": "Player1",
+  "score": 15000
+}
+
+→ { "success": true, "rank": 1, "badges": ["KILO", "STACK_KING"] }
+```
+
+<h3 id="api-achievements">Achievements</h3>
+
+```json
+GET /api/achievements?name=Player1
+
+→ { "achievements": [{ "achievement_id": "KILO", "game": "tetris", "date": "..." }] }
+```
+
+<h3 id="api-register">Player Registration</h3>
+
+```json
+POST /api/register
+Content-Type: application/json
+
+{
+  "name": "Player1",
+  "password": "mysecret"
+}
+
+→ { "success": true, "name": "Player1" }
+```
+
+<h3 id="api-embed">Embeddable Leaderboard</h3>
+
+```text
+GET /embed/leaderboard?theme=dark
+→ (complete HTML document, rendered at Edge)
+
+GET /embed/leaderboard?theme=light
+→ (light-themed variant)
+```
+
+<DocxPagination />
+</div>

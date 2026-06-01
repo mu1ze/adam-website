@@ -52,3 +52,8 @@ remotion/
 
 # Local Netlify folder
 .netlify
+public/pagefind
+
+# Local Kilo agent data
+.kilo/
+

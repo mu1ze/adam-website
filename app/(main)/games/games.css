@@ -395,17 +395,19 @@
 .game-canvas {
   display: block;
   border-radius: 8px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--primary);
   background: var(--game-bg);
   cursor: crosshair;
   max-width: 100%;
-  transition: border-color 0.5s;
+  transition: all 0.5s ease;
   image-rendering: pixelated;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.12), inset 0 0 10px rgba(0, 255, 136, 0.05);
 }
 
 .game-canvas:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.25), inset 0 0 15px rgba(0, 255, 136, 0.1);
 }
 
 /* ── Game HUD ── */

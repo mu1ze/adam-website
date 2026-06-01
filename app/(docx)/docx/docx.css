@@ -1,10 +1,11 @@
 /* ── Content container ── */
 .docx-content {
-  max-width: 900px;
+  max-width: 780px;
   padding: 40px 48px;
-  font-family: Averta, sans-serif, sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   line-height: 1.7;
   color: var(--text);
+  font-size: 15px;
 }
 
 /* ── ASCII title header ── */
@@ -29,41 +30,15 @@
   letter-spacing: 0;
 }
 
-/* ── On-page anchor TOC ── */
-.docx-onpage-toc {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 12px 16px;
-  margin-bottom: 32px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.docx-onpage-toc a {
-  display: inline-block;
-  padding: 4px 10px;
-  color: var(--text-dim);
-  text-decoration: none;
-  border-radius: 3px;
-  transition: all 0.2s;
-}
-
-.docx-onpage-toc a:hover {
-  color: var(--primary);
-  background: rgba(0, 255, 136, 0.06);
-}
-
 /* ── Section headings ── */
 .docx-content h2 {
-  font-size: 24px;
-  color: var(--primary);
-  margin: 48px 0 16px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 44px 0 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
 }
 
 .docx-content h2:first-of-type {
@@ -71,26 +46,30 @@
 }
 
 .docx-content h3 {
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 600;
   color: var(--text);
-  margin: 36px 0 12px;
-  letter-spacing: 0;
+  margin: 32px 0 10px;
+  letter-spacing: -0.01em;
 }
 
 .docx-content h4 {
   font-size: 15px;
+  font-weight: 600;
   color: var(--text-dim);
-  margin: 28px 0 10px;
+  margin: 24px 0 8px;
 }
 
 .docx-content p {
   margin: 14px 0;
   font-size: 15px;
   color: var(--text);
+  line-height: 1.75;
 }
 
 .docx-content strong {
-  color: var(--primary);
+  color: var(--text);
+  font-weight: 600;
 }
 
 .docx-content ul,
@@ -100,23 +79,27 @@
 }
 
 .docx-content li {
-  margin: 5px 0;
+  margin: 4px 0;
+  line-height: 1.7;
 }
 
 .docx-content a {
-  color: var(--primary-dim);
+  color: var(--primary);
   text-decoration: underline;
+  text-decoration-color: rgba(0, 255, 136, 0.3);
   text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s;
 }
 
 .docx-content a:hover {
   color: var(--primary);
+  text-decoration-color: var(--primary);
 }
 
 .docx-content hr {
   border: none;
   border-top: 1px solid var(--border);
-  margin: 36px 0;
+  margin: 32px 0;
 }
 
 /* ── Code blocks ── */
@@ -129,21 +112,23 @@
   font-size: 13px;
   line-height: 1.6;
   margin: 16px 0;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .docx-content pre code {
   color: var(--text);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 13px;
 }
 
 .docx-content :not(pre) > code {
   background: var(--bg-secondary);
-  padding: 2px 8px;
-  border-radius: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-size: 13px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
   color: var(--primary);
+  border: 1px solid var(--border);
 }
 
 /* ── Tables ── */
@@ -163,10 +148,10 @@
 }
 
 .docx-content th {
-  color: var(--primary);
+  color: var(--text-dim);
   font-weight: 600;
-  letter-spacing: 0;
-  font-size: 13px;
+  letter-spacing: 0.5px;
+  font-size: 12px;
   text-transform: uppercase;
   background: var(--bg-secondary);
 }
@@ -181,9 +166,9 @@
 
 /* ── Media placeholders ── */
 .docx-media-slot {
-  border: 2px dashed var(--border);
+  border: 1px dashed var(--border);
   border-radius: 8px;
-  padding: 48px 24px;
+  padding: 40px 24px;
   margin: 24px 0;
   text-align: center;
   color: var(--text-dim);
@@ -197,14 +182,14 @@
 }
 
 .docx-media-slot .media-icon {
-  font-size: 36px;
+  font-size: 32px;
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .docx-media-slot .media-label {
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
   color: var(--text-dim);
 }
 
@@ -218,8 +203,8 @@
 /* ── Feature grid ── */
 .docx-feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
   margin: 16px 0;
 }
 
@@ -236,7 +221,7 @@
 }
 
 .docx-feature-card h4 {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 14px;
   color: var(--primary);
 }
@@ -256,10 +241,10 @@
 .docx-tag {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 12px;
-  letter-spacing: 1px;
-  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace;
   border: 1px solid var(--border);
   color: var(--text-dim);
   margin: 1px;
@@ -274,6 +259,7 @@
 @media (max-width: 800px) {
   .docx-content {
     padding: 24px 16px;
+    font-size: 14px;
   }
   .docx-ascii-title {
     font-size: 5px;

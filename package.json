@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3369",
-    "build": "next build",
+    "build": "next build && pagefind --site .next/server/app --output-path public/pagefind",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
@@ -12,10 +12,21 @@
   "dependencies": {
     "@chenglou/pretext": "^0.0.3",
     "@libsql/client": "^0.17.3",
+    "@mdx-js/loader": "^3.1.1",
+    "@mdx-js/mdx": "^3.1.1",
+    "@mdx-js/react": "^3.1.1",
+    "@next/mdx": "^16.2.6",
     "bcryptjs": "^3.0.3",
     "next": "16.2.1",
+    "pagefind": "^1.5.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-pretty-code": "^0.14.3",
+    "rehype-slug": "^6.0.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^4.1.0"
   },
   "devDependencies": {
     "@types/react": "19.2.15",

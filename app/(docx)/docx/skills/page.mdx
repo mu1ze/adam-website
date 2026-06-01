@@ -1,0 +1,34 @@
+import { AsciiTitle, MediaSlot } from '../_shared'
+import { SKILLS } from '../_data'
+import { HashScroll } from '../_components'
+import DocxPagination from '../../_pagination'
+
+<HashScroll />
+
+<div className="docx-content">
+
+<AsciiTitle>{` ____  _  _____ _     _     ____  
+/ ___|| |/ /_ _| |   | |   / ___| 
+\\___ \\| ' / | || |   | |   \\___ \\ 
+ ___) | . \\ | || |___| |___ ___) |
+|____/|_|\\_\\___|_____|_____|____/ `}</AsciiTitle>
+
+## Skills
+
+ADAM ships with **8 core skills**, each representing a domain of capability. Visit `/skills` for an overview or `/skills/:slug` for detailed information and interactive demos.
+
+<div className="docx-feature-grid">
+  {SKILLS.map(([emoji, name, desc]) => (
+    <div key={name} className="docx-feature-card">
+      <h4>{emoji} {name}</h4>
+      <p>{desc}</p>
+<DocxPagination />
+</div>
+  ))}
+</div>
+
+<MediaSlot id="media-skills-research" label="Research skill demo screenshot" />
+<MediaSlot id="media-skills-code" label="Code skill demo screenshot" />
+<MediaSlot id="media-skills-data" label="Data skill demo screenshot" />
+
+</div>

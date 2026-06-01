@@ -245,9 +245,12 @@ export default function TwoZeroFourEightPage() {
   }, [gameState, score]);
 
   const touchStartRef = useRef(null);
-  const handleTouchStart = (e) => { e.preventDefault(); touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; };
+  const handleTouchStart = (e) => {
+    if (gameState === 'PLAYING') e.preventDefault();
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
   const handleTouchEnd = (e) => {
-    e.preventDefault();
+    if (gameState === 'PLAYING') e.preventDefault();
     if (!touchStartRef.current || gameState === 'GAMEOVER') return;
     if (gameState === 'READY') { startGame(); return; }
     const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
@@ -284,10 +287,37 @@ export default function TwoZeroFourEightPage() {
         <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
           <div className="name-prompt-box">
             <h3 className="name-prompt-title">&gt; IDENTIFY_USER</h3>
-            <p className="name-prompt-sub">Enter your callsign for the leaderboard</p>
-            <form onSubmit={(e) => { e.preventDefault(); setName(new FormData(e.target).get('playername') || 'Guest'); }}>
+            <p className="name-prompt-sub">Register a callsign for the leaderboard. Returning? Use the same name + password.</p>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const newName = (formData.get('playername') || 'Guest').trim().substring(0, 16);
+              const newPass = (formData.get('playerpass') || '').trim();
+              if (!newName || !newPass || newPass.length < 4) {
+                alert('Name and password (4+ chars) required');
+                return;
+              }
+              try {
+                let res = await fetch('/api/register', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: newName, password: newPass }),
+                });
+                let data = await res.json();
+                if (!data.success && data.error !== 'NAME_TAKEN') {
+                  alert(data.error || 'Registration failed');
+                  return;
+                }
+                localStorage.setItem('adam_player_name', newName);
+                localStorage.setItem('adam_player_pass', newPass);
+                setName(newName, newPass);
+              } catch {
+                alert('Connection error. Try again.');
+              }
+            }}>
               <input name="playername" className="name-prompt-input" placeholder="Callsign (max 16 char)" maxLength={16} autoFocus defaultValue={name} />
-              <button type="submit" className="name-prompt-btn">INITIALIZE</button>
+              <input name="playerpass" className="name-prompt-input" type="password" placeholder="Password (4+ chars)" maxLength={64} style={{ marginTop: '8px' }} />
+              <button type="submit" className="name-prompt-btn" style={{ marginTop: '12px' }}>INITIALIZE</button>
             </form>
           </div>
         </div>
@@ -307,8 +337,8 @@ export default function TwoZeroFourEightPage() {
         <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: '#edc22e' }}>{score}</div></div>
       </div>
 
-      <div className="game-canvas-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }}>
-        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1', touchAction: 'none' }} />
+      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
+        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }} />
 
         {gameState === 'READY' && (
           <div className="game-overlay">

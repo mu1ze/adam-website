@@ -249,13 +249,11 @@ export default function SnakePage() {
     const dy = touchEndY - touchStartRef.current.y;
     
     if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal
-        if (dx > 30 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: 1, y: 0 };
-        else if (dx < -30 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: -1, y: 0 };
+        if (dx > 20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: 1, y: 0 };
+        else if (dx < -20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: -1, y: 0 };
     } else {
-        // Vertical
-        if (dy > 30 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: 1 };
-        else if (dy < -30 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: -1 };
+        if (dy > 20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: 1 };
+        else if (dy < -20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: -1 };
     }
     
     touchStartRef.current = null;
@@ -316,13 +314,15 @@ export default function SnakePage() {
       </div>
 
       {/* Canvas Area */}
-      <div className="game-canvas-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }}>
+      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           className="game-canvas"
-          style={{ maxWidth: '100%', height: 'auto', aspectRatio: '1/1', touchAction: 'none' }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          style={{ touchAction: 'none' }}
         />
 
         {/* UI Overlays */}
