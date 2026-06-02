@@ -84,10 +84,11 @@ export default function DocxLayout({ children }) {
           justify-content: space-between;
           transition: width 0.25s ease;
           position: relative;
+          overflow: hidden;
         }
 
         .docx-sidebar.collapsed {
-          width: 52px;
+          width: 76px;
         }
 
         .docx-sidebar-inner {
@@ -109,7 +110,11 @@ export default function DocxLayout({ children }) {
         }
 
         .docx-sidebar.collapsed .docx-sidebar-inner {
-          padding: 20px 0 0;
+          padding: 16px 6px 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          overflow-y: auto;
         }
 
         .docx-sidebar-title {
@@ -131,8 +136,7 @@ export default function DocxLayout({ children }) {
           justify-content: center;
           padding-bottom: 8px;
           margin-bottom: 8px;
-          padding-left: 0;
-          padding-right: 0;
+          width: 100%;
         }
 
         .docx-sidebar-title-text {
@@ -148,9 +152,19 @@ export default function DocxLayout({ children }) {
           margin-bottom: 2px;
         }
 
+        .docx-sidebar.collapsed .docx-sidebar-group {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+
         .docx-sidebar-entry {
           display: flex;
           align-items: center;
+        }
+
+        .docx-sidebar.collapsed .docx-sidebar-entry {
+          justify-content: center;
         }
 
         .docx-sidebar-icon {
@@ -167,6 +181,12 @@ export default function DocxLayout({ children }) {
 
         .docx-sidebar-link:hover .docx-sidebar-icon {
           transform: scale(1.1);
+        }
+
+        .docx-sidebar.collapsed .docx-sidebar-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 20px;
         }
 
         .docx-sidebar-arrow {
@@ -232,18 +252,19 @@ export default function DocxLayout({ children }) {
           display: none !important;
         }
 
-.docx-sidebar.collapsed .docx-sidebar-link {
+        .docx-sidebar.collapsed .docx-sidebar-link {
           justify-content: center;
-          padding: 6px;
+          padding: 4px;
           flex: none;
-          width: 40px;
-          height: 36px;
-          overflow: hidden;
+          width: 48px;
+          height: 48px;
+          border-radius: 8px;
+          margin-bottom: 2px;
         }
 
-        .docx-sidebar.collapsed .docx-sidebar-icon {
-          display: flex !important;
-          flex-shrink: 0;
+        .docx-sidebar.collapsed .docx-sidebar-link.active {
+          background: rgba(0, 255, 136, 0.12);
+          box-shadow: inset 0 0 0 1px rgba(0, 255, 136, 0.2);
         }
 
         .docx-sidebar-sublinks {
@@ -302,7 +323,7 @@ export default function DocxLayout({ children }) {
           gap: 8px;
           padding: 8px 10px;
           border: 1px solid var(--border);
-          border-radius: 4px;
+          border-radius: 6px;
           background: transparent;
           color: var(--text-dim);
           font-size: 13px;
@@ -311,15 +332,17 @@ export default function DocxLayout({ children }) {
           font-family: inherit;
           white-space: nowrap;
           overflow: hidden;
+          flex: 1;
         }
 
         .docx-sidebar-theme-btn:hover {
           border-color: var(--primary);
           color: var(--primary);
+          background: rgba(0, 255, 136, 0.05);
         }
 
         .docx-sidebar-theme-icon {
-          font-size: 14px;
+          font-size: 16px;
           flex-shrink: 0;
         }
 
@@ -331,24 +354,22 @@ export default function DocxLayout({ children }) {
 
         .docx-sidebar.collapsed .docx-sidebar-footer {
           flex-direction: column;
+          align-items: center;
           padding: 8px 6px;
           gap: 4px;
         }
 
         .docx-sidebar.collapsed .docx-sidebar-theme-btn {
-          width: 36px;
-          height: 36px;
+          width: 40px;
+          height: 40px;
           padding: 0;
           flex: none;
-          margin: 0 auto;
+          border-radius: 6px;
+          font-size: 18px;
         }
 
         .docx-sidebar.collapsed .docx-sidebar-theme-label {
           display: none;
-        }
-
-        .docx-sidebar.collapsed .docx-sidebar-icon {
-          display: flex;
         }
 
         .docx-sidebar-collapse {
@@ -359,7 +380,7 @@ export default function DocxLayout({ children }) {
           height: 36px;
           flex-shrink: 0;
           border: 1px solid var(--border);
-          border-radius: 4px;
+          border-radius: 6px;
           background: transparent;
           color: var(--text-dim);
           cursor: pointer;
@@ -375,7 +396,9 @@ export default function DocxLayout({ children }) {
         }
 
         .docx-sidebar.collapsed .docx-sidebar-collapse {
-          width: 36px;
+          width: 40px;
+          height: 40px;
+          border-radius: 6px;
         }
 
         /* ═══ Content Styles ═══ */

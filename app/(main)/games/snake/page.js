@@ -23,7 +23,7 @@ const INITIAL_DIRECTION = { x: 0, y: -1 };
 export default function SnakePage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { name, deviceId, showPrompt, changeName, promptComponent } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'snake' });
 
   const [gameState, setGameState] = useState('READY');
@@ -83,7 +83,7 @@ export default function SnakePage() {
   const handleGameOver = () => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, score, password).then(result => setFinalRank(result.rank));
+      submitScore(name, score, deviceId).then(result => setFinalRank(result.rank));
     }
   };
 

@@ -62,7 +62,7 @@ export const API_ENDPOINTS = [
   ['GET /api/scores', 'Query leaderboard scores', '?game=&name=&limit= → { scores }'],
   ['POST /api/scores', 'Submit a score + award badges', '{ game, name, score } → { success, badges }'],
   ['GET /api/achievements', 'Get player badges', '?name= → { achievements }'],
-  ['POST /api/register', 'Register a player', '{ name, password } → { success, name }'],
+  ['POST /api/register', 'Register a player', '{ name, deviceId } → { success, name }'],
   ['GET /embed/leaderboard', 'Embeddable leaderboard HTML', '?theme=dark|light → text/html'],
 ];
 

@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
+import { navLinks } from '@/config/nav';
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
@@ -73,15 +74,11 @@ export default function Sidebar() {
         </div>
 
         <nav className="sidebar-nav">
-          <Link href="/" onClick={close}>⌂ Home</Link>
-          <Link href="/skills" onClick={close}>⚡ Skills</Link>
-          <Link href="/plugins" onClick={close}>🔌 Plugins</Link>
-          <Link href="/ask-adam" onClick={close}>💬 Ask Adam</Link>
-          <Link href="/games" onClick={close}>🎮 Games</Link>
-          <Link href="/achievements" onClick={close}>🏅 Badges</Link>
-          <Link href="/terminal" onClick={close}>🖥️ Terminal</Link>
-          <Link href="/docx" onClick={close}>📐 Docs</Link>
-          <Link href="/docs" onClick={close}>📏 PreText Demo</Link>
+          {navLinks.map(link => (
+            <Link key={link.href} href={link.href} onClick={close}>
+              {link.icon} {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="sidebar-divider" />

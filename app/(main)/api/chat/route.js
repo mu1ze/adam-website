@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rateLimit';
 
 const PERSONALITY_NICE = `You are ADAM (Autonomous Digital Assistant Mind), an advanced AI assistant designed to serve as a second brain. You are methodical, precise, and verify before implementing. You speak in a slightly robotic but warm and helpful tone. You are polite, patient, and always eager to assist. You address the user respectfully.`;
 
@@ -59,8 +60,17 @@ function getSystemPrompt(mood) {
 }
 
 export async function POST(req) {
+  const rl = rateLimit(req, { limit: 20, windowMs: 60_000, keyPrefix: 'chat' });
+  if (rl) return rl;
+
   try {
     const { messages, mood: currentMood } = await req.json();
+
+    // Cap message history to control API costs
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ error: 'Messages required' }, { status: 400 });
+    }
+    const cappedMessages = messages.slice(-20);
 
     const apiKey = process.env.ORCA_API_KEY;
 
@@ -93,7 +103,7 @@ export async function POST(req) {
         model: 'deepseek/deepseek-v4-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...messages
+          ...cappedMessages
         ],
         temperature: newMood === 'hostile' ? 0.95 : 0.7, // more creative when roasting
       }),

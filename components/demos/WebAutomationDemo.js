@@ -9,9 +9,9 @@ const automationSteps = [
   {
     step: 2, action: 'Filling name field: "John Doe"', url: 'example.com/contact',
     content: (
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Name</label>
-        <input type="text" value="John Doe" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--primary)', borderRadius: '4px', color: 'var(--primary)', fontFamily: 'inherit' }} />
+      <div className="form-group">
+        <label className="form-label">Name</label>
+        <input type="text" value="John Doe" readOnly className="form-input" />
       </div>
     ),
   },
@@ -19,13 +19,13 @@ const automationSteps = [
     step: 3, action: 'Filling email field: "john@example.com"', url: 'example.com/contact',
     content: (
       <>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Name</label>
-          <input type="text" value="John Doe" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--primary)', borderRadius: '4px', color: 'var(--primary)', fontFamily: 'inherit' }} />
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input type="text" value="John Doe" readOnly className="form-input" />
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Email</label>
-          <input type="email" value="john@example.com" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--primary)', borderRadius: '4px', color: 'var(--primary)', fontFamily: 'inherit' }} />
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <input type="email" value="john@example.com" readOnly className="form-input" />
         </div>
       </>
     ),
@@ -34,21 +34,21 @@ const automationSteps = [
     step: 4, action: 'Submitting form...', url: 'example.com/contact',
     content: (
       <>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Name</label>
-          <input type="text" value="John Doe" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--primary)', borderRadius: '4px', color: 'var(--primary)', fontFamily: 'inherit' }} />
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input type="text" value="John Doe" readOnly className="form-input" />
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Email</label>
-          <input type="email" value="john@example.com" readOnly style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text)', fontFamily: 'inherit' }} />
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <input type="email" value="john@example.com" readOnly className="form-input" style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-dim)' }}>Message</label>
-          <textarea readOnly rows={3} style={{ width: '100%', padding: '10px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text)', fontFamily: 'inherit' }}>
+        <div className="form-group">
+          <label className="form-label">Message</label>
+          <textarea readOnly rows={3} className="form-textarea" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
             Hello, I would like to get in touch!
           </textarea>
         </div>
-        <button style={{ background: 'var(--primary)', color: 'var(--bg)', border: 'none', padding: '12px 24px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'inherit' }}>Submit</button>
+        <button className="form-submit">Submit</button>
       </>
     ),
   },

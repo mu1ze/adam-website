@@ -1,133 +1,23 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { skills } from '@/data/skills';
-import { plugins } from '@/data/plugins';
-import { GAME_NAMES } from '@/data/games';
-
-const BOOT_LINES = [
-  { text: 'ADAM Terminal v2.0 — Autonomous Digital Assistant Mind', delay: 0 },
-  { text: 'Copyright (c) 2026 ADAM Systems. All rights reserved.', delay: 100 },
-  { text: '', delay: 200 },
-  { text: '> Initializing kernel modules...', delay: 300 },
-  { text: '> Loading skill drivers [8/8]...............OK', delay: 600 },
-  { text: '> Loading plugin interfaces [12/12].........OK', delay: 900 },
-  { text: '> Establishing neural pathways..............OK', delay: 1200 },
-  { text: '> Memory subsystem online...................OK', delay: 1500 },
-  { text: '', delay: 1700 },
-  { text: 'System ready. Type "help" for available commands.', delay: 1800 },
-  { text: '', delay: 1900 },
-];
-
-const HELP_TEXT_FULL = `╔══════════════════════════════════════════════════════════════╗
-║                    AVAILABLE COMMANDS                        ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  NAVIGATION                                                  ║
-║    ls skills          List all installed skills               ║
-║    ls plugins         List all connected plugins             ║
-║    ls games           List all arcade games                  ║
-║    cat <name>         Show details of a skill or plugin       ║
-║    cd <page>          Navigate (home/skills/plugins/docs/    ║
-║                       ask/terminal/games/achievements)       ║
-║    leaderboard [game] Show arcade high scores                 ║
-║    badges [name]      List achievements or check player       ║
-║                                                              ║
-║  SYSTEM                                                      ║
-║    status             Show system status & metrics            ║
-║    whoami             Display current user identity           ║
-║    uptime             Show system uptime                      ║
-║    neofetch           System information display              ║
-║                                                              ║
-║  PLUGINS                                                     ║
-║    connect <plugin>   Simulate plugin OAuth connection        ║
-║    disconnect <plugin> Disconnect a plugin                    ║
-║    connections        List active plugin connections          ║
-║                                                              ║
-║  UTILITIES                                                   ║
-║    echo <text>        Print text to terminal                  ║
-║    clear              Clear terminal output                   ║
-║    history            Show command history                    ║
-║    player [name]      Show or set your callsign               ║
-║    theme [light|dark] Show or switch color theme              ║
-║    help               Show this help message                  ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝`;
-
-const HELP_TEXT_COMPACT = `── COMMANDS ──────────────
-
- NAVIGATION
-  ls skills      — List skills
-  ls plugins     — List plugins
-  ls games       — List games
-  cat <name>     — Show details
-  cd <page>      — Navigate
-  leaderboard    — High scores
-  badges [name]  — Achievements
-
- SYSTEM
-  status         — System stats
-  whoami         — User info
-  uptime         — Uptime
-  neofetch       — System info
-
- PLUGINS
-  connect <p>    — Connect
-  disconnect     — Disconnect
-  connections    — List active
-
- UTILITIES
-  echo <text>    — Print text
-  clear          — Clear screen
-  history        — Past commands
-  player [name]  — Callsign
-  theme [l|d]    — Color theme
-  help           — This help
-──────────────────────────`;
-
-const NEOFETCH = `
-        ██████╗     adam@neural-core
-       ██╔═══██╗    ──────────────────
-        ██║   ██║    OS:      ADAM OS v2.0
-       ██║   ██║    Host:    Neural Core Mk.IV
-       ██║▄▄▄██║    Kernel:  cortex-6.1.0-pretext
-       ╚██████╔╝    Uptime:  {UPTIME}
-        ╚═════╝     Shell:   adam-sh 2.0
-                    Terminal: ADAM Terminal
-    A  D  A  M      CPU:     Quantum Inference Engine
-                    Memory:  ∞ (elastic neural mesh)
-                    Skills:  8 loaded
-                    Plugins: 12 available
-                    Theme:   Cyberpunk Green
-`;
-
-function getUptime() {
-  const start = localStorage.getItem('adam_terminal_start');
-  if (!start) {
-    localStorage.setItem('adam_terminal_start', Date.now().toString());
-    return '0m 0s';
-  }
-  const elapsed = Date.now() - parseInt(start);
-  const hours = Math.floor(elapsed / 3600000);
-  const mins = Math.floor((elapsed % 3600000) / 60000);
-  const secs = Math.floor((elapsed % 60000) / 1000);
-  if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
-  return `${mins}m ${secs}s`;
-}
+import { BOOT_LINES, ALL_COMMANDS } from '@/data/terminalStrings';
+import { usePluginConnections } from '@/hooks/usePluginConnections';
+import { useCommandHistory } from '@/hooks/useCommandHistory';
+import { processCommand } from '@/commands';
+import { getLineColor } from '@/commands/system';
 
 export default function TerminalEmulator() {
   const [lines, setLines] = useState([]);
   const [input, setInput] = useState('');
   const [booted, setBooted] = useState(false);
-  const [cmdHistory, setCmdHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [connections, setConnections] = useState({});
   const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
   const router = useRouter();
+  const { connections, connect: connectPlugin, disconnect: disconnectPlugin } = usePluginConnections();
+  const { cmdHistory, addCommand, navigateUp, navigateDown, currentInput } = useCommandHistory();
 
-  // Detect mobile
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth <= 768); }
     check();
@@ -135,16 +25,6 @@ export default function TerminalEmulator() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Load persisted state
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('adam_terminal_history');
-    if (savedHistory) setCmdHistory(JSON.parse(savedHistory));
-
-    const savedConnections = localStorage.getItem('adam_terminal_connections');
-    if (savedConnections) setConnections(JSON.parse(savedConnections));
-  }, []);
-
-  // Boot sequence
   useEffect(() => {
     const timeouts = [];
     BOOT_LINES.forEach((line, i) => {
@@ -157,439 +37,47 @@ export default function TerminalEmulator() {
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
-  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [lines]);
 
-  // Focus input
   useEffect(() => {
     if (booted && inputRef.current) inputRef.current.focus();
   }, [booted]);
-
-  // Save connections
-  useEffect(() => {
-    if (Object.keys(connections).length > 0) {
-      localStorage.setItem('adam_terminal_connections', JSON.stringify(connections));
-    }
-  }, [connections]);
 
   const addLine = useCallback((text, type = 'output') => {
     setLines(prev => [...prev, { text, type }]);
   }, []);
 
-  const addLines = useCallback((texts, type = 'output') => {
-    setLines(prev => [...prev, ...texts.map(t => ({ text: t, type }))]);
-  }, []);
-
-  const processCommand = useCallback((rawCmd) => {
+  const runCommand = useCallback((rawCmd) => {
     const cmd = rawCmd.trim();
     if (!cmd) return;
 
-    // Add to history
-    const newHistory = [cmd, ...cmdHistory.filter(h => h !== cmd)].slice(0, 50);
-    setCmdHistory(newHistory);
-    localStorage.setItem('adam_terminal_history', JSON.stringify(newHistory));
-    setHistoryIndex(-1);
-
-    // Echo the command
+    addCommand(cmd);
     addLine(`adam@neural-core:~$ ${cmd}`, 'command');
 
     const parts = cmd.split(/\s+/);
     const command = parts[0].toLowerCase();
     const args = parts.slice(1);
 
-    switch (command) {
-      case 'help':
-        addLine(isMobile ? HELP_TEXT_COMPACT : HELP_TEXT_FULL, 'system');
-        break;
+    const result = processCommand({
+      command,
+      args,
+      addLine,
+      connections,
+      connectPlugin,
+      disconnectPlugin,
+      cmdHistory,
+      router,
+      isMobile,
+    });
 
-      case 'clear':
-        setLines([]);
-        break;
-
-      case 'ls': {
-        const target = args[0]?.toLowerCase();
-        if (target === 'skills') {
-          addLine('');
-          addLine('  INSTALLED SKILLS', 'system');
-          addLine('  ════════════════════════════════════════', 'system');
-          skills.forEach(s => {
-            addLine(`  ${s.icon}  ${s.title.padEnd(15)} [${s.category.toUpperCase()}]  ${s.tagline}`);
-          });
-          addLine('');
-          addLine(`  Total: ${skills.length} skills loaded.`, 'success');
-        } else if (target === 'plugins') {
-          addLine('');
-          addLine('  AVAILABLE PLUGINS', 'system');
-          addLine('  ════════════════════════════════════════', 'system');
-          plugins.forEach(p => {
-            const connected = connections[p.slug] ? '● CONNECTED' : '○ available';
-            const statusColor = connections[p.slug] ? 'success' : 'output';
-            addLine(`  ${p.icon}  ${p.title.padEnd(15)} [${p.category.toUpperCase().padEnd(14)}]  ${connected}`);
-          });
-          addLine('');
-          addLine(`  Total: ${plugins.length} plugins (${Object.keys(connections).length} connected).`, 'success');
-        } else if (target === 'games') {
-          addLine('');
-          addLine('  INSTALLED GAMES', 'system');
-          addLine('  ════════════════════════════════════════', 'system');
-          Object.entries(GAME_NAMES).forEach(([slug, title]) => {
-            addLine(`  🎮  ${title.padEnd(16)} [${slug}]`);
-          });
-          addLine('');
-          addLine(`  Total: ${Object.keys(GAME_NAMES).length} games loaded.`, 'success');
-        } else {
-          addLine('Usage: ls skills | ls plugins | ls games');
-        }
-        break;
-      }
-
-      case 'cat': {
-        const name = args.join(' ').toLowerCase();
-        const skill = skills.find(s => s.slug === name || s.title.toLowerCase() === name);
-        const plugin = plugins.find(p => p.slug === name || p.title.toLowerCase() === name);
-        const item = skill || plugin;
-
-        if (!item) {
-          addLine(`cat: ${name}: No such skill or plugin`, 'error');
-          addLine(`  Try: cat research, cat github, cat content ...`);
-          break;
-        }
-
-        addLine('');
-        addLine(`  ┌─── ${item.icon} ${item.title.toUpperCase()} ───`, 'system');
-        addLine(`  │ Category:  ${item.category}`);
-        addLine(`  │ Type:      ${skill ? 'Core Skill' : 'Plugin'}`);
-        addLine(`  │`);
-        addLine(`  │ ${item.description || item.tagline}`);
-        addLine(`  │`);
-        addLine(`  │ Capabilities:`, 'system');
-        item.capabilities.forEach(c => addLine(`  │   • ${c}`));
-        if (item.exampleUsage) {
-          addLine(`  │`);
-          addLine(`  │ Usage Examples:`, 'system');
-          item.exampleUsage.split('\n').forEach(l => addLine(`  │   ${l}`));
-        }
-        addLine(`  └${'─'.repeat(40)}`, 'system');
-        addLine('');
-        break;
-      }
-
-      case 'cd': {
-        const page = args[0]?.toLowerCase();
-        const routes = {
-          'home': '/', '/': '/',
-          'skills': '/skills',
-          'plugins': '/plugins',
-          'docs': '/docs',
-          'ask': '/ask-adam', 'ask-adam': '/ask-adam',
-          'terminal': '/terminal',
-          'games': '/games',
-          'achievements': '/achievements',
-          'badges': '/achievements',
-        };
-
-        if (!page || !routes[page]) {
-          addLine(`cd: ${page || '?'}: No such directory`, 'error');
-          addLine(`  Available: home, skills, plugins, docs, ask, terminal, games, achievements`);
-        } else {
-          addLine(`Navigating to ${page}...`, 'success');
-          setTimeout(() => router.push(routes[page]), 600);
-        }
-        break;
-      }
-
-      case 'status':
-        addLine('');
-        addLine('  ╔══════════ SYSTEM STATUS ══════════╗', 'system');
-        addLine(`  ║  Uptime:       ${getUptime().padEnd(19)}║`);
-        addLine(`  ║  CPU Load:     ${(Math.random() * 20 + 5).toFixed(1).padStart(5)}%${''.padEnd(13)}║`);
-        addLine(`  ║  Memory:       ${(Math.random() * 30 + 20).toFixed(1).padStart(5)}%${''.padEnd(13)}║`);
-        addLine(`  ║  Neural Cores: 8/8 active${''.padEnd(8)}║`);
-        addLine(`  ║  Skills:       ${skills.length}/8 loaded${''.padEnd(9)}║`);
-        addLine(`  ║  Plugins:      ${Object.keys(connections).length}/${plugins.length} connected${''.padEnd(5)}║`);
-        addLine(`  ║  API Status:   ● OPERATIONAL${''.padEnd(5)}║`, 'success');
-        addLine('  ╚══════════════════════════════════╝', 'system');
-        addLine('');
-        break;
-
-      case 'whoami':
-        addLine('');
-        addLine('  User:    root@adam-neural-core');
-        addLine('  Role:    System Administrator');
-        addLine('  Access:  Level 5 (Full Clearance)');
-        addLine('  Session: ' + new Date().toISOString());
-        addLine('');
-        break;
-
-      case 'uptime':
-        addLine(`  System uptime: ${getUptime()}`);
-        break;
-
-      case 'neofetch':
-        addLine(NEOFETCH.replace('{UPTIME}', getUptime()), 'system');
-        break;
-
-      case 'connect': {
-        const pluginName = args.join(' ').toLowerCase();
-        const plugin = plugins.find(p => p.slug === pluginName || p.title.toLowerCase() === pluginName);
-
-        if (!plugin) {
-          addLine(`connect: ${pluginName}: Plugin not found`, 'error');
-          addLine(`  Try: connect github, connect spotify ...`);
-          break;
-        }
-
-        if (connections[plugin.slug]) {
-          addLine(`  ${plugin.icon} ${plugin.title} is already connected.`, 'system');
-          break;
-        }
-
-        addLine('');
-        addLine(`  Initiating OAuth handshake with ${plugin.title}...`, 'system');
-
-        // Simulate OAuth flow
-        setTimeout(() => addLine(`  [1/4] Requesting authorization token...`), 400);
-        setTimeout(() => addLine(`  [2/4] Verifying credentials...`), 900);
-        setTimeout(() => addLine(`  [3/4] Exchanging tokens...`), 1400);
-        setTimeout(() => addLine(`  [4/4] Establishing secure channel...`), 1900);
-        setTimeout(() => {
-          setConnections(prev => ({ ...prev, [plugin.slug]: { connectedAt: new Date().toISOString() } }));
-          addLine('');
-          addLine(`  ✓ ${plugin.icon} ${plugin.title} connected successfully!`, 'success');
-          addLine(`    Capabilities unlocked: ${plugin.capabilities.length}`);
-          addLine('');
-        }, 2400);
-        break;
-      }
-
-      case 'disconnect': {
-        const pluginName = args.join(' ').toLowerCase();
-        const plugin = plugins.find(p => p.slug === pluginName || p.title.toLowerCase() === pluginName);
-
-        if (!plugin) {
-          addLine(`disconnect: ${pluginName}: Plugin not found`, 'error');
-          break;
-        }
-
-        if (!connections[plugin.slug]) {
-          addLine(`  ${plugin.icon} ${plugin.title} is not connected.`, 'system');
-          break;
-        }
-
-        setConnections(prev => {
-          const next = { ...prev };
-          delete next[plugin.slug];
-          localStorage.setItem('adam_terminal_connections', JSON.stringify(next));
-          return next;
-        });
-        addLine(`  ✗ ${plugin.icon} ${plugin.title} disconnected.`);
-        break;
-      }
-
-      case 'connections': {
-        const active = Object.entries(connections);
-        if (active.length === 0) {
-          addLine('  No active plugin connections.');
-          addLine('  Use "connect <plugin>" to connect one.');
-          break;
-        }
-        addLine('');
-        addLine('  ACTIVE CONNECTIONS', 'system');
-        addLine('  ══════════════════════════════════', 'system');
-        active.forEach(([slug, data]) => {
-          const plugin = plugins.find(p => p.slug === slug);
-          if (plugin) {
-            addLine(`  ● ${plugin.icon} ${plugin.title.padEnd(15)} Connected: ${data.connectedAt}`, 'success');
-          }
-        });
-        addLine('');
-        break;
-      }
-
-      case 'echo':
-        addLine(args.join(' '));
-        break;
-
-      case 'history': {
-        if (cmdHistory.length === 0) {
-          addLine('  No command history.');
-          break;
-        }
-        addLine('');
-        addLine('  COMMAND HISTORY', 'system');
-        addLine('  ══════════════════════════════════', 'system');
-        cmdHistory.slice(0, 20).forEach((h, i) => {
-          addLine(`  ${String(i + 1).padStart(3)}.  ${h}`);
-        });
-        addLine('');
-        break;
-      }
-
-      case 'leaderboard':
-      case 'games': {
-        const playerName = localStorage.getItem('adam_player_name') || 'GUEST';
-        const specificGame = args[0]?.toLowerCase();
-        const gameKeys = Object.keys(GAME_NAMES);
-        const gamesToFetch = specificGame ? (gameKeys.includes(specificGame) ? [specificGame] : null) : gameKeys;
-
-        if (!gamesToFetch) {
-          addLine(`leaderboard: ${specificGame}: Unknown game. Available: ${gameKeys.join(', ')}`, 'error');
-          break;
-        }
-
-        addLine('');
-        addLine('  ARCADE LEADERBOARDS', 'system');
-        addLine(`  Callsign: ${playerName}`);
-        addLine('  ══════════════════════════════════', 'system');
-
-        (async () => {
-          for (const game of gamesToFetch) {
-            addLine(`  [ ${GAME_NAMES[game]} ]`, 'success');
-            try {
-              const res = await fetch(`/api/scores?game=${game}`);
-              const data = await res.json();
-              const board = data.success ? data.scores : [];
-              if (board.length === 0) {
-                addLine('    No scores recorded.');
-              } else {
-                board.slice(0, 5).forEach((s, i) => {
-                  addLine(`    #${i + 1} ${s.name.padEnd(16)} ${s.score.toString().padStart(6)}`);
-                });
-
-                const personalScores = board.filter(s => s.name === playerName);
-                if (personalScores.length > 0) {
-                  const best = Math.max(...personalScores.map(s => s.score));
-                  addLine(`  > Personal Best: ${best}`, 'system');
-                }
-              }
-            } catch {
-              addLine('    Error reading scores.');
-            }
-            addLine('');
-          }
-        })();
-        break;
-      }
-
-      case 'date':
-        addLine(`  ${new Date().toString()}`);
-        break;
-
-      case 'ping':
-        addLine('  PING adam-neural-core (127.0.0.1): 56 data bytes');
-        setTimeout(() => addLine(`  64 bytes from 127.0.0.1: time=${(Math.random() * 2 + 0.1).toFixed(1)}ms`), 300);
-        setTimeout(() => addLine(`  64 bytes from 127.0.0.1: time=${(Math.random() * 2 + 0.1).toFixed(1)}ms`), 600);
-        setTimeout(() => addLine(`  64 bytes from 127.0.0.1: time=${(Math.random() * 2 + 0.1).toFixed(1)}ms`), 900);
-        setTimeout(() => {
-          addLine('');
-          addLine('  --- adam-neural-core ping statistics ---');
-          addLine('  3 packets transmitted, 3 received, 0% loss');
-        }, 1200);
-        break;
-
-      case 'player':
-      case 'name': {
-        if (args.length > 0) {
-          const newName = args.join(' ').substring(0, 16).toUpperCase();
-          localStorage.setItem('adam_player_name', newName);
-          addLine(`  Callsign updated: ${newName}`, 'success');
-        } else {
-          const current = localStorage.getItem('adam_player_name') || 'GUEST';
-          addLine(`  Current callsign: ${current}`);
-          addLine(`  Use "player {name}" to set a new callsign.`);
-        }
-        break;
-      }
-
-      case 'theme': {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        if (args.length > 0) {
-          const newTheme = args[0].toLowerCase();
-          if (newTheme === 'dark' || newTheme === 'light') {
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            addLine(`  Theme set to ${newTheme}.`, 'success');
-          } else {
-            addLine(`theme: ${newTheme}: Unknown theme. Use "light" or "dark".`, 'error');
-          }
-        } else {
-          addLine(`  Current theme: ${currentTheme}`);
-          addLine(`  Use "theme light" or "theme dark" to switch.`);
-        }
-        break;
-      }
-
-      case 'sudo':
-        addLine('  Nice try. You already have root access.', 'system');
-        break;
-
-      case 'badges':
-      case 'achievements': {
-        const ALL_BADGES = [
-          { id: 'first_score', name: 'FIRST_BLOOD', desc: 'Submit your first score' },
-          { id: 'score_100', name: 'CENTURY', desc: 'Score ≥100 in any game' },
-          { id: 'score_1000', name: 'KILO', desc: 'Score ≥1,000 in any game' },
-          { id: 'score_10000', name: 'DECA_KILO', desc: 'Score ≥10,000 in any game' },
-          { id: 'total_5', name: 'ROOKIE', desc: 'Play 5 total games' },
-          { id: 'total_25', name: 'VETERAN', desc: 'Play 25 total games' },
-          { id: 'total_100', name: 'LEGEND', desc: 'Play 100 total games' },
-          { id: 'pong_1000', name: 'PADDLE_MASTER', desc: 'Score ≥1,000 in Pong' },
-          { id: 'tetris_10000', name: 'STACK_KING', desc: 'Score ≥10,000 in Tetris' },
-          { id: 'bird_20', name: 'AERIAL_ACE', desc: 'Pass 20 pipes in Flappy Bird' },
-          { id: 'merge_512', name: 'TILE_ADEPT', desc: 'Score ≥1,000 in 2048' },
-        ];
-        const badgeName = args.join(' ').toLowerCase();
-        const playerName = badgeName || localStorage.getItem('adam_player_name') || 'GUEST';
-        addLine('');
-
-        if (!badgeName) {
-          addLine('  ALL ACHIEVEMENTS', 'system');
-          addLine('  ════════════════════════════════════════', 'system');
-          ALL_BADGES.forEach(b => {
-            addLine(`  ${b.name.padEnd(16)} ${b.desc}`);
-          });
-          addLine('');
-          addLine(`  Total: ${ALL_BADGES.length} achievements available.`, 'success');
-          addLine(`  Use "badges <name>" to check earned badges for a player.`);
-          break;
-        }
-
-        addLine(`  Fetching badges for ${playerName}...`, 'system');
-        (async () => {
-          try {
-            const res = await fetch(`/api/achievements?name=${encodeURIComponent(playerName)}`);
-            const data = await res.json();
-            const earned = data.success ? (data.earned || []) : [];
-            addLine('');
-            addLine(`  BADGES — ${playerName}`, 'system');
-            addLine('  ════════════════════════════════════════', 'system');
-            ALL_BADGES.forEach(b => {
-              const isEarned = earned.includes(b.id);
-              addLine(`  ${isEarned ? '●' : '○'} ${b.name.padEnd(16)} ${b.desc}`, isEarned ? 'success' : 'output');
-            });
-            addLine('');
-            addLine(`  Earned: ${earned.length}/${ALL_BADGES.length}`, earned.length > 0 ? 'success' : 'output');
-          } catch {
-            addLine('  Error fetching achievements.', 'error');
-          }
-        })();
-        break;
-      }
-
-      case 'exit':
-        addLine('  Closing terminal session...', 'system');
-        setTimeout(() => router.push('/'), 800);
-        break;
-
-      default:
-        addLine(`  adam-sh: ${command}: command not found`, 'error');
-        addLine(`  Type "help" for available commands.`);
+    if (result === 'clear') {
+      setLines([]);
     }
-  }, [addLine, addLines, cmdHistory, connections, router]);
+  }, [addLine, addCommand, connections, connectPlugin, disconnectPlugin, cmdHistory, router, isMobile]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -597,77 +85,46 @@ export default function TerminalEmulator() {
       addLine('adam@neural-core:~$ ', 'command');
       return;
     }
-    processCommand(input);
+    runCommand(input);
     setInput('');
   }
 
   function handleKeyDown(e) {
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (cmdHistory.length === 0) return;
-      const newIndex = Math.min(historyIndex + 1, cmdHistory.length - 1);
-      setHistoryIndex(newIndex);
-      setInput(cmdHistory[newIndex]);
+      navigateUp();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (historyIndex <= 0) {
-        setHistoryIndex(-1);
-        setInput('');
-        return;
-      }
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setInput(cmdHistory[newIndex]);
+      navigateDown();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      // Basic tab completion
       const partial = input.toLowerCase();
-      const allCommands = ['help', 'clear', 'ls', 'cat', 'cd', 'status', 'whoami', 'uptime', 'neofetch', 'connect', 'disconnect', 'connections', 'echo', 'history', 'date', 'ping', 'leaderboard', 'games', 'badges', 'achievements', 'player', 'name', 'theme', 'sudo', 'exit'];
-      const match = allCommands.find(c => c.startsWith(partial));
+      const match = ALL_COMMANDS.find(c => c.startsWith(partial));
       if (match) setInput(match + ' ');
     }
   }
 
-  function getLineColor(type) {
-    switch (type) {
-      case 'command': return '#888';
-      case 'system': return '#228B22';
-      case 'error': return '#ff5f57';
-      case 'success': return '#28ca41';
-      default: return '#e0e0e0';
-    }
-  }
+  useEffect(() => {
+    if (currentInput !== null) setInput(currentInput);
+  }, [currentInput]);
 
   return (
     <div
       className="terminal-shell"
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--code-bg)',
-        fontFamily: '"Courier New", monospace',
-        fontSize: isMobile ? '11px' : '14px',
-      }}
+      style={{ fontSize: isMobile ? '11px' : '14px' }}
       onClick={() => inputRef.current?.focus()}
     >
       <div
         ref={scrollRef}
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '20px',
-          paddingBottom: '0',
-        }}
+        className="terminal-scroll"
+        style={{ paddingBottom: '0' }}
       >
         {lines.map((line, i) => (
           <div
             key={i}
+            className="terminal-line"
             style={{
               color: getLineColor(line.type),
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              lineHeight: '1.5',
               minHeight: line.text === '' ? '14px' : 'auto',
             }}
           >
@@ -679,14 +136,10 @@ export default function TerminalEmulator() {
       {booted && (
         <form
           onSubmit={handleSubmit}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '10px 20px 20px',
-            gap: '8px',
-          }}
+          className="terminal-form"
+          style={{ padding: '10px 20px 20px' }}
         >
-          <span style={{ color: 'var(--primary)', whiteSpace: 'nowrap', fontSize: isMobile ? '10px' : '14px' }}>{isMobile ? '$' : 'adam@neural-core:~$'}</span>
+          <span className="terminal-prompt" style={{ fontSize: isMobile ? '10px' : '14px' }}>{isMobile ? '$' : 'adam@neural-core:~$'}</span>
           <input
             ref={inputRef}
             type="text"
@@ -694,16 +147,8 @@ export default function TerminalEmulator() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text)',
-              fontFamily: '"Courier New", monospace',
-              fontSize: isMobile ? '11px' : '14px',
-              caretColor: 'var(--primary)',
-            }}
+            className="terminal-input"
+            style={{ fontSize: isMobile ? '11px' : '14px' }}
             spellCheck="false"
             autoComplete="off"
             autoCapitalize="off"

@@ -51,10 +51,14 @@ export async function ensureSchema() {
       await db.execute(`
         CREATE TABLE IF NOT EXISTS players (
           name TEXT PRIMARY KEY,
-          password_hash TEXT NOT NULL,
+          password_hash TEXT,
+          device_id TEXT,
           created_at TEXT NOT NULL
         )
       `);
+      try {
+        await db.execute(`ALTER TABLE players ADD COLUMN device_id TEXT`);
+      } catch {}
       await db.execute(`
         CREATE TABLE IF NOT EXISTS achievements (
           id INTEGER PRIMARY KEY AUTOINCREMENT,

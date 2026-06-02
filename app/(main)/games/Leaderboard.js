@@ -28,10 +28,9 @@ export default function Leaderboard({ gameId, currentScore, playerName }) {
       .catch((err) => console.error("Failed to load scores", err));
   }, [gameId]);
 
-  const submitScore = useCallback(async (name, score, password) => {
+  const submitScore = useCallback(async (name, score, deviceId) => {
     try {
-      const body = { game: gameId, name, score: Math.round(score) };
-      if (password) body.password = password;
+      const body = { game: gameId, name, score: Math.round(score), deviceId };
       const res = await fetch('/api/scores', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

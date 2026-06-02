@@ -7,11 +7,14 @@ import DocxPagination from '../../_pagination'
 
 <div className="docx-content">
 
-<AsciiTitle>{` ____  _  _____ _     _     ____  
-/ ___|| |/ /_ _| |   | |   / ___| 
-\\___ \\| ' / | || |   | |   \\___ \\ 
- ___) | . \\ | || |___| |___ ___) |
-|____/|_|\\_\\___|_____|_____|____/ `}</AsciiTitle>
+<AsciiTitle>{`
+  ███████╗██╗  ██╗██╗██╗     ██╗     ███████╗
+  ██╔════╝██║ ██╔╝██║██║     ██║     ██╔════╝
+  ███████╗█████╔╝ ██║██║     ██║     ███████╗
+  ╚════██║██╔═██╗ ██║██║     ██║     ╚════██║
+  ███████║██║  ██╗██║███████╗███████╗███████║
+  ╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝
+`}</AsciiTitle>
 
 ## Skills
 
@@ -22,8 +25,7 @@ ADAM ships with **8 core skills**, each representing a domain of capability. Vis
     <div key={name} className="docx-feature-card">
       <h4>{emoji} {name}</h4>
       <p>{desc}</p>
-<DocxPagination />
-</div>
+    </div>
   ))}
 </div>
 
@@ -31,4 +33,5 @@ ADAM ships with **8 core skills**, each representing a domain of capability. Vis
 <MediaSlot id="media-skills-code" label="Code skill demo screenshot" />
 <MediaSlot id="media-skills-data" label="Data skill demo screenshot" />
 
+<DocxPagination />
 </div>

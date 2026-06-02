@@ -7,11 +7,14 @@ import DocxPagination from '../../_pagination'
 
 <div className="docx-content">
 
-<AsciiTitle>{` ____  _    _   _  ____ ___ _   _ ____  
-|  _ \\| |  | | | |/ ___|_ _| \\ | / ___| 
-| |_) | |  | | | | |  _ | ||  \\| \\___ \\ 
-|  __/| |__| |_| | |_| || || |\\  |___) |
-|_|   |_____\\___/ \\____|___|_| \\_|____/ `}</AsciiTitle>
+<AsciiTitle>{`
+  ██████╗ ██╗     ██╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
+  ██╔══██╗██║     ██║   ██║██╔════╝ ██║████╗  ██║██╔════╝
+  ██████╔╝██║     ██║   ██║██║  ███╗██║██╔██╗ ██║███████╗
+  ██╔═══╝ ██║     ██║   ██║██║   ██║██║██║╚██╗██║╚════██║
+  ██║     ███████╗╚██████╔╝╚██████╔╝██║██║ ╚████║███████║
+  ╚═╝     ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
+`}</AsciiTitle>
 
 ## Plugins
 
@@ -22,11 +25,11 @@ import DocxPagination from '../../_pagination'
     <div key={name} className="docx-feature-card">
       <h4>{emoji} {name}</h4>
       <p>{desc}</p>
-<DocxPagination />
-</div>
+    </div>
   ))}
 </div>
 
 <MediaSlot id="media-plugins-connect" label="Plugin connection flow GIF" />
 
+<DocxPagination />
 </div>

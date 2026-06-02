@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import client, { ensureSchema } from '@/data/db';
+import { rateLimit } from '@/lib/rateLimit';
 
 const BADGE_CRITERIA = [
   { id: 'first_score', name: 'FIRST_BLOOD', desc: 'Submit your first score', check: (game, score, totalPlays, badges) => totalPlays === 1 },
@@ -18,6 +18,9 @@ const BADGE_CRITERIA = [
 ];
 
 export async function GET(request) {
+  const rl = rateLimit(request, { limit: 120, windowMs: 60_000, keyPrefix: 'scores-read' });
+  if (rl) return rl;
+
   const { searchParams } = new URL(request.url);
   const game = searchParams.get('game');
   const id = searchParams.get('id');
@@ -48,7 +51,8 @@ export async function GET(request) {
     }
 
     if (recent) {
-      result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT ?', args: [parseInt(recent) || 10] });
+      const limit = Math.min(parseInt(recent) || 10, 100);
+      result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT ?', args: [limit] });
       return cors(NextResponse.json({ success: true, scores: result.rows }));
     }
 
@@ -60,32 +64,42 @@ export async function GET(request) {
     
     return cors(NextResponse.json({ success: true, scores: result.rows }));
   } catch (error) {
-    return cors(NextResponse.json({ success: false, error: error.message }, { status: 500 }));
+    return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
   }
 }
 
 export async function POST(request) {
+  const rl = rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'score' });
+  if (rl) return rl;
+
   try {
     await ensureSchema();
-    const { game, name, score, password } = await request.json();
+    const { game, name, score, deviceId } = await request.json();
     
-    if (!game || !name || typeof score !== 'number') {
+    if (!game || !name || typeof score !== 'number' || !deviceId) {
       return cors(NextResponse.json({ success: false, error: 'Missing or invalid fields' }, { status: 400 }));
+    }
+
+    if (score < 0 || !isFinite(score)) {
+      return cors(NextResponse.json({ success: false, error: 'Invalid score value' }, { status: 400 }));
     }
 
     const sanitizedName = name.substring(0, 16);
     const dateStr = new Date().toISOString().split('T')[0];
     const challengeId = crypto.randomBytes(4).toString('hex');
 
-    // Identity check
-    if (password) {
-      const playerResult = await client.execute({ sql: 'SELECT * FROM players WHERE name = ?', args: [sanitizedName] });
-      if (playerResult.rows.length > 0) {
-        const valid = bcrypt.compareSync(password, playerResult.rows[0].password_hash);
-        if (!valid) {
-          return cors(NextResponse.json({ success: false, error: 'WRONG_PASSWORD' }, { status: 403 }));
-        }
+    // Verify device identity — prevent score impersonation
+    const playerResult = await client.execute({ sql: 'SELECT device_id FROM players WHERE name = ?', args: [sanitizedName] });
+    if (playerResult.rows.length > 0) {
+      if (playerResult.rows[0].device_id !== deviceId) {
+        return cors(NextResponse.json({ success: false, error: 'IDENTITY_MISMATCH' }, { status: 403 }));
       }
+    } else {
+      // Auto-register on first score (device picks up the name)
+      await client.execute({
+        sql: 'INSERT INTO players (name, device_id, created_at) VALUES (?, ?, ?)',
+        args: [sanitizedName, deviceId, new Date().toISOString()],
+      });
     }
     
     const insertResult = await client.execute({
@@ -124,7 +138,7 @@ export async function POST(request) {
       awards: awards.length > 0 ? awards : undefined,
     }));
   } catch (error) {
-    return cors(NextResponse.json({ success: false, error: error.message }, { status: 500 }));
+    return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
   }
 }
 
@@ -138,4 +152,3 @@ function cors(response) {
 export async function OPTIONS() {
   return cors(new NextResponse(null, { status: 204 }));
 }
-

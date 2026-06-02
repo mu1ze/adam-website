@@ -20,7 +20,7 @@ const BULLET_HEIGHT = 15;
 export default function SpaceInvadersPage() {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
-  const { name, password, showPrompt, changeName, promptComponent } = usePlayerName();
+  const { name, deviceId, showPrompt, changeName, promptComponent } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
 
   const [gameState, setGameState] = useState('READY');
@@ -86,14 +86,14 @@ export default function SpaceInvadersPage() {
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
     if (name) {
-      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, deviceId).then(result => setFinalRank(result.rank));
     }
   };
 
   const handleWin = (finalScore) => {
     setGameState('WIN');
     if (name) {
-      submitScore(name, finalScore, password).then(result => setFinalRank(result.rank));
+      submitScore(name, finalScore, deviceId).then(result => setFinalRank(result.rank));
     }
   };
 
@@ -360,60 +360,7 @@ export default function SpaceInvadersPage() {
 
   return (
     <div className="game-page" data-theme="dark">
-      {/* Name Prompt Modal */}
-      {showPrompt && (
-        <div className="name-prompt-overlay" style={{ zIndex: 3000 }}>
-          <div className="name-prompt-box">
-            <h3 className="name-prompt-title">&gt; IDENTIFY_USER</h3>
-            <p className="name-prompt-sub">Register a callsign for the leaderboard. Returning? Use the same name + password.</p>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              const newName = (formData.get('playername') || 'Guest').trim().substring(0, 16);
-              const newPass = (formData.get('playerpass') || '').trim();
-              if (!newName || !newPass || newPass.length < 4) {
-                alert('Name and password (4+ chars) required');
-                return;
-              }
-              try {
-                let res = await fetch('/api/register', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ name: newName, password: newPass }),
-                });
-                let data = await res.json();
-                if (!data.success && data.error !== 'NAME_TAKEN') {
-                  alert(data.error || 'Registration failed');
-                  return;
-                }
-                localStorage.setItem('adam_player_name', newName);
-                localStorage.setItem('adam_player_pass', newPass);
-                setName(newName, newPass);
-              } catch {
-                alert('Connection error. Try again.');
-              }
-            }}>
-              <input
-                name="playername"
-                className="name-prompt-input"
-                placeholder="Callsign (max 16 char)"
-                maxLength={16}
-                autoFocus
-                defaultValue={name}
-              />
-              <input
-                name="playerpass"
-                className="name-prompt-input"
-                type="password"
-                placeholder="Password (4+ chars)"
-                maxLength={64}
-                style={{ marginTop: '8px' }}
-              />
-              <button type="submit" className="name-prompt-btn" style={{ marginTop: '12px' }}>INITIALIZE</button>
-            </form>
-          </div>
-        </div>
-      )}
+      {promptComponent}
 
       {/* Top Bar */}
       <div className="game-top-bar">

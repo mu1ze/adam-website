@@ -57,7 +57,7 @@ export default function AchievementsClient() {
   const unlockedCount = earned.length;
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', fontFamily: '"Courier New", monospace', padding: '40px 20px' }}>
+    <main className="page-shell" style={{ padding: '40px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <Link href="/" style={{ color: 'var(--text-dim)', textDecoration: 'none', fontSize: '12px' }}>← RETURN_TO_HUB</Link>
 
@@ -72,30 +72,10 @@ export default function AchievementsClient() {
             placeholder="Enter player name..."
             maxLength={16}
             defaultValue={name}
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)',
-              color: 'var(--text)',
-              padding: '10px 14px',
-              fontFamily: 'inherit',
-              fontSize: '14px',
-              borderRadius: '4px',
-              flex: 1,
-              maxWidth: '280px',
-            }}
+            className="form-input"
+            style={{ maxWidth: '280px', background: 'var(--bg-secondary)', borderColor: 'var(--border)', color: 'var(--text)' }}
           />
-          <button type="submit" style={{
-            background: 'var(--primary)',
-            color: 'var(--bg)',
-            border: 'none',
-            padding: '10px 20px',
-            fontFamily: 'inherit',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            letterSpacing: '1px',
-          }}>
+          <button type="submit" className="form-submit" style={{ fontWeight: 'bold', letterSpacing: '1px' }}>
             {loading ? '...' : 'LOOKUP'}
           </button>
         </form>
@@ -110,10 +90,9 @@ export default function AchievementsClient() {
           {ALL_BADGES.map(badge => {
             const unlocked = earnedSet.has(badge.id);
             return (
-              <div key={badge.id} style={{
-                background: unlocked ? 'var(--bg-secondary)' : 'rgba(255,255,255,0.02)',
-                border: unlocked ? '1px solid var(--primary)' : '1px solid var(--border)',
-                borderRadius: '8px',
+              <div key={badge.id} className="card" style={{
+                background: unlocked ? undefined : 'rgba(255,255,255,0.02)',
+                borderColor: unlocked ? 'var(--primary)' : undefined,
                 padding: '18px',
                 display: 'flex',
                 alignItems: 'center',

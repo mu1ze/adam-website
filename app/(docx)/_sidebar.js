@@ -122,15 +122,16 @@ export default function DocxSidebar() {
         <button
           className="docx-sidebar-theme-btn"
           onClick={toggleTheme}
-          title={collapsed ? themeText : undefined}
+          title={themeText}
         >
           <span className="docx-sidebar-theme-icon">{themeLabel}</span>
-          {!collapsed && <span className="docx-sidebar-theme-label">{themeText}</span>}
+          <span className="docx-sidebar-theme-label">{themeText}</span>
         </button>
         <button
           className="docx-sidebar-collapse"
           onClick={() => setCollapsed(c => !c)}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? '▸' : '◂'}
         </button>

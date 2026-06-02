@@ -21,7 +21,6 @@ export default function AskAdamClient() {
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Load saved state + check if disclaimer was already acknowledged
   useEffect(() => {
     const savedMessages = localStorage.getItem('adam_messages');
     const savedMood = localStorage.getItem('adam_mood');
@@ -37,7 +36,6 @@ export default function AskAdamClient() {
     if (!disclaimerSeen) setShowDisclaimer(true);
   }, []);
 
-  // Persist state
   useEffect(() => {
     if (messages.length > 0) {
         localStorage.setItem('adam_messages', JSON.stringify(messages));
@@ -45,14 +43,12 @@ export default function AskAdamClient() {
     localStorage.setItem('adam_mood', mood);
   }, [messages, mood]);
 
-  // Auto scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading, thought]);
 
-  // Thought cycling
   useEffect(() => {
       let interval;
       if (isLoading) {
@@ -67,7 +63,6 @@ export default function AskAdamClient() {
   const dismissDisclaimer = () => {
     setShowDisclaimer(false);
     sessionStorage.setItem('adam_disclaimer_seen', 'true');
-    // Focus the input after dismissing
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -85,7 +80,6 @@ export default function AskAdamClient() {
         return;
     }
 
-    // Detect /search command
     const trimmedInput = input.trim();
     const searchInputMatch = trimmedInput.match(/^\/search\s+(.+)/is);
     const searchOnlyCommand = /^\/search\s*$/i.test(trimmedInput);
@@ -141,40 +135,15 @@ export default function AskAdamClient() {
 
   return (
     <>
-      {/* ═══ DISCLAIMER POPUP ═══ */}
+      {/* DISCLAIMER POPUP */}
       {showDisclaimer && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 3000,
-          background: 'rgba(0, 0, 0, 0.88)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backdropFilter: 'blur(6px)',
-          animation: 'fadeIn 0.3s ease',
-        }}>
-          <div style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--warning)',
-            borderRadius: '12px',
-            padding: '32px',
-            maxWidth: '460px',
-            width: '90%',
-            textAlign: 'center',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 170, 0, 0.1)',
-            fontFamily: '"Courier New", monospace',
-          }}>
+        <div className="modal-overlay">
+          <div className="modal-box">
             <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚠️</div>
             <h3 style={{ color: 'var(--warning)', fontSize: '16px', letterSpacing: '2px', marginBottom: '16px' }}>
               TESTING PHASE
             </h3>
-            <p style={{
-              color: 'var(--text-dim)',
-              fontSize: '13px',
-              lineHeight: '1.8',
-              marginBottom: '24px',
-            }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
               ADAM is a highly advanced, cooperative autonomous entity designed to be <span style={{ color: 'var(--primary)' }}>friendly and helpful</span>. 
               However, if you choose to <span style={{ color: hostileAccent }}>instigate him</span>, you are entirely left with the consequences of your actions.
               <br /><br />
@@ -188,7 +157,6 @@ export default function AskAdamClient() {
                 border: 'none',
                 padding: '12px 36px',
                 borderRadius: '6px',
-                fontFamily: '"Courier New", monospace',
                 fontSize: '14px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
@@ -203,13 +171,8 @@ export default function AskAdamClient() {
         </div>
       )}
 
-      {/* ═══ FULL-PAGE CHAT ═══ */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0,
-      }}>
+      {/* FULL-PAGE CHAT */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {/* Status bar */}
         <div style={{
           display: 'flex',
@@ -219,7 +182,6 @@ export default function AskAdamClient() {
           background: isHostile ? 'rgba(255, 34, 68, 0.06)' : 'rgba(0, 255, 136, 0.03)',
           borderBottom: `1px solid ${isHostile ? hostileAccent + '44' : 'var(--border)'}`,
           fontSize: '11px',
-          fontFamily: '"Courier New", monospace',
           color: isHostile ? hostileAccent : 'var(--text-dim)',
           transition: 'all 0.5s ease',
           flexShrink: 0,
@@ -267,17 +229,12 @@ export default function AskAdamClient() {
                   background: isUser
                     ? (isHostile ? 'rgba(255, 34, 68, 0.1)' : 'rgba(0, 255, 136, 0.08)')
                     : 'transparent',
-                  border: isUser
-                    ? `1px solid ${currentAccent}44`
-                    : 'none',
-                  color: isUser
-                    ? 'var(--text)'
-                    : isHostileReply ? hostileAccent : 'var(--primary)',
+                  border: isUser ? `1px solid ${currentAccent}44` : 'none',
+                  color: isUser ? 'var(--text)' : isHostileReply ? hostileAccent : 'var(--primary)',
                   padding: isUser ? '10px 14px' : '4px 0',
                   borderRadius: isUser ? '12px 12px 4px 12px' : '0',
                   maxWidth: '85%',
                   width: isUser ? 'auto' : '100%',
-                  fontFamily: '"Courier New", monospace',
                   fontSize: '14px',
                   lineHeight: '1.7',
                   whiteSpace: 'pre-wrap',
@@ -288,15 +245,9 @@ export default function AskAdamClient() {
                 {parts.map((part, i) => {
                    if (i % 2 !== 0) {
                       return (
-                        <pre key={i} style={{
+                        <pre key={i} className="code-block" style={{
                           margin: '10px 0',
-                          padding: '12px',
-                          background: 'var(--bg-secondary)',
-                          border: `1px solid ${isHostileReply ? hostileAccent + '44' : 'var(--border)'}`,
-                          borderRadius: '6px',
-                          fontSize: '13px',
                           color: isHostileReply ? hostileAccent : 'var(--primary-dim)',
-                          overflowX: 'auto',
                         }}>
                           <code>{part.replace(/^\w+\n/, '')}</code>
                         </pre>
@@ -338,7 +289,6 @@ export default function AskAdamClient() {
             padding: '0 12px',
             color: currentAccent,
             fontSize: '14px',
-            fontFamily: '"Courier New", monospace',
             transition: 'color 0.5s ease',
           }}>
             &gt;
@@ -355,7 +305,6 @@ export default function AskAdamClient() {
               border: 'none',
               padding: '16px 0',
               color: 'var(--text)',
-              fontFamily: '"Courier New", monospace',
               fontSize: '14px',
               outline: 'none',
             }}
@@ -371,7 +320,6 @@ export default function AskAdamClient() {
               borderLeft: `1px solid ${isHostile ? hostileAccent + '22' : 'var(--border)'}`,
               padding: '16px 20px',
               cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-              fontFamily: '"Courier New", monospace',
               fontWeight: 'bold',
               fontSize: '13px',
               letterSpacing: '1px',

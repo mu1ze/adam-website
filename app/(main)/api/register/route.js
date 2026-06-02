@@ -1,31 +1,39 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import client, { ensureSchema } from '@/data/db';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request) {
+  const rl = rateLimit(request, { limit: 5, windowMs: 60_000, keyPrefix: 'register' });
+  if (rl) return rl;
+
   try {
     await ensureSchema();
-    const { name, password } = await request.json();
+    const { name, deviceId } = await request.json();
 
-    if (!name || !password || name.length < 1 || password.length < 4) {
-      return NextResponse.json({ success: false, error: 'Name and password (4+ chars) required' }, { status: 400 });
+    if (!name || !deviceId || name.length < 1) {
+      return NextResponse.json({ success: false, error: 'Name and device ID required' }, { status: 400 });
     }
 
     const sanitizedName = name.trim().substring(0, 16);
 
-    const existing = await client.execute({ sql: 'SELECT name FROM players WHERE name = ?', args: [sanitizedName] });
+    // Check if name is already registered to a different device
+    const existing = await client.execute({ sql: 'SELECT name, device_id FROM players WHERE name = ?', args: [sanitizedName] });
     if (existing.rows.length > 0) {
-      return NextResponse.json({ success: false, error: 'NAME_TAKEN' }, { status: 409 });
+      const row = existing.rows[0];
+      // Same device re-registering is fine (e.g. name change flow)
+      if (row.device_id !== deviceId) {
+        return NextResponse.json({ success: false, error: 'NAME_TAKEN' }, { status: 409 });
+      }
     }
 
-    const hash = bcrypt.hashSync(password, 10);
+    // Upsert: insert or update device_id for this name
     await client.execute({
-      sql: 'INSERT INTO players (name, password_hash, created_at) VALUES (?, ?, ?)',
-      args: [sanitizedName, hash, new Date().toISOString()],
+      sql: 'INSERT INTO players (name, device_id, created_at) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET device_id = excluded.device_id',
+      args: [sanitizedName, deviceId, new Date().toISOString()],
     });
 
     return NextResponse.json({ success: true, name: sanitizedName });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
