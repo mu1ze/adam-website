@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
-import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
+import GamePauseMenu from '@/components/GamePauseMenu';
+import { useGameControls } from '../useGameControls';
+import GameLayout from '../GameLayout';
 import '../games.css';
 
 const SIZE = 4;
@@ -115,21 +116,15 @@ export default function TwoZeroFourEightPage() {
   gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
-  const [isMobile, setIsMobile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
   const stateRef = useRef({
     board: createBoard(),
     score: 0,
     hasWon: false,
   });
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const startGame = () => {
     let board = createBoard();
@@ -156,10 +151,7 @@ export default function TwoZeroFourEightPage() {
       if (name) submitScore(name, state.score, deviceId).then(result => setFinalRank(result.rank));
     }
 
-    if (!hasMoves(state.board)) {
-      handleGameOver();
-    }
-
+    if (!hasMoves(state.board)) handleGameOver();
     render();
   };
 
@@ -178,13 +170,9 @@ export default function TwoZeroFourEightPage() {
     const ctx = canvas.getContext('2d');
     const { board } = stateRef.current;
 
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Grid background
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++) {
         const x = GAP + c * (CELL + GAP);
@@ -195,7 +183,6 @@ export default function TwoZeroFourEightPage() {
         ctx.fill();
       }
 
-    // Tiles
     board.forEach((row, r) => row.forEach((val, c) => {
       if (!val) return;
       const x = GAP + c * (CELL + GAP);
@@ -213,26 +200,10 @@ export default function TwoZeroFourEightPage() {
     }));
   };
 
-  useEffect(() => {
-    render();
-  }, []);
+  useEffect(() => { render(); }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        }
-        return;
-      }
-      if (e.key === 'p') {
-        e.preventDefault();
-        const gs = gameStateRef.current;
-        if (gs === 'PLAYING') setGameState('PAUSED');
-        else if (gs === 'PAUSED') setGameState('PLAYING');
-        return;
-      }
       e.preventDefault();
       if (e.key === 'ArrowLeft') doMove('left');
       else if (e.key === 'ArrowRight') doMove('right');
@@ -261,124 +232,89 @@ export default function TwoZeroFourEightPage() {
     touchStartRef.current = null;
   };
 
-  const handlePause = () => {
-    const gs = gameStateRef.current;
-    if (gs === 'PLAYING') setGameState('PAUSED');
-    else if (gs === 'PAUSED') setGameState('PLAYING');
-  };
-
-  const handleFullscreen = () => {
-    const el = canvasRef.current?.parentElement;
-    if (!el) return;
-    try {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      } else {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      }
-    } catch {}
-  };
-
   return (
     <div className="game-page" data-theme="dark">
       {promptComponent}
 
-      <div className="game-top-bar">
-        <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
-        <div className="game-title-bar"><span className="game-title">2048</span></div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PauseButton onClick={() => handlePause()} />
-          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>[FULLSCREEN]</span>
-          <span className="game-player-name" onClick={changeName}>&gt; {name || 'GUEST'} [CHANGE]</span>
+      <GameLayout
+        gameTitle="2048"
+        gameId="2048"
+        name={name}
+        changeName={changeName}
+        handlePause={handlePause}
+        handleFullscreen={handleFullscreen}
+        isMobile={isMobile}
+        showLeaderboard={showLeaderboard}
+        setShowLeaderboard={setShowLeaderboard}
+        LeaderboardUI={LeaderboardUI}
+        scores={scores}
+        newRank={newRank}
+      >
+        <div className="game-hud">
+          <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: '#edc22e' }}>{score}</div></div>
         </div>
-      </div>
 
-      <div className="game-hud">
-        <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: '#edc22e' }}>{score}</div></div>
-      </div>
+        <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
+          <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }} />
 
-      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
-        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }} />
-
-        {gameState === 'READY' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title">2048</div>
-            <div className="game-overlay-sub">Join the tiles and get to 2048!</div>
-            <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
-            <div className="game-overlay-controls">
-              <p>Desktop: Arrow Keys to Slide</p>
-              <p>Mobile: Swipe Directions</p>
+          {gameState === 'READY' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title">2048</div>
+              <div className="game-overlay-sub">Join the tiles and get to 2048!</div>
+              <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
+              <div className="game-overlay-controls">
+                <p>Desktop: Arrow Keys to Slide</p>
+                <p>Mobile: Swipe Directions</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {gameState === 'WIN' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: '#edc22e' }}>TILE_2048_ACHIEVED</div>
-            <div className="game-overlay-sub">You reached 2048! Keep going for a higher score.</div>
-            <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
-            {finalRank >= 0 && (
-              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
-            )}
-            <button className="game-overlay-btn" onClick={() => setGameState('PLAYING')}>CONTINUE</button>
-            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
-          </div>
-        )}
+          {gameState === 'WIN' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title" style={{ color: '#edc22e' }}>TILE_2048_ACHIEVED</div>
+              <div className="game-overlay-sub">You reached 2048! Keep going for a higher score.</div>
+              <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
+              {finalRank >= 0 && (
+                <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              )}
+              <button className="game-overlay-btn" onClick={() => setGameState('PLAYING')}>CONTINUE</button>
+              <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
+            </div>
+          )}
 
-        {gameState === 'GAMEOVER' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>GRIDLOCK</div>
-            <div className="game-overlay-sub">No valid moves remaining.</div>
-            <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
-            {finalRank >= 0 && (
-              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
-            )}
-            <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
-          </div>
-        )}
+          {gameState === 'GAMEOVER' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title" style={{ color: 'var(--error)' }}>GRIDLOCK</div>
+              <div className="game-overlay-sub">No valid moves remaining.</div>
+              <div className="game-overlay-score" style={{ color: '#edc22e' }}>{score}</div>
+              {finalRank >= 0 && (
+                <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              )}
+              <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+              <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
+            </div>
+          )}
 
-        {gameState === 'PAUSED' && (
-          <GamePauseMenu
-            isPaused={true}
-            onResume={() => setGameState('PLAYING')}
-            onFullscreen={handleFullscreen}
-            gameTitle="2048"
-            playerName={name}
-            hudItems={[
-              { label: 'SCORE', value: score, color: '#edc22e' },
-            ]}
-            controls={[
-              { keys: ['←', '↑', '↓', '→'], desc: 'Slide Tiles' },
-              { keys: ['R'], desc: 'Restart' },
-            ]}
-            LeaderboardUI={LeaderboardUI}
-            scores={scores}
-            newRank={newRank}
-            gameId="2048"
-          />
-        )}
-      </div>
-
-      <div className="game-bottom">
-        {!isMobile && (
-          <div className="game-controls-hint">
-            <span className="control-hint"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> Slide Tiles</span>
-            <span className="control-hint"><kbd>R</kbd> Restart</span>
-          </div>
-        )}
-        <LeaderboardUI scores={scores} newRank={newRank} gameId="2048" />
-      </div>
-
-      <button className="leaderboard-toggle-btn" onClick={() => setShowLeaderboard(true)}>🏆 SCORES</button>
-      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
-        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
-          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
-          <LeaderboardUI scores={scores} newRank={newRank} gameId="2048" />
+          {gameState === 'PAUSED' && (
+            <GamePauseMenu
+              isPaused={true}
+              onResume={() => setGameState('PLAYING')}
+              onFullscreen={handleFullscreen}
+              gameTitle="2048"
+              playerName={name}
+              hudItems={[{ label: 'SCORE', value: score, color: '#edc22e' }]}
+              controls={[
+                { keys: ['←', '↑', '↓', '→'], desc: 'Slide Tiles' },
+                { keys: ['R'], desc: 'Restart' },
+              ]}
+              LeaderboardUI={LeaderboardUI}
+              scores={scores}
+              newRank={newRank}
+              gameId="2048"
+            />
+          )}
         </div>
-      </div>
+      </GameLayout>
 
       <GameStructuredData name="2048" description="Join the numbers and get to the 2048 tile! Swipe to move all tiles. When two tiles with the same number touch, they merge into one. Strategic puzzle with global leaderboards." url="/games/2048" />
     </div>

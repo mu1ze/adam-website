@@ -40,17 +40,18 @@
   **Files created:** `commands/index.js`, `commands/system.js`, `commands/navigation.js`, `commands/plugins.js`, `commands/gaming.js`, `commands/utility.js`, `data/terminalStrings.js`, `hooks/usePluginConnections.js`, `hooks/useCommandHistory.js`
   **Files changed:** `components/TerminalEmulator.js`
 
-- [~] **M4 — Game code duplication is severe** (partially resolved)
-  ✅ Inline name prompts removed from 5 games — all now use shared `promptComponent` from `usePlayerName`. Remaining duplication: `handleFullscreen`, `handlePause`, `isMobile` listener, mobile leaderboard overlay, top bar JSX still copy-pasted across all 6 games.
-  **Files:** All 6 game `page.js` files in `app/(main)/games/`
+- [x] **M4 — Game code duplication is severe** ✅ DONE
+  Extracted shared game logic into `useGameControls` hook (handleFullscreen, handlePause, isMobile listener, Escape/P key handlers) and `GameLayout` wrapper component (top bar, mobile leaderboard overlay, bottom controls). All 6 games now import from shared modules.
+  **Files created:** `app/(main)/games/useGameControls.js`, `app/(main)/games/GameLayout.js`
+  **Files changed:** All 6 game `page.js` files
 
-- [ ] **M5 — No design token system / globals.css is 898 lines of flat CSS**
-  At least 15 different spacing values and 20 different font sizes used ad-hoc. No spacing scale, no typography scale, no border-radius tokens, no shadow tokens. Same card pattern independently styled for skills, plugins, games, and docs.
-  **Files:** `app/globals.css`, `app/(main)/games/games.css`
+- [x] **M5 — No design token system / globals.css is 898 lines of flat CSS** ✅ DONE
+  Added comprehensive design token system to `:root` in `globals.css`: spacing scale (--space-2xs through --space-4xl), font size scale (--font-size-2xs through --font-size-hero), border radius tokens (--radius-sm through --radius-full), shadow/glow tokens (--shadow-sm/md/lg, --glow-sm/md/lg, --shadow-panel), transition tokens (--duration-fast/base/slow), and layout tokens (--container-max, --sidebar-width, --touch-target).
+  **Files changed:** `app/globals.css`
 
-- [ ] **M6 — `docx.css` is dead code / duplicate styles**
-  `docx.css` is never imported. The `docx/layout.js` reinvents all docx styles in a `<style>` tag with slightly different values. Two competing style definitions for the same selectors.
-  **Files:** `app/(docx)/docx/docx.css`, `app/(docx)/layout.js`
+- [x] **M6 — `docx.css` is dead code / duplicate styles** ✅ DONE
+  Deleted `app/(docx)/docx/docx.css` (273 lines) — confirmed never imported anywhere. The active styles live in `app/(docx)/layout.js` inline `<style>` tag.
+  **Files deleted:** `app/(docx)/docx/docx.css`
 
 ---
 
@@ -167,6 +168,6 @@
 | Phase | Status | Completed |
 |-------|--------|-----------|
 | C1–C4 (Critical security) | ✅ Done | C1 ✅, C2 ✅, C3 ✅, C4 ✅ |
-| M1–M6 (Major architecture) | 🟡 In Progress | M1 ✅, M2 ✅, M3 ✅ |
+| M1–M6 (Major architecture) | ✅ Done | M1 ✅, M2 ✅, M3 ✅, M4 ✅, M5 ✅, M6 ✅ |
 | O1–O11 (Moderate) | ⬜ Pending | |
 | L1–L14 (Minor) | ⬜ Pending | |

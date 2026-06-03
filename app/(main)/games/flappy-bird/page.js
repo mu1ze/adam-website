@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
-import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
+import GamePauseMenu from '@/components/GamePauseMenu';
+import { useGameControls } from '../useGameControls';
+import GameLayout from '../GameLayout';
 import '../games.css';
 
 const GAME_WIDTH = 400;
@@ -30,8 +31,9 @@ export default function FlappyBirdPage() {
   gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
-  const [isMobile, setIsMobile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
   const stateRef = useRef({
     birdY: GAME_HEIGHT / 2,
@@ -39,13 +41,6 @@ export default function FlappyBirdPage() {
     pipes: [],
     score: 0,
   });
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const startGame = () => {
     stateRef.current = { birdY: GAME_HEIGHT / 2, birdVelocity: 0, pipes: [], score: 0 };
@@ -71,7 +66,6 @@ export default function FlappyBirdPage() {
 
     const update = () => {
       const state = stateRef.current;
-
       state.birdVelocity += GRAVITY;
       state.birdY += state.birdVelocity;
 
@@ -89,14 +83,12 @@ export default function FlappyBirdPage() {
         const p = state.pipes[i];
         p.x -= PIPE_SPEED;
 
-        // Score when bird passes pipe
         if (!p.scored && p.x + PIPE_WIDTH < BIRD_X) {
           p.scored = true;
           state.score++;
           setScore(state.score);
         }
 
-        // Collision check
         const birdLeft = BIRD_X;
         const birdRight = BIRD_X + BIRD_SIZE;
         const birdTop = state.birdY;
@@ -128,14 +120,12 @@ export default function FlappyBirdPage() {
     const ctx = canvas.getContext('2d');
     const { birdY, pipes } = stateRef.current;
 
-    // Sky
     const skyGrad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
     skyGrad.addColorStop(0, '#0a1628');
     skyGrad.addColorStop(1, '#141e30');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Stars
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     for (let i = 0; i < 20; i++) {
       const sx = (i * 97 + 23) % GAME_WIDTH;
@@ -143,30 +133,24 @@ export default function FlappyBirdPage() {
       ctx.fillRect(sx, sy, 2, 2);
     }
 
-    // Ground
     ctx.fillStyle = '#2d5016';
     ctx.fillRect(0, GAME_HEIGHT - 20, GAME_WIDTH, 20);
     ctx.fillStyle = '#4a7c24';
     ctx.fillRect(0, GAME_HEIGHT - 20, GAME_WIDTH, 4);
 
-    // Pipes
     pipes.forEach(p => {
       ctx.fillStyle = '#2d5016';
       ctx.fillRect(p.x, 0, PIPE_WIDTH, p.gapY);
       ctx.fillRect(p.x, p.gapY + PIPE_GAP, PIPE_WIDTH, GAME_HEIGHT - p.gapY - PIPE_GAP);
-
-      // Pipe caps
       ctx.fillStyle = '#4a7c24';
       ctx.fillRect(p.x - 4, p.gapY - 30, PIPE_WIDTH + 8, 30);
       ctx.fillRect(p.x - 4, p.gapY + PIPE_GAP, PIPE_WIDTH + 8, 30);
-
       ctx.strokeStyle = '#1a3a0a';
       ctx.lineWidth = 2;
       ctx.strokeRect(p.x - 4, p.gapY - 30, PIPE_WIDTH + 8, 30);
       ctx.strokeRect(p.x - 4, p.gapY + PIPE_GAP, PIPE_WIDTH + 8, 30);
     });
 
-    // Bird
     const birdRotation = Math.min(Math.max(stateRef.current.birdVelocity * 0.05, -0.5), 0.5);
     ctx.save();
     ctx.translate(BIRD_X + BIRD_SIZE / 2, birdY + BIRD_SIZE / 2);
@@ -175,7 +159,6 @@ export default function FlappyBirdPage() {
     ctx.beginPath();
     ctx.ellipse(0, 2, BIRD_SIZE / 2, BIRD_SIZE / 2 - 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    // Eye
     ctx.fillStyle = '#0a0a0a';
     ctx.beginPath();
     ctx.arc(BIRD_SIZE / 4, -2, 5, 0, Math.PI * 2);
@@ -184,14 +167,12 @@ export default function FlappyBirdPage() {
     ctx.beginPath();
     ctx.arc(BIRD_SIZE / 4 + 1, -3, 2, 0, Math.PI * 2);
     ctx.fill();
-    // Beak
     ctx.fillStyle = '#ffaa00';
     ctx.beginPath();
     ctx.moveTo(BIRD_SIZE / 2 + 2, 2);
     ctx.lineTo(BIRD_SIZE / 2 + 14, 6);
     ctx.lineTo(BIRD_SIZE / 2 + 2, 10);
     ctx.fill();
-    // Wing
     ctx.fillStyle = '#00cc66';
     ctx.beginPath();
     ctx.ellipse(-4, 4, BIRD_SIZE / 2 - 2, BIRD_SIZE / 3, -0.3, 0, Math.PI * 2);
@@ -201,20 +182,6 @@ export default function FlappyBirdPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        }
-        return;
-      }
-      if (e.key === 'p') {
-        e.preventDefault();
-        const gs = gameStateRef.current;
-        if (gs === 'PLAYING') setGameState('PAUSED');
-        else if (gs === 'PAUSED') setGameState('PLAYING');
-        return;
-      }
       if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); flap(); }
       if (e.key === 'r' && gameState !== 'PLAYING') startGame();
     };
@@ -227,112 +194,77 @@ export default function FlappyBirdPage() {
     flap();
   };
 
-  const handlePause = () => {
-    const gs = gameStateRef.current;
-    if (gs === 'PLAYING') setGameState('PAUSED');
-    else if (gs === 'PAUSED') setGameState('PLAYING');
-  };
-
-  const handleFullscreen = () => {
-    const el = canvasRef.current?.parentElement;
-    if (!el) return;
-    try {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      } else {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      }
-    } catch {}
-  };
-
   return (
     <div className="game-page" data-theme="dark">
       {promptComponent}
 
-      <div className="game-top-bar">
-        <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
-        <div className="game-title-bar"><span className="game-title">FLAPPY BIRD</span></div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PauseButton onClick={() => handlePause()} />
-          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>[FULLSCREEN]</span>
-          <span className="game-player-name" onClick={changeName}>&gt; {name || 'GUEST'} [CHANGE]</span>
+      <GameLayout
+        gameTitle="FLAPPY BIRD"
+        gameId="flappy-bird"
+        name={name}
+        changeName={changeName}
+        handlePause={handlePause}
+        handleFullscreen={handleFullscreen}
+        isMobile={isMobile}
+        showLeaderboard={showLeaderboard}
+        setShowLeaderboard={setShowLeaderboard}
+        LeaderboardUI={LeaderboardUI}
+        scores={scores}
+        newRank={newRank}
+      >
+        <div className="game-hud">
+          <div className="hud-item"><div className="hud-label">PIPES PASSED</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
         </div>
-      </div>
 
-      <div className="game-hud">
-        <div className="hud-item"><div className="hud-label">PIPES PASSED</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
-      </div>
+        <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
+          <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouch} style={{ touchAction: 'none' }} />
 
-      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
-        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouch} style={{ touchAction: 'none' }} />
-
-        {gameState === 'READY' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title">FLAPPY BIRD</div>
-            <div className="game-overlay-sub">Tap or press Space to fly. Avoid the pipes.</div>
-            <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
-            <div className="game-overlay-controls">
-              <p>Desktop: <kbd>Space</kbd> or <kbd>↑</kbd> to Flap</p>
-              <p>Mobile: Tap to Flap</p>
+          {gameState === 'READY' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title">FLAPPY BIRD</div>
+              <div className="game-overlay-sub">Tap or press Space to fly. Avoid the pipes.</div>
+              <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
+              <div className="game-overlay-controls">
+                <p>Desktop: <kbd>Space</kbd> or <kbd>↑</kbd> to Flap</p>
+                <p>Mobile: Tap to Flap</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {gameState === 'GAMEOVER' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>BIRD_DOWN</div>
-            <div className="game-overlay-sub">You hit a pipe.</div>
-            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
-            {finalRank >= 0 && (
-              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
-            )}
-            <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="flappy-bird" gameTitle="FLAPPY BIRD" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
-          </div>
-        )}
+          {gameState === 'GAMEOVER' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title" style={{ color: 'var(--error)' }}>BIRD_DOWN</div>
+              <div className="game-overlay-sub">You hit a pipe.</div>
+              <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
+              {finalRank >= 0 && (
+                <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              )}
+              <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+              <ScorecardImage gameId="flappy-bird" gameTitle="FLAPPY BIRD" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
+            </div>
+          )}
 
-        {gameState === 'PAUSED' && (
-          <GamePauseMenu
-            isPaused={true}
-            onResume={() => setGameState('PLAYING')}
-            onFullscreen={handleFullscreen}
-            gameTitle="FLAPPY BIRD"
-            playerName={name}
-            hudItems={[
-              { label: 'PIPES PASSED', value: score, color: 'var(--accent)' },
-            ]}
-            controls={[
-              { keys: ['Space'], desc: 'Flap' },
-              { keys: ['↑'], desc: 'Flap' },
-              { keys: ['R'], desc: 'Restart' },
-            ]}
-            LeaderboardUI={LeaderboardUI}
-            scores={scores}
-            newRank={newRank}
-            gameId="flappy-bird"
-          />
-        )}
-      </div>
-
-      <div className="game-bottom">
-        {!isMobile && (
-          <div className="game-controls-hint">
-            <span className="control-hint"><kbd>Space</kbd> Flap</span>
-            <span className="control-hint"><kbd>R</kbd> Restart</span>
-          </div>
-        )}
-        <LeaderboardUI scores={scores} newRank={newRank} gameId="flappy-bird" />
-      </div>
-
-      <button className="leaderboard-toggle-btn" onClick={() => setShowLeaderboard(true)}>🏆 SCORES</button>
-      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
-        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
-          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
-          <LeaderboardUI scores={scores} newRank={newRank} gameId="flappy-bird" />
+          {gameState === 'PAUSED' && (
+            <GamePauseMenu
+              isPaused={true}
+              onResume={() => setGameState('PLAYING')}
+              onFullscreen={handleFullscreen}
+              gameTitle="FLAPPY BIRD"
+              playerName={name}
+              hudItems={[{ label: 'PIPES PASSED', value: score, color: 'var(--accent)' }]}
+              controls={[
+                { keys: ['Space'], desc: 'Flap' },
+                { keys: ['↑'], desc: 'Flap' },
+                { keys: ['R'], desc: 'Restart' },
+              ]}
+              LeaderboardUI={LeaderboardUI}
+              scores={scores}
+              newRank={newRank}
+              gameId="flappy-bird"
+            />
+          )}
         </div>
-      </div>
+      </GameLayout>
 
       <GameStructuredData name="Flappy Bird" description="Navigate a bird through endless pipes. Tap to flap and avoid obstacles. Deceptively simple but incredibly addictive with global leaderboards." url="/games/flappy-bird" />
     </div>

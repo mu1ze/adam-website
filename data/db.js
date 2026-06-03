@@ -31,6 +31,8 @@ export async function ensureSchema() {
   const db = getClient();
   if (!db) return;
 
+  // Prevent race condition: only one invocation runs the schema setup.
+  // Subsequent callers wait for the same promise.
   if (!schemaReady) {
     schemaReady = (async () => {
       await db.execute(`
@@ -51,7 +53,7 @@ export async function ensureSchema() {
       await db.execute(`
         CREATE TABLE IF NOT EXISTS players (
           name TEXT PRIMARY KEY,
-          password_hash TEXT,
+          password_hash TEXT NOT NULL DEFAULT '',
           device_id TEXT,
           created_at TEXT NOT NULL
         )

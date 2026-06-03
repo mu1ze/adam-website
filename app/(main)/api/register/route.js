@@ -26,14 +26,16 @@ export async function POST(request) {
       }
     }
 
-    // Upsert: insert or update device_id for this name
+    // Upsert: insert or update device_id for this name.
+    // password_hash defaults to '' for new registrations (legacy schema has NOT NULL on the column)
     await client.execute({
-      sql: 'INSERT INTO players (name, device_id, created_at) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET device_id = excluded.device_id',
+      sql: 'INSERT INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?) ON CONFLICT(name) DO UPDATE SET device_id = excluded.device_id',
       args: [sanitizedName, deviceId, new Date().toISOString()],
     });
 
     return NextResponse.json({ success: true, name: sanitizedName });
   } catch (error) {
+    console.error('[register] POST failed:', error.message || error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

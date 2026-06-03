@@ -25,6 +25,7 @@ export default function DocxSearch() {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = '/pagefind/pagefind.js';
+    script.type = 'module';
     script.async = true;
     script.onload = () => {
       if (window.pagefind) {

@@ -57,3 +57,7 @@ public/pagefind
 # Local Kilo agent data
 .kilo/
 
+playwright-report/index.html
+playwright-output.txt
+package-lock.json
+package.json

@@ -1,15 +1,16 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
-import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
+import GamePauseMenu from '@/components/GamePauseMenu';
+import { useGameControls } from '../useGameControls';
+import GameLayout from '../GameLayout';
 import '../games.css';
 
-const GRID_SIZE = 20; // 20x20 grid
-const CELL_SIZE = 30; // 30px per cell
+const GRID_SIZE = 20;
+const CELL_SIZE = 30;
 const GAME_WIDTH = GRID_SIZE * CELL_SIZE;
 const GAME_HEIGHT = GRID_SIZE * CELL_SIZE;
 
@@ -31,25 +32,19 @@ export default function SnakePage() {
   gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
-  const [isMobile, setIsMobile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
   const stateRef = useRef({
     snake: [...INITIAL_SNAKE],
     direction: { ...INITIAL_DIRECTION },
     nextDirection: { ...INITIAL_DIRECTION },
     food: { x: 5, y: 5 },
-    speed: 150, // ms per tick
+    speed: 150,
     lastTick: 0,
     startTime: Date.now(),
   });
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const spawnFood = (snake) => {
     let newFood;
@@ -58,7 +53,6 @@ export default function SnakePage() {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE)
       };
-      // eslint-disable-next-line no-loop-func
       const conflict = snake.some(s => s.x === newFood.x && s.y === newFood.y);
       if (!conflict) break;
     }
@@ -87,22 +81,18 @@ export default function SnakePage() {
     }
   };
 
-  // Game Loop
   useEffect(() => {
     if (gameState !== 'PLAYING') {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       return;
     }
 
-    const state = stateRef.current;
     const update = () => {
       const now = Date.now();
       const state = stateRef.current;
 
-      // Tick update
       if (now - state.lastTick > state.speed) {
         state.lastTick = now;
-        
         state.direction = { ...state.nextDirection };
         const head = state.snake[0];
         const nextHead = {
@@ -110,16 +100,11 @@ export default function SnakePage() {
           y: head.y + state.direction.y,
         };
 
-        // Wall collision
-        if (
-          nextHead.x < 0 || nextHead.x >= GRID_SIZE ||
-          nextHead.y < 0 || nextHead.y >= GRID_SIZE
-        ) {
+        if (nextHead.x < 0 || nextHead.x >= GRID_SIZE || nextHead.y < 0 || nextHead.y >= GRID_SIZE) {
           handleGameOver();
           return;
         }
 
-        // Self collision
         if (state.snake.some(segment => segment.x === nextHead.x && segment.y === nextHead.y)) {
           handleGameOver();
           return;
@@ -127,13 +112,12 @@ export default function SnakePage() {
 
         state.snake.unshift(nextHead);
 
-        // Food collision
         if (nextHead.x === state.food.x && nextHead.y === state.food.y) {
           state.food = spawnFood(state.snake);
           setScore(s => s + 10);
-          state.speed = Math.max(50, 150 - Math.floor(score / 50) * 10); // speed up
+          state.speed = Math.max(50, 150 - Math.floor(score / 50) * 10);
         } else {
-          state.snake.pop(); // remove tail
+          state.snake.pop();
         }
       }
 
@@ -142,10 +126,7 @@ export default function SnakePage() {
     };
 
     rafRef.current = requestAnimationFrame(update);
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, [gameState, score]);
 
   const render = (now) => {
@@ -154,45 +135,33 @@ export default function SnakePage() {
     const ctx = canvas.getContext('2d');
     const state = stateRef.current;
 
-    // Clear background
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Draw grid lines
     ctx.strokeStyle = 'rgba(255,255,255,0.05)';
     ctx.beginPath();
-    for(let i=0; i<=GAME_WIDTH; i+=CELL_SIZE) {
-        ctx.moveTo(i, 0); ctx.lineTo(i, GAME_HEIGHT);
-        ctx.moveTo(0, i); ctx.lineTo(GAME_WIDTH, i);
+    for (let i = 0; i <= GAME_WIDTH; i += CELL_SIZE) {
+      ctx.moveTo(i, 0); ctx.lineTo(i, GAME_HEIGHT);
+      ctx.moveTo(0, i); ctx.lineTo(GAME_WIDTH, i);
     }
     ctx.stroke();
 
-    // Draw Food
-    const foodScale = 1 + Math.sin(now * 0.01) * 0.1; // pulse effect
+    const foodScale = 1 + Math.sin(now * 0.01) * 0.1;
     ctx.fillStyle = '#ff4444';
     ctx.save();
-    ctx.translate(state.food.x * CELL_SIZE + CELL_SIZE/2, state.food.y * CELL_SIZE + CELL_SIZE/2);
+    ctx.translate(state.food.x * CELL_SIZE + CELL_SIZE / 2, state.food.y * CELL_SIZE + CELL_SIZE / 2);
     ctx.scale(foodScale, foodScale);
     ctx.beginPath();
-    ctx.arc(0, 0, CELL_SIZE/2 - 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, CELL_SIZE / 2 - 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
-    // Draw Snake
     state.snake.forEach((segment, i) => {
-      if (i === 0) {
-        // Head
-        ctx.fillStyle = '#00ff88';
-      } else {
-        // Body
-        ctx.fillStyle = '#00cc66';
-      }
-      // Leave a tiny gap between segments
+      ctx.fillStyle = i === 0 ? '#00ff88' : '#00cc66';
       ctx.fillRect(segment.x * CELL_SIZE + 1, segment.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
     });
   };
 
-  // Input Handling
   useEffect(() => {
     const handleKeyDown = (e) => {
       const state = stateRef.current;
@@ -211,16 +180,6 @@ export default function SnakePage() {
       } else if (e.key === ' ' && gameState === 'READY') {
         startGame();
         e.preventDefault();
-      } else if (e.key === 'Escape') {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        }
-      } else if (e.key === 'p') {
-        e.preventDefault();
-        const gs = gameStateRef.current;
-        if (gs === 'PLAYING') setGameState('PAUSED');
-        else if (gs === 'PAUSED') setGameState('PLAYING');
       } else if (e.key === 'r') {
         startGame();
       }
@@ -229,190 +188,118 @@ export default function SnakePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState]);
 
-  // Swipe controls for mobile
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {
-    if (gameState === 'PLAYING') e.preventDefault(); // Only prevent scroll during gameplay
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY
-    };
+    if (gameState === 'PLAYING') e.preventDefault();
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
   const handleTouchEnd = (e) => {
     if (gameState === 'PLAYING') e.preventDefault();
     if (!touchStartRef.current || gameState !== 'PLAYING') return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    
-    const dx = touchEndX - touchStartRef.current.x;
-    const dy = touchEndY - touchStartRef.current.y;
-    
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
     if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: 1, y: 0 };
-        else if (dx < -20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: -1, y: 0 };
+      if (dx > 20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: 1, y: 0 };
+      else if (dx < -20 && stateRef.current.direction.x === 0) stateRef.current.nextDirection = { x: -1, y: 0 };
     } else {
-        if (dy > 20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: 1 };
-        else if (dy < -20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: -1 };
+      if (dy > 20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: 1 };
+      else if (dy < -20 && stateRef.current.direction.y === 0) stateRef.current.nextDirection = { x: 0, y: -1 };
     }
-    
     touchStartRef.current = null;
-  };
-
-  const handlePause = () => {
-    const gs = gameStateRef.current;
-    if (gs === 'PLAYING') setGameState('PAUSED');
-    else if (gs === 'PAUSED') setGameState('PLAYING');
-  };
-
-  const handleFullscreen = () => {
-    const el = canvasRef.current?.parentElement;
-    if (!el) return;
-
-    try {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      } else {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else alert("Fullscreen API not supported on this browser.");
-      }
-    } catch (err) {
-      console.error("Fullscreen error:", err);
-    }
   };
 
   return (
     <div className="game-page" data-theme="dark">
-      {/* Name Prompt Modal */}
       {promptComponent}
 
-      {/* Top Bar */}
-      <div className="game-top-bar">
-        <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
-        <div className="game-title-bar">
-          <span className="game-title">SNAKE</span>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PauseButton onClick={() => handlePause()} />
-          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
-            [FULLSCREEN]
-          </span>
-          <span className="game-player-name" onClick={changeName}>
-            &gt; {name || 'GUEST'} [CHANGE]
-          </span>
-        </div>
-      </div>
-
-      {/* HUD */}
-      <div className="game-hud">
-        <div className="hud-item">
-          <div className="hud-label">CURRENT SCORE</div>
-          <div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div>
-        </div>
-      </div>
-
-      {/* Canvas Area */}
-      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
-        <canvas
-          ref={canvasRef}
-          width={GAME_WIDTH}
-          height={GAME_HEIGHT}
-          className="game-canvas"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          style={{ touchAction: 'none' }}
-        />
-
-        {/* UI Overlays */}
-        {gameState === 'READY' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title">SNAKE</div>
-            <div className="game-overlay-sub">Standard Protocol. Don't hit the walls.</div>
-            <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
-            <div className="game-overlay-controls">
-              <p>Desktop: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or Arrows</p>
-              <p>Mobile: Swipe Directions</p>
-            </div>
-          </div>
-        )}
-
-        {gameState === 'GAMEOVER' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>CRITICAL_CRASH</div>
-            <div className="game-overlay-sub">Collision detected.</div>
-            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
-            
-            {finalRank >= 0 && (
-              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
-                NEW HIGH SCORE! RANK #{finalRank + 1}
-              </div>
-            )}
-            
-            {awards.length > 0 && (
-              <div style={{ marginBottom: 16 }}>
-                {awards.map(a => (
-                  <div key={a} className="badge-unlock">🏅 {a.replace(/_/g, ' ').toUpperCase()} UNLOCKED</div>
-                ))}
-              </div>
-            )}
-            
-            <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
-          </div>
-        )}
-
-        {gameState === 'PAUSED' && (
-          <GamePauseMenu
-            isPaused={true}
-            onResume={() => setGameState('PLAYING')}
-            onFullscreen={handleFullscreen}
-            gameTitle="SNAKE"
-            playerName={name}
-            hudItems={[
-              { label: 'SCORE', value: score, color: 'var(--accent)' },
-            ]}
-            controls={[
-              { keys: ['W', 'A', 'S', 'D'], desc: 'Move' },
-              { keys: ['Arrows'], desc: 'Move' },
-              { keys: ['R'], desc: 'Restart' },
-            ]}
-            LeaderboardUI={LeaderboardUI}
-            scores={scores}
-            newRank={newRank}
-            gameId="snake"
-          />
-        )}
-      </div>
-
-      {/* Leaderboard Section (Desktop) */}
-      <div className="game-bottom">
-        {!isMobile && (
-          <div className="game-controls-hint">
-            <span className="control-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</span>
-            <span className="control-hint"><kbd>Arrows</kbd> Move</span>
-            <span className="control-hint"><kbd>R</kbd> Restart</span>
-          </div>
-        )}
-        <LeaderboardUI scores={scores} newRank={newRank} gameId="snake" />
-      </div>
-
-      {/* Mobile Leaderboard Toggle */}
-      <button
-        className="leaderboard-toggle-btn"
-        onClick={() => setShowLeaderboard(true)}
+      <GameLayout
+        gameTitle="SNAKE"
+        gameId="snake"
+        name={name}
+        changeName={changeName}
+        handlePause={handlePause}
+        handleFullscreen={handleFullscreen}
+        isMobile={isMobile}
+        showLeaderboard={showLeaderboard}
+        setShowLeaderboard={setShowLeaderboard}
+        LeaderboardUI={LeaderboardUI}
+        scores={scores}
+        newRank={newRank}
       >
-        🏆 SCORES
-      </button>
-
-      {/* Mobile Leaderboard Overlay */}
-      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
-        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
-          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
-          <LeaderboardUI scores={scores} newRank={newRank} gameId="snake" />
+        <div className="game-hud">
+          <div className="hud-item">
+            <div className="hud-label">CURRENT SCORE</div>
+            <div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div>
+          </div>
         </div>
-      </div>
+
+        <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
+          <canvas
+            ref={canvasRef}
+            width={GAME_WIDTH}
+            height={GAME_HEIGHT}
+            className="game-canvas"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            style={{ touchAction: 'none' }}
+          />
+
+          {gameState === 'READY' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title">SNAKE</div>
+              <div className="game-overlay-sub">Standard Protocol. Don't hit the walls.</div>
+              <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
+              <div className="game-overlay-controls">
+                <p>Desktop: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or Arrows</p>
+                <p>Mobile: Swipe Directions</p>
+              </div>
+            </div>
+          )}
+
+          {gameState === 'GAMEOVER' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title" style={{ color: 'var(--error)' }}>CRITICAL_CRASH</div>
+              <div className="game-overlay-sub">Collision detected.</div>
+              <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
+              {finalRank >= 0 && (
+                <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>
+                  NEW HIGH SCORE! RANK #{finalRank + 1}
+                </div>
+              )}
+              {awards.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  {awards.map(a => (
+                    <div key={a} className="badge-unlock">🏅 {a.replace(/_/g, ' ').toUpperCase()} UNLOCKED</div>
+                  ))}
+                </div>
+              )}
+              <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+              <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
+            </div>
+          )}
+
+          {gameState === 'PAUSED' && (
+            <GamePauseMenu
+              isPaused={true}
+              onResume={() => setGameState('PLAYING')}
+              onFullscreen={handleFullscreen}
+              gameTitle="SNAKE"
+              playerName={name}
+              hudItems={[{ label: 'SCORE', value: score, color: 'var(--accent)' }]}
+              controls={[
+                { keys: ['W', 'A', 'S', 'D'], desc: 'Move' },
+                { keys: ['Arrows'], desc: 'Move' },
+                { keys: ['R'], desc: 'Restart' },
+              ]}
+              LeaderboardUI={LeaderboardUI}
+              scores={scores}
+              newRank={newRank}
+              gameId="snake"
+            />
+          )}
+        </div>
+      </GameLayout>
+
       <GameStructuredData
         name="Snake"
         description="Classic Snake arcade game. Navigate the grid, eat food, and grow longer. Avoid walls and your own tail in this retro terminal-styled version with global leaderboards."

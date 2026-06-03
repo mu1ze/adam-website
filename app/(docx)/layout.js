@@ -73,22 +73,23 @@ export default function DocxLayout({ children }) {
           min-height: 0;
         }
 
-        /* ── Sidebar ── */
-        .docx-sidebar {
-          width: 260px;
-          flex-shrink: 0;
-          border-right: 1px solid var(--border);
+        /* ── Sidebar (inherits position/transform from .sidebar-panel) ── */
+        .sidebar-panel.docx-sidebar {
+          padding: 0;
           background: var(--bg);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          transition: width 0.25s ease;
-          position: relative;
-          overflow: hidden;
+          overflow: visible;
+          height: 100vh;
+        }
+
+        .sidebar-panel.docx-sidebar.sidebar-open {
+          transform: translateX(0) !important;
         }
 
         .docx-sidebar.collapsed {
-          width: 76px;
+          /* Width is handled by inner elements collapsing */
         }
 
         .docx-sidebar-inner {
@@ -623,7 +624,6 @@ export default function DocxLayout({ children }) {
 
         /* ── Responsive ── */
         @media (max-width: 800px) {
-          .docx-sidebar { display: none; }
           .docx-header { padding: 12px 16px; }
           .docx-header-brand { font-size: 11px; }
           .docx-back-btn { padding: 6px 12px; font-size: 11px; }
@@ -647,8 +647,8 @@ export default function DocxLayout({ children }) {
           </div>
         </header>
 
+        <DocxSidebar />
         <div className="docx-body">
-          <DocxSidebar />
           <main className="docx-main" data-pagefind-body>{children}</main>
         </div>
       </div>

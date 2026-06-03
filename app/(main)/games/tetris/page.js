@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import ScorecardImage from '@/components/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
-import GamePauseMenu, { PauseButton } from '@/components/GamePauseMenu';
+import GamePauseMenu from '@/components/GamePauseMenu';
+import { useGameControls } from '../useGameControls';
+import GameLayout from '../GameLayout';
 import '../games.css';
 
 const COLS = 10;
@@ -83,8 +84,9 @@ export default function TetrisPage() {
   gameStateRef.current = gameState;
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
-  const [isMobile, setIsMobile] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
   const stateRef = useRef({
     board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
@@ -96,13 +98,6 @@ export default function TetrisPage() {
     lastDrop: 0,
     score: 0,
   });
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const startGame = () => {
     const board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -180,15 +175,11 @@ export default function TetrisPage() {
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.04)';
     ctx.lineWidth = 0.5;
     for (let r = 0; r < ROWS; r++)
-      for (let c = 0; c < COLS; c++) {
-        ctx.strokeRect(c * CELL, r * CELL, CELL, CELL);
-      }
+      for (let c = 0; c < COLS; c++) ctx.strokeRect(c * CELL, r * CELL, CELL, CELL);
 
-    // Board blocks
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++) {
         if (board[r][c]) {
@@ -199,7 +190,6 @@ export default function TetrisPage() {
         }
       }
 
-    // Ghost piece
     if (piece) {
       let ghostY = piece.y;
       while (!collides(board, piece.shape, piece.x, ghostY + 1)) ghostY++;
@@ -207,10 +197,7 @@ export default function TetrisPage() {
       piece.shape.forEach((row, r) => row.forEach((v, c) => {
         if (v) ctx.fillRect((piece.x + c) * CELL + 1, (ghostY + r) * CELL + 1, CELL - 2, CELL - 2);
       }));
-    }
 
-    // Current piece
-    if (piece) {
       ctx.fillStyle = piece.color;
       piece.shape.forEach((row, r) => row.forEach((v, c) => {
         if (v) {
@@ -222,9 +209,7 @@ export default function TetrisPage() {
       }));
     }
 
-    // Next piece preview
     if (nextPiece) {
-      ctx.fillStyle = nextPiece.color;
       const ox = GAME_WIDTH - 80;
       const oy = 10;
       ctx.fillStyle = 'rgba(255,255,255,0.1)';
@@ -264,18 +249,6 @@ export default function TetrisPage() {
           state.piece.y++;
         state.lastDrop = 0;
       }
-      else if (e.key === 'Escape') {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        }
-      }
-      else if (e.key === 'p') {
-        e.preventDefault();
-        const gs = gameStateRef.current;
-        if (gs === 'PLAYING') setGameState('PAUSED');
-        else if (gs === 'PAUSED') setGameState('PLAYING');
-      }
       else if (e.key === 'r' && gameState !== 'PLAYING') startGame();
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -309,120 +282,85 @@ export default function TetrisPage() {
     touchRef.current = null;
   };
 
-  const handlePause = () => {
-    const gs = gameStateRef.current;
-    if (gs === 'PLAYING') setGameState('PAUSED');
-    else if (gs === 'PAUSED') setGameState('PLAYING');
-  };
-
-  const handleFullscreen = () => {
-    const el = canvasRef.current?.parentElement;
-    if (!el) return;
-    try {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      } else {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      }
-    } catch {}
-  };
-
   return (
     <div className="game-page" data-theme="dark">
       {promptComponent}
 
-      <div className="game-top-bar">
-        <Link href="/games" className="game-back-link">← RETURN_TO_HUB</Link>
-        <div className="game-title-bar"><span className="game-title">TETRIS</span></div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <PauseButton onClick={() => handlePause()} />
-          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>[FULLSCREEN]</span>
-          <span className="game-player-name" onClick={changeName}>&gt; {name || 'GUEST'} [CHANGE]</span>
+      <GameLayout
+        gameTitle="TETRIS"
+        gameId="tetris"
+        name={name}
+        changeName={changeName}
+        handlePause={handlePause}
+        handleFullscreen={handleFullscreen}
+        isMobile={isMobile}
+        showLeaderboard={showLeaderboard}
+        setShowLeaderboard={setShowLeaderboard}
+        LeaderboardUI={LeaderboardUI}
+        scores={scores}
+        newRank={newRank}
+      >
+        <div className="game-hud">
+          <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
+          <div className="hud-item"><div className="hud-label">LEVEL</div><div className="hud-value" style={{ color: '#00f0f0' }}>{stateRef.current.level}</div></div>
+          <div className="hud-item"><div className="hud-label">LINES</div><div className="hud-value" style={{ color: '#f0f000' }}>{stateRef.current.lines}</div></div>
         </div>
-      </div>
 
-      <div className="game-hud">
-        <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
-        <div className="hud-item"><div className="hud-label">LEVEL</div><div className="hud-value" style={{ color: '#00f0f0' }}>{stateRef.current.level}</div></div>
-        <div className="hud-item"><div className="hud-label">LINES</div><div className="hud-value" style={{ color: '#f0f000' }}>{stateRef.current.lines}</div></div>
-      </div>
+        <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
+          <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }} />
 
-      <div className="game-canvas-wrapper" style={{ touchAction: 'none' }}>
-        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="game-canvas" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ touchAction: 'none' }} />
-
-        {gameState === 'READY' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title">TETRIS</div>
-            <div className="game-overlay-sub">Stack the blocks. Clear lines to survive.</div>
-            <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
-            <div className="game-overlay-controls">
-              <p>Desktop: <kbd>←</kbd><kbd>→</kbd> Move · <kbd>↑</kbd> Rotate · <kbd>↓</kbd> Soft Drop · <kbd>Space</kbd> Hard Drop</p>
-              <p>Mobile: Tap sides to move · Swipe up to rotate · Swipe down to hard drop</p>
+          {gameState === 'READY' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title">TETRIS</div>
+              <div className="game-overlay-sub">Stack the blocks. Clear lines to survive.</div>
+              <button className="game-overlay-btn" onClick={startGame}>START SIMULATION</button>
+              <div className="game-overlay-controls">
+                <p>Desktop: <kbd>←</kbd><kbd>→</kbd> Move · <kbd>↑</kbd> Rotate · <kbd>↓</kbd> Soft Drop · <kbd>Space</kbd> Hard Drop</p>
+                <p>Mobile: Tap sides to move · Swipe up to rotate · Swipe down to hard drop</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {gameState === 'GAMEOVER' && (
-          <div className="game-overlay">
-            <div className="game-overlay-title" style={{ color: 'var(--error)' }}>STACK_OVERFLOW</div>
-            <div className="game-overlay-sub">The blocks reached the top.</div>
-            <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
-            {finalRank >= 0 && (
-              <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
-            )}
-            <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-            <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
-          </div>
-        )}
+          {gameState === 'GAMEOVER' && (
+            <div className="game-overlay">
+              <div className="game-overlay-title" style={{ color: 'var(--error)' }}>STACK_OVERFLOW</div>
+              <div className="game-overlay-sub">The blocks reached the top.</div>
+              <div className="game-overlay-score" style={{ color: 'var(--accent)' }}>{score}</div>
+              {finalRank >= 0 && (
+                <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
+              )}
+              <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
+              <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
+            </div>
+          )}
 
-        {gameState === 'PAUSED' && (
-          <GamePauseMenu
-            isPaused={true}
-            onResume={() => setGameState('PLAYING')}
-            onFullscreen={handleFullscreen}
-            gameTitle="TETRIS"
-            playerName={name}
-            hudItems={[
-              { label: 'SCORE', value: score, color: 'var(--accent)' },
-              { label: 'LEVEL', value: stateRef.current.level, color: '#00f0f0' },
-              { label: 'LINES', value: stateRef.current.lines, color: '#f0f000' },
-            ]}
-            controls={[
-              { keys: ['←', '→'], desc: 'Move' },
-              { keys: ['↑'], desc: 'Rotate' },
-              { keys: ['↓'], desc: 'Soft Drop' },
-              { keys: ['Space'], desc: 'Hard Drop' },
-              { keys: ['R'], desc: 'Restart' },
-            ]}
-            LeaderboardUI={LeaderboardUI}
-            scores={scores}
-            newRank={newRank}
-            gameId="tetris"
-          />
-        )}
-      </div>
-
-      <div className="game-bottom">
-        {!isMobile && (
-          <div className="game-controls-hint">
-            <span className="control-hint"><kbd>←</kbd><kbd>→</kbd> Move</span>
-            <span className="control-hint"><kbd>↑</kbd> Rotate</span>
-            <span className="control-hint"><kbd>↓</kbd> Soft Drop</span>
-            <span className="control-hint"><kbd>Space</kbd> Hard Drop</span>
-          </div>
-        )}
-        <LeaderboardUI scores={scores} newRank={newRank} gameId="tetris" />
-      </div>
-
-      <button className="leaderboard-toggle-btn" onClick={() => setShowLeaderboard(true)}>🏆 SCORES</button>
-      <div className={`leaderboard-overlay ${showLeaderboard ? 'show' : ''}`} onClick={() => setShowLeaderboard(false)}>
-        <div className="leaderboard-overlay-inner" onClick={(e) => e.stopPropagation()}>
-          <button className="leaderboard-overlay-close" onClick={() => setShowLeaderboard(false)}>✕</button>
-          <LeaderboardUI scores={scores} newRank={newRank} gameId="tetris" />
+          {gameState === 'PAUSED' && (
+            <GamePauseMenu
+              isPaused={true}
+              onResume={() => setGameState('PLAYING')}
+              onFullscreen={handleFullscreen}
+              gameTitle="TETRIS"
+              playerName={name}
+              hudItems={[
+                { label: 'SCORE', value: score, color: 'var(--accent)' },
+                { label: 'LEVEL', value: stateRef.current.level, color: '#00f0f0' },
+                { label: 'LINES', value: stateRef.current.lines, color: '#f0f000' },
+              ]}
+              controls={[
+                { keys: ['←', '→'], desc: 'Move' },
+                { keys: ['↑'], desc: 'Rotate' },
+                { keys: ['↓'], desc: 'Soft Drop' },
+                { keys: ['Space'], desc: 'Hard Drop' },
+                { keys: ['R'], desc: 'Restart' },
+              ]}
+              LeaderboardUI={LeaderboardUI}
+              scores={scores}
+              newRank={newRank}
+              gameId="tetris"
+            />
+          )}
         </div>
-      </div>
+      </GameLayout>
 
       <GameStructuredData name="Tetris" description="Classic block-stacking puzzle. Arrange falling tetrominoes to clear lines. Speed increases as you level up in this retro terminal-styled version with global leaderboards." url="/games/tetris" />
     </div>

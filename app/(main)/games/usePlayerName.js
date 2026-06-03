@@ -4,10 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 const NAME_KEY = 'adam_player_name';
 const DEVICE_KEY = 'adam_device_id';
 
+function generateId() {
+  // Fallback UUID generator for browsers without crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 function getOrCreateDeviceId() {
   let id = localStorage.getItem(DEVICE_KEY);
   if (!id) {
-    id = crypto.randomUUID();
+    id = (crypto.randomUUID ? crypto.randomUUID() : generateId());
     localStorage.setItem(DEVICE_KEY, id);
   }
   return id;
