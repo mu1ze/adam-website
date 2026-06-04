@@ -6,9 +6,10 @@ export default function DocxSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState(null);
+  const [error, setError] = useState(null);
   const inputRef = useRef(null);
-  const pagefindRef = useRef(null);
+  const abortRef = useRef(null);
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -23,50 +24,57 @@ export default function DocxSearch() {
   }, []);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = '/pagefind/pagefind.js';
-    script.type = 'module';
-    script.async = true;
-    script.onload = () => {
-      if (window.pagefind) {
-        pagefindRef.current = window.pagefind;
-        setReady(true);
-      }
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  useEffect(() => {
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
   }, [open]);
 
-  const search = useCallback(async (val) => {
-    setQuery(val);
-    if (!val.trim() || !pagefindRef.current) {
+  const runSearch = useCallback(async (val) => {
+    const trimmed = val.trim();
+    if (trimmed.length < 2) {
       setResults([]);
+      setMode(null);
+      setError(null);
       setLoading(false);
       return;
     }
+    if (abortRef.current) abortRef.current.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setLoading(true);
+    setError(null);
     try {
-      const pf = pagefindRef.current;
-      const searchResult = await pf.search(val);
-      if (searchResult && searchResult.results) {
-        const items = await Promise.all(
-          searchResult.results.slice(0, 10).map(async (r) => {
-            const data = await r.data();
-            return { url: data.url, title: data.meta?.title || 'Untitled', excerpt: data.excerpt };
-          })
-        );
-        setResults(items);
+      const r = await fetch('/api/docx-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: trimmed, k: 8 }),
+        signal: ctrl.signal,
+      });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || `Search failed (${r.status})`);
+      }
+      const data = await r.json();
+      setResults(data.results || []);
+      setMode(data.mode || null);
+      if (data.mode === 'unavailable') {
+        setError(data.error || 'Search index unavailable');
       }
     } catch (err) {
+      if (err.name === 'AbortError') return;
       console.warn('Search error:', err);
+      setError(err.message || 'Search failed');
+      setResults([]);
     }
     setLoading(false);
   }, []);
+
+  // 200 ms debounce on the live query.
+  useEffect(() => {
+    if (!open) return;
+    const id = setTimeout(() => runSearch(query), 200);
+    return () => clearTimeout(id);
+  }, [query, open, runSearch]);
 
   if (!open) {
     return (
@@ -129,8 +137,8 @@ export default function DocxSearch() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={e => search(e.target.value)}
-            placeholder={ready ? 'Search documentation...' : 'Loading search...'}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search documentation..."
             style={{
               width: '100%',
               background: 'transparent',
@@ -148,14 +156,24 @@ export default function DocxSearch() {
               Searching...
             </div>
           )}
-          {!loading && results.length === 0 && query.trim() && (
+          {!loading && error && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+          {!loading && !error && results.length === 0 && query.trim().length >= 2 && (
             <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-dim)', fontSize: 14 }}>
               No results for &ldquo;{query}&rdquo;
             </div>
           )}
+          {!loading && query.trim().length < 2 && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
+              Type at least 2 characters to search.
+            </div>
+          )}
           {results.map((r, i) => (
             <a
-              key={i}
+              key={`${r.url}-${i}`}
               href={r.url}
               style={{
                 display: 'block',
@@ -164,14 +182,37 @@ export default function DocxSearch() {
                 borderBottom: '1px solid var(--border)',
                 transition: 'background 0.15s',
               }}
-              onMouseEnter={e => e.target.style.background = 'var(--bg-secondary)'}
-              onMouseLeave={e => e.target.style.background = 'transparent'}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               onClick={() => setOpen(false)}
             >
               <div style={{ color: 'var(--primary)', fontSize: 15, marginBottom: 4 }}>{r.title}</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.4 }} dangerouslySetInnerHTML={{ __html: r.excerpt }} />
+              <div style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.4 }} dangerouslySetInnerHTML={{ __html: r.snippet }} />
             </a>
           ))}
+        </div>
+        <div
+          style={{
+            padding: '8px 16px',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            color: 'var(--text-dim)',
+            fontSize: 11,
+            letterSpacing: 0.5,
+          }}
+        >
+          <span>
+            {mode === 'keyword-fallback'
+              ? '⚠️ keyword fallback'
+              : mode === 'vector'
+                ? 'Semantic search'
+                : mode === 'unavailable'
+                  ? 'Search unavailable'
+                  : 'Ready'}
+          </span>
+          {results.length > 0 && <span>{results.length} result{results.length === 1 ? '' : 's'}</span>}
         </div>
       </div>
     </div>

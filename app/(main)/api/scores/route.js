@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
+const MAX_SCORES_PER_PLAYER_PER_GAME = 5;
+
 const BADGE_CRITERIA = [
   { id: 'first_score', name: 'FIRST_BLOOD', desc: 'Submit your first score', check: (game, score, totalPlays, badges) => totalPlays === 1 },
   { id: 'score_100', name: 'CENTURY', desc: 'Score ≥100 in any game', check: (game, score) => score >= 100 },
@@ -86,7 +88,6 @@ export async function POST(request) {
 
     const sanitizedName = name.substring(0, 16);
     const dateStr = new Date().toISOString().split('T')[0];
-    const challengeId = crypto.randomBytes(4).toString('hex');
 
     // Verify device identity — prevent score impersonation
     const playerResult = await client.execute({ sql: 'SELECT device_id FROM players WHERE name = ?', args: [sanitizedName] });
@@ -95,29 +96,72 @@ export async function POST(request) {
         return cors(NextResponse.json({ success: false, error: 'IDENTITY_MISMATCH' }, { status: 403 }));
       }
     } else {
-      // Auto-register on first score (device picks up the name)
+      // Auto-register on first score (device picks up the name).
+      // password_hash is NOT NULL in the legacy schema; pass '' explicitly.
       await client.execute({
-        sql: 'INSERT INTO players (name, device_id, created_at) VALUES (?, ?, ?)',
+        sql: 'INSERT INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?)',
         args: [sanitizedName, deviceId, new Date().toISOString()],
       });
     }
-    
-    const insertResult = await client.execute({
-      sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
+
+    // Pre-check: only persist the score if it makes this player's top 5 for
+    // the game. Keeps the `scores` table small and prevents one player from
+    // occupying the entire leaderboard.
+    const existingResult = await client.execute({
+      sql: 'SELECT id, score FROM scores WHERE game = ? AND name = ? ORDER BY score DESC LIMIT ?',
+      args: [game, sanitizedName, MAX_SCORES_PER_PLAYER_PER_GAME],
     });
-    const id = insertResult.lastInsertRowid;
-    
+    const existing = existingResult.rows;
+    const fifthBest = existing.length === MAX_SCORES_PER_PLAYER_PER_GAME
+      ? Number(existing[existing.length - 1].score)
+      : null;
+    const makesCut = existing.length < MAX_SCORES_PER_PLAYER_PER_GAME
+      || (fifthBest !== null && score > fifthBest);
+
+    let id = null;
+    let challengeId = null;
+    if (makesCut) {
+      challengeId = crypto.randomBytes(4).toString('hex');
+      const insertResult = await client.execute({
+        sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
+      });
+      id = Number(insertResult.lastInsertRowid);
+
+      // Trim: keep only the top MAX_SCORES_PER_PLAYER_PER_GAME for this
+      // (game, name). Oldest non-qualifying rows go.
+      const keepResult = await client.execute({
+        sql: 'SELECT id FROM scores WHERE game = ? AND name = ? ORDER BY score DESC, id DESC LIMIT ?',
+        args: [game, sanitizedName, MAX_SCORES_PER_PLAYER_PER_GAME],
+      });
+      const keepIds = keepResult.rows.map(r => Number(r.id));
+      if (keepIds.length > 0) {
+        const placeholders = keepIds.map(() => '?').join(',');
+        await client.execute({
+          sql: `DELETE FROM scores WHERE game = ? AND name = ? AND id NOT IN (${placeholders})`,
+          args: [game, sanitizedName, ...keepIds],
+        });
+      }
+    }
+
+    // Global rank (0-based): number of scores in this game strictly greater
+    // than the submitted one. Accurate at any depth, not just top 10.
+    const rankResult = await client.execute({
+      sql: 'SELECT COUNT(*) as higher FROM scores WHERE game = ? AND score > ?',
+      args: [game, score],
+    });
+    const rank = Number(rankResult.rows[0].higher);
+
     const topScoresResult = await client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] });
     const topScores = topScoresResult.rows;
-    const rank = topScores.findIndex((s) => s.name === sanitizedName && s.score === score);
 
-    // Achievement detection
+    // Achievement detection (uses the now-capped score count as a proxy for
+    // total plays per player — acceptable, and a natural side effect of the cap).
     const totalResult = await client.execute({ sql: 'SELECT COUNT(*) as cnt FROM scores WHERE name = ?', args: [sanitizedName] });
     const totalPlays = totalResult.rows[0].cnt;
     const existingBadges = await client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [sanitizedName] });
     const existingIds = new Set(existingBadges.rows.map(r => r.achievement_id));
-    
+
     const awards = [];
     for (const badge of BADGE_CRITERIA) {
       if (!existingIds.has(badge.id) && badge.check(game, score, totalPlays, existingIds)) {
@@ -129,15 +173,17 @@ export async function POST(request) {
       }
     }
 
-    return cors(NextResponse.json({ 
-      success: true, 
+    return cors(NextResponse.json({
+      success: true,
       id,
       challengeId,
+      saved: makesCut,
       scores: topScores,
-      rank: rank >= 0 ? rank : -1,
+      rank,
       awards: awards.length > 0 ? awards : undefined,
     }));
   } catch (error) {
+    console.error('POST /api/scores failed:', error?.message);
     return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
   }
 }
