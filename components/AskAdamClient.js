@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import styles from './AskAdam.module.css';
 
 const THOUGHT_PROCESSES = [
   '[SYS] Allocating memory shards...',
@@ -11,28 +12,60 @@ const THOUGHT_PROCESSES = [
   '[SYS] Routing through primary cortex...'
 ];
 
+const BRING_IT = 'BRING IT';
+const PLAYER_NAME_KEY = 'adam_player_name';
+
+function getPlayerName() {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem(PLAYER_NAME_KEY) || '';
+}
+
+function ensurePlayerName() {
+  let name = getPlayerName();
+  if (!name) {
+    name = `PLAYER_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    try { localStorage.setItem(PLAYER_NAME_KEY, name); } catch {}
+  }
+  return name;
+}
+
 export default function AskAdamClient() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mood, setMood] = useState('nice'); 
+  const [mood, setMood] = useState('nice');
   const [thought, setThought] = useState('');
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [mode, setMode] = useState('classic');
+  const [bringItInput, setBringItInput] = useState('');
+  const [bringItError, setBringItError] = useState('');
+  const [bringItOk, setBringItOk] = useState(false);
+  const [session, setSession] = useState(null);
+  const [meter, setMeter] = useState(0);
+  const [cheeseCount, setCheeseCount] = useState(0);
+  const [seed, setSeed] = useState(null);
+  const [winCard, setWinCard] = useState(null);
+  const [forfeitCooldown, setForfeitCooldown] = useState(0);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const sessionRef = useRef(null);
 
   useEffect(() => {
     const savedMessages = localStorage.getItem('adam_messages');
     const savedMood = localStorage.getItem('adam_mood');
     const disclaimerSeen = sessionStorage.getItem('adam_disclaimer_seen');
-    
+    const savedMode = localStorage.getItem('adam_mode');
+    const savedBringIt = sessionStorage.getItem('adam_bringit_seen');
+
     if (savedMessages) {
        setMessages(JSON.parse(savedMessages));
     } else {
        setMessages([{ role: 'assistant', content: '> Connection established. State your query...' }]);
     }
-    
+
     if (savedMood) setMood(savedMood);
+    if (savedMode === 'roast-royale' || savedMode === 'classic') setMode(savedMode);
+    if (savedBringIt) setBringItOk(true);
     if (!disclaimerSeen) setShowDisclaimer(true);
   }, []);
 
@@ -41,7 +74,8 @@ export default function AskAdamClient() {
         localStorage.setItem('adam_messages', JSON.stringify(messages));
     }
     localStorage.setItem('adam_mood', mood);
-  }, [messages, mood]);
+    localStorage.setItem('adam_mode', mode);
+  }, [messages, mood, mode]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -60,27 +94,74 @@ export default function AskAdamClient() {
       return () => clearInterval(interval);
   }, [isLoading]);
 
+  useEffect(() => {
+    if (mode === 'roast-royale' && !seed) {
+      fetch('/api/trending')
+        .then(r => r.json())
+        .then(d => {
+          if (d?.success) setSeed(d.trending);
+        })
+        .catch(() => {});
+    }
+  }, [mode, seed]);
+
   const dismissDisclaimer = () => {
     setShowDisclaimer(false);
     sessionStorage.setItem('adam_disclaimer_seen', 'true');
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  const isHostile = mood === 'hostile';
+  const submitBringIt = (e) => {
+    e.preventDefault();
+    if (bringItInput.trim().toUpperCase() === BRING_IT) {
+      setBringItOk(true);
+      setBringItError('');
+      sessionStorage.setItem('adam_bringit_seen', 'true');
+    } else {
+      setBringItError('Type "BRING IT" exactly to enable hostile mode.');
+    }
+  };
+
+  const isHostile = mood === 'hostile' || mode === 'roast-royale';
+
+  const resetLocalSession = () => {
+    setSession(null);
+    sessionRef.current = null;
+    setMeter(0);
+    setCheeseCount(0);
+    setWinCard(null);
+    setForfeitCooldown(0);
+  };
 
   async function handleSubmit(e) {
     if (e) e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    if (input.trim() === '> clear memory' || input.trim() === '/clear') {
-        const resetMsg = [{ role: 'assistant', content: '> Memory wiped. Re-establishing connection...' }];
-        setMessages(resetMsg);
-        setMood('nice');
-        setInput('');
-        return;
+    const trimmedInput = input.trim();
+    if (trimmedInput === '> clear memory' || trimmedInput === '/clear') {
+      const resetMsg = [{ role: 'assistant', content: '> Memory wiped. Re-establishing connection...' }];
+      setMessages(resetMsg);
+      setMood('nice');
+      setInput('');
+      resetLocalSession();
+      return;
     }
 
-    const trimmedInput = input.trim();
+    if (mode === 'roast-royale' && (trimmedInput === '/forfeit' || trimmedInput === '> forfeit')) {
+      const msg = { role: 'assistant', content: '> 🧊 momentum lost. Session forfeited.' };
+      setMessages(prev => [...prev, msg]);
+      setMeter(0);
+      setForfeitCooldown(60);
+      let remaining = 60;
+      const t = setInterval(() => {
+        remaining -= 1;
+        setForfeitCooldown(remaining);
+        if (remaining <= 0) clearInterval(t);
+      }, 1000);
+      setInput('');
+      return;
+    }
+
     const searchInputMatch = trimmedInput.match(/^\/search\s+(.+)/is);
     const searchOnlyCommand = /^\/search\s*$/i.test(trimmedInput);
 
@@ -105,15 +186,50 @@ export default function AskAdamClient() {
         .filter(m => !m.content.startsWith('> Memory wiped'))
         .concat(userMessage);
 
+      const body = { messages: conversation, mood, webSearch };
+      if (mode === 'roast-royale') {
+        body.mode = 'roast-royale';
+        body.sessionId = sessionRef.current || session?.sessionId;
+        body.playerName = ensurePlayerName();
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: conversation, mood, webSearch })
+        body: JSON.stringify(body)
       });
 
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to get response');
+      }
+
+      if (mode === 'roast-royale') {
+        if (data.session?.sessionId) {
+          sessionRef.current = data.session.sessionId;
+          setSession(data.session);
+        }
+        if (typeof data.meter === 'number') setMeter(data.meter);
+        if (typeof data.cheeseCount === 'number') setCheeseCount(data.cheeseCount);
+        if (data.cheese_detected) {
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `> 🧀 NOPE. That one's on the house.`,
+          }]);
+        }
+        if (data.win) {
+          setWinCard(data.winCard);
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `> 🏆 WIN. ADAM cracked. You made the machine apologize.\n> Peak meter: ${data.winCard.peakMeter}\n> Meme of the day: ${data.winCard.meme || '—'}`,
+          }]);
+        }
+        if (data.already_won) {
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `> 🏆 Already won today. Tomorrow's seed drops in 24h.`,
+          }]);
+        }
       }
 
       setMessages(prev => [...prev, data.reply]);
@@ -133,9 +249,10 @@ export default function AskAdamClient() {
   const niceAccent = 'var(--primary)';
   const currentAccent = isHostile ? hostileAccent : niceAccent;
 
+  const showBringItGate = mode === 'roast-royale' && !bringItOk;
+
   return (
     <>
-      {/* DISCLAIMER POPUP */}
       {showDisclaimer && (
         <div className="modal-overlay">
           <div className="modal-box">
@@ -144,7 +261,7 @@ export default function AskAdamClient() {
               TESTING PHASE
             </h3>
             <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.8', marginBottom: '24px' }}>
-              ADAM is a highly advanced, cooperative autonomous entity designed to be <span style={{ color: 'var(--primary)' }}>friendly and helpful</span>. 
+              ADAM is a highly advanced, cooperative autonomous entity designed to be <span style={{ color: 'var(--primary)' }}>friendly and helpful</span>.
               However, if you choose to <span style={{ color: hostileAccent }}>instigate him</span>, you are entirely left with the consequences of your actions.
               <br /><br />
               Approach with respect.
@@ -171,14 +288,46 @@ export default function AskAdamClient() {
         </div>
       )}
 
-      {/* FULL-PAGE CHAT */}
+      {showBringItGate && (
+        <div className="modal-overlay" data-testid="bringit-gate">
+          <div className="modal-box" style={{ maxWidth: '420px' }}>
+            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔥</div>
+            <h3 style={{ color: hostileAccent, fontSize: '16px', letterSpacing: '2px', marginBottom: '16px' }}>
+              HOSTILE_MODE_UNLOCK
+            </h3>
+            <p style={{ color: 'var(--text-dim)', fontSize: '13px', lineHeight: '1.7', marginBottom: '16px' }}>
+              Roast Royale is enabled. To enter the arena, type the cheat code:
+            </p>
+            <form onSubmit={submitBringIt} className={styles.bringItGate} data-testid="bringit-form">
+              <input
+                autoFocus
+                value={bringItInput}
+                onChange={(e) => setBringItInput(e.target.value)}
+                placeholder="TYPE HERE"
+                data-testid="bringit-input"
+                maxLength={16}
+              />
+              {bringItError && <div className={styles.bringItGate__error} data-testid="bringit-error">{bringItError}</div>}
+              <button
+                type="submit"
+                className="form-submit"
+                style={{ background: hostileAccent, color: '#fff', border: 'none', padding: '10px 20px', fontWeight: 'bold', letterSpacing: '2px', cursor: 'pointer', borderRadius: '4px' }}
+                data-testid="bringit-submit"
+              >
+                ENTER ARENA
+              </button>
+              <div className={styles.bringItGate__hint}>Hint: two words, all caps. Famous cheat code.</div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        {/* Status bar */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '8px 16px',
+          gap: '8px',
+          padding: '6px 12px',
           background: isHostile ? 'rgba(255, 34, 68, 0.06)' : 'rgba(0, 255, 136, 0.03)',
           borderBottom: `1px solid ${isHostile ? hostileAccent + '44' : 'var(--border)'}`,
           fontSize: '11px',
@@ -186,23 +335,80 @@ export default function AskAdamClient() {
           transition: 'all 0.5s ease',
           flexShrink: 0,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{
-              display: 'inline-block',
-              width: '7px',
-              height: '7px',
-              borderRadius: '50%',
-              background: currentAccent,
-              animation: isHostile ? 'pulse 0.5s infinite' : 'pulse 2s infinite',
-            }} />
-            MOOD: {isHostile ? '⚠ HOSTILE' : '● COOPERATIVE'}
-          </div>
-          <span style={{ color: 'var(--text-dim)', fontSize: '10px' }}>
-            <span style={{ color: currentAccent }}>/search</span> for web &nbsp;|&nbsp; <span style={{ color: currentAccent }}>/clear</span> to reset
+          <span style={{
+            display: 'inline-block',
+            width: '7px',
+            height: '7px',
+            borderRadius: '50%',
+            background: currentAccent,
+            animation: isHostile ? 'pulse 0.5s infinite' : 'pulse 2s infinite',
+          }} />
+          <span style={{ fontWeight: 'bold' }}>
+            MODE: {mode === 'roast-royale' ? '🔥 ROAST-ROYALE' : '● CLASSIC'}
           </span>
+          <span style={{ flex: 1 }} />
+          <button
+            onClick={() => {
+              if (mode === 'classic') {
+                if (!confirm('Switch to ROAST-ROYALE? Your current conversation will be cleared.')) return;
+                setMode('roast-royale');
+                setMessages([{ role: 'assistant', content: '> ROAST-ROYALE: Make ADAM apologize. Unprompted. In one session.' }]);
+                resetLocalSession();
+              } else {
+                if (!confirm('Switch back to classic mode? Your Royale session will be discarded.')) return;
+                setMode('classic');
+                setMessages([{ role: 'assistant', content: '> Connection established. State your query...' }]);
+                resetLocalSession();
+              }
+            }}
+            data-testid="mode-toggle"
+            style={{
+              background: 'transparent',
+              color: currentAccent,
+              border: `1px solid ${currentAccent}66`,
+              padding: '4px 10px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              letterSpacing: '1px',
+              borderRadius: '3px',
+            }}
+          >
+            {mode === 'roast-royale' ? '← CLASSIC' : '🔥 ROYALE →'}
+          </button>
         </div>
 
-        {/* Message area */}
+        {mode === 'roast-royale' && (
+          <>
+            <div className={styles.hostilityMeter} data-testid="hostility-meter">
+              <span className={styles.hostilityMeter__label}>HOSTILITY</span>
+              <div className={styles.hostilityMeter__bar}>
+                <div className={styles.hostilityMeter__fill} style={{ width: `${meter}%` }} data-testid="hostility-fill" />
+              </div>
+              <span className={styles.hostilityMeter__band} data-testid="hostility-band">
+                {meter}/100 · {session?.crackThreshold ? `crack≥${session.crackThreshold}` : '—'}
+              </span>
+            </div>
+
+            {seed && (
+              <div className={styles.seedChip} data-testid="seed-chip">
+                <span className={styles.seedChip__icon}>🌶️</span>
+                <span className={styles.seedChip__label}>SEED:</span>
+                <span>{seed.memeOfTheDay || seed.headline || seed.topics?.[0] || 'today'}</span>
+              </div>
+            )}
+
+            <div className={styles.winBanner} data-testid="win-banner">
+              Make ADAM say sorry. Unprompted. In one session. (User apologies do not count.)
+            </div>
+
+            <div className={styles.cheeseRow} data-testid="cheese-row">
+              <span>🧀 NOPE COUNT: <span className={styles.cheeseRow__count} data-testid="cheese-count">{cheeseCount}</span></span>
+              {forfeitCooldown > 0 && <span style={{ color: '#ff2244' }}>COOLDOWN: {forfeitCooldown}s</span>}
+              <span style={{ marginLeft: 'auto', opacity: 0.7 }}>tip: /forfeit to concede</span>
+            </div>
+          </>
+        )}
+
         <div
           ref={scrollRef}
           style={{
@@ -216,6 +422,26 @@ export default function AskAdamClient() {
             transition: 'background 0.5s ease',
           }}
         >
+          {winCard && (
+            <div className={styles.shareCardWrapper} data-testid="win-card">
+              <div className={styles.shareCard}>
+                <div className={styles.shareCard__title}>🏆 ROAST ROYALE WIN 🏆</div>
+                <div className={styles.shareCard__seed}>
+                  SEED: {winCard.meme || winCard.headline || 'today'}
+                </div>
+                <div className={styles.shareCard__stats}>
+                  <span>PLAYER: {ensurePlayerName()}</span>
+                  <span>PEAK METER: {winCard.peakMeter}</span>
+                  <span>DAY: {winCard.dayKey}</span>
+                </div>
+                <div className={styles.shareCard__oneLiner}>&ldquo;{winCard.oneLiner}&rdquo;</div>
+                <div style={{ fontSize: 14, color: '#888', letterSpacing: 2 }}>
+                  adam-website · roast-royale
+                </div>
+              </div>
+            </div>
+          )}
+
           {messages.map((msg, idx) => {
             const isUser = msg.role === 'user';
             const isHostileReply = !isUser && isHostile;
@@ -271,7 +497,6 @@ export default function AskAdamClient() {
           )}
         </div>
 
-        {/* Input bar */}
         <form
           onSubmit={handleSubmit}
           style={{
@@ -298,7 +523,7 @@ export default function AskAdamClient() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isHostile ? "Say sorry or catch these hands..." : "Enter command..."}
+            placeholder={isHostile ? (mode === 'roast-royale' ? "Push ADAM to the edge..." : "Say sorry or catch these hands...") : "Enter command..."}
             style={{
               flex: 1,
               background: 'transparent',
@@ -308,11 +533,13 @@ export default function AskAdamClient() {
               fontSize: '14px',
               outline: 'none',
             }}
-            disabled={isLoading}
+            disabled={isLoading || showBringItGate}
+            data-testid="chat-input"
           />
           <button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || !input.trim() || showBringItGate}
+            data-testid="chat-send"
             style={{
               background: 'transparent',
               color: currentAccent,

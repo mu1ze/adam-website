@@ -994,79 +994,7 @@ footer { text-align: center; padding: 40px 20px; color: var(--text-dim); font-si
 }
 
 /* ── Scorecard Image (Game Over Share) ── */
-.share-section {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-.share-canvas {
-  display: none;
-}
-
-.share-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.share-btn {
-  background: var(--accent-bg);
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  cursor: pointer;
-  letter-spacing: 1px;
-  transition: all 0.2s;
-}
-
-.share-btn:hover:not(:disabled) {
-  background: var(--primary);
-  color: var(--bg);
-}
-
-.share-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.share-hint {
-  color: var(--text-dim);
-  font-size: 11px;
-  text-align: center;
-  margin-top: 10px;
-  letter-spacing: 1px;
-}
-
-.share-buttons-social {
-  margin-top: 8px;
-}
-
-.share-btn-twitter {
-  border-color: #1da1f2;
-  color: #1da1f2;
-  background: rgba(29, 161, 242, 0.08);
-}
-
-.share-btn-twitter:hover:not(:disabled) {
-  background: #1da1f2;
-  color: #fff;
-}
-
-.share-btn-native {
-  border-color: var(--text-dim);
-  color: var(--text-dim);
-  background: transparent;
-}
-
-.share-btn-native:hover:not(:disabled) {
-  background: var(--text-dim);
-  color: var(--bg);
-}
+/* Styles moved to components/share/scorecard.module.css */
 
 @media (max-width: 768px) {
   .live-leaderboard-header,
@@ -1074,15 +1002,5 @@ footer { text-align: center; padding: 40px 20px; color: var(--text-dim); font-si
     grid-template-columns: 35px 1fr 65px 60px;
     padding: 8px 12px;
     font-size: 11px;
-  }
-  
-  .share-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .share-btn {
-    width: 100%;
-    max-width: 280px;
   }
 }

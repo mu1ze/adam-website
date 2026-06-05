@@ -105,7 +105,7 @@ export default async function ScorecardPage({ params }) {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: '20px', color: 'var(--text-dim)', fontSize: '11px' }}>
-          adam.ai/games
+          adam.dvlli.com/games
         </div>
       </div>
     </main>

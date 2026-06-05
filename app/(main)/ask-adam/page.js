@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function AskAdamPage() {
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }} data-testid="ask-adam-page">
       <header style={{ padding: '20px 20px 0', textAlign: 'center', borderBottom: '1px solid var(--primary)', flexShrink: 0 }}>
         <div className="ascii-art">
 {`╔═══════════════════════════════════════════════════════════════╗

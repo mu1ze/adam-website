@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import usePlayerName from '../usePlayerName';
 import Leaderboard from '../Leaderboard';
 import { getRotatingChar, getSmoothColor, getCurrentLanguage } from '../textLanguages';
-import ScorecardImage from '@/components/ScorecardImage';
+import ScorecardImage from '@/components/share/ScorecardImage';
 import GameStructuredData from '@/components/GameStructuredData';
 import GamePauseMenu from '@/components/GamePauseMenu';
 import { useGameControls } from '../useGameControls';

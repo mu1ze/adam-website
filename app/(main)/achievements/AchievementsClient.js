@@ -14,6 +14,10 @@ const ALL_BADGES = [
   { id: 'tetris_10000', name: 'STACK_KING', desc: 'Score ≥10,000 in Tetris', emoji: '🧱' },
   { id: 'bird_20', name: 'AERIAL_ACE', desc: 'Pass 20 pipes in Flappy Bird', emoji: '🐦' },
   { id: 'merge_512', name: 'TILE_ADEPT', desc: 'Score ≥1,000 in 2048', emoji: '🔢' },
+  { id: 'adam_apology_won', name: 'FORCED_APOLOGY', desc: 'Make ADAM apologize unprompted', emoji: '🧎' },
+  { id: 'adam_apology_streak_3', name: 'APOLOGY_STREAK_3', desc: 'Win on 3 different calendar days', emoji: '📅' },
+  { id: 'adam_apology_perfect', name: 'CLEAN_KILL', desc: 'Win without using a slur from HOSTILE_TRIGGERS', emoji: '🧼' },
+  { id: 'adam_apology_comeback', name: 'COMEBACK_KING', desc: 'Win after the meter dropped below 10 mid-session', emoji: '🔁' },
 ];
 
 export default function AchievementsClient() {
