@@ -33,6 +33,7 @@ export default function SnakePage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showEndGameContent, setShowEndGameContent] = useState(false);
 
   const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
@@ -71,11 +72,13 @@ export default function SnakePage() {
       startTime: Date.now(),
     };
     setScore(0);
+    setShowEndGameContent(false);
     setGameState('PLAYING');
   };
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
+    setShowEndGameContent(true);
     if (name) {
       submitScore(name, score, deviceId).then(result => setFinalRank(result.rank));
     }
@@ -127,7 +130,7 @@ export default function SnakePage() {
 
     rafRef.current = requestAnimationFrame(update);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [gameState, score]);
+  }, [gameState]);
 
   const render = (now) => {
     const canvas = canvasRef.current;
@@ -225,6 +228,7 @@ export default function SnakePage() {
         LeaderboardUI={LeaderboardUI}
         scores={scores}
         newRank={newRank}
+        endGameContent={showEndGameContent ? <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} /> : null}
       >
         <div className="game-hud">
           <div className="hud-item">
@@ -274,7 +278,6 @@ export default function SnakePage() {
                 </div>
               )}
               <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-              <ScorecardImage gameId="snake" gameTitle="SNAKE" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 

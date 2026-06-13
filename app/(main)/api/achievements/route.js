@@ -25,6 +25,7 @@ export async function GET(request) {
 
     return NextResponse.json({ success: true, earned, details: byGame });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Achievements API Error:', error.message);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

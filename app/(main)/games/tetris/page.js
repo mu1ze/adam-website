@@ -85,6 +85,7 @@ export default function TetrisPage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showEndGameContent, setShowEndGameContent] = useState(false);
 
   const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
@@ -105,11 +106,13 @@ export default function TetrisPage() {
     const nextPiece = randomPiece();
     stateRef.current = { board, piece, nextPiece, level: 1, lines: 0, dropInterval: 800, lastDrop: Date.now(), score: 0 };
     setScore(0);
+    setShowEndGameContent(false);
     setGameState('PLAYING');
   };
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
+    setShowEndGameContent(true);
     if (name) submitScore(name, score, deviceId).then(result => setFinalRank(result.rank));
   };
 
@@ -164,7 +167,7 @@ export default function TetrisPage() {
 
     rafRef.current = requestAnimationFrame(update);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [gameState, score]);
+  }, [gameState]);
 
   const render = (now) => {
     const canvas = canvasRef.current;
@@ -299,6 +302,7 @@ export default function TetrisPage() {
         LeaderboardUI={LeaderboardUI}
         scores={scores}
         newRank={newRank}
+        endGameContent={showEndGameContent ? <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} /> : null}
       >
         <div className="game-hud">
           <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
@@ -330,7 +334,6 @@ export default function TetrisPage() {
                 <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
               )}
               <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-              <ScorecardImage gameId="tetris" gameTitle="TETRIS" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 

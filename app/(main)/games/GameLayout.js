@@ -15,6 +15,7 @@ export default function GameLayout({
   LeaderboardUI,
   scores,
   newRank,
+  endGameContent,
   children,
 }) {
   return (
@@ -27,12 +28,12 @@ export default function GameLayout({
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <PauseButton onClick={handlePause} />
-          <span className="game-player-name game-fullscreen-btn" onClick={handleFullscreen}>
+          <button className="game-fullscreen-btn" onClick={handleFullscreen}>
             [FULLSCREEN]
-          </span>
-          <span className="game-player-name" onClick={changeName}>
+          </button>
+          <button className="game-player-name" onClick={changeName}>
             &gt; {name || 'GUEST'} [CHANGE]
-          </span>
+          </button>
         </div>
       </div>
 
@@ -46,6 +47,7 @@ export default function GameLayout({
             <span className="control-hint"><kbd>P</kbd> Pause</span>
           </div>
         )}
+        {endGameContent}
         <LeaderboardUI scores={scores} newRank={newRank} gameId={gameId} />
       </div>
 

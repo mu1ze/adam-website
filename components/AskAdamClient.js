@@ -44,8 +44,12 @@ export default function AskAdamClient() {
   const [meter, setMeter] = useState(0);
   const [cheeseCount, setCheeseCount] = useState(0);
   const [seed, setSeed] = useState(null);
+  const [personalHooks, setPersonalHooks] = useState([]);
+  const [liveDiss, setLiveDiss] = useState(null);
   const [winCard, setWinCard] = useState(null);
   const [forfeitCooldown, setForfeitCooldown] = useState(0);
+  const [dailyBriefOpen, setDailyBriefOpen] = useState(false);
+  const [devMode, setDevMode] = useState(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const sessionRef = useRef(null);
@@ -67,6 +71,9 @@ export default function AskAdamClient() {
     if (savedMode === 'roast-royale' || savedMode === 'classic') setMode(savedMode);
     if (savedBringIt) setBringItOk(true);
     if (!disclaimerSeen) setShowDisclaimer(true);
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === '1') {
+      setDevMode(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -209,6 +216,9 @@ export default function AskAdamClient() {
           sessionRef.current = data.session.sessionId;
           setSession(data.session);
         }
+        if (data.session?.trending && !seed) setSeed(data.session.trending);
+        if (Array.isArray(data.session?.personalHooks)) setPersonalHooks(data.session.personalHooks);
+        if (data.session?.liveDiss !== undefined) setLiveDiss(data.session.liveDiss);
         if (typeof data.meter === 'number') setMeter(data.meter);
         if (typeof data.cheeseCount === 'number') setCheeseCount(data.cheeseCount);
         if (data.cheese_detected) {
@@ -322,6 +332,106 @@ export default function AskAdamClient() {
         </div>
       )}
 
+      {dailyBriefOpen && seed && (
+        <div className="modal-overlay" data-testid="daily-brief" onClick={() => setDailyBriefOpen(false)}>
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '640px', maxHeight: '80vh', overflowY: 'auto', textAlign: 'left' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ color: '#ff2244', fontSize: 14, letterSpacing: 2, margin: 0 }}>📋 DAILY BRIEF</h3>
+              <button
+                onClick={() => setDailyBriefOpen(false)}
+                data-testid="daily-brief-close"
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontSize: 18, cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--text-dim)', fontSize: 11, letterSpacing: 1, marginBottom: 16 }}>
+              DAY: {session?.dayKey || '—'} · CHAOS: {session?.difficulty ? `${session.difficulty}/5` : '—'} · {devMode ? '🛠 DEV MODE' : 'PLAYER VIEW'}
+            </p>
+
+            {seed.vibe && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ color: 'var(--primary)', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>TODAY'S VIBE</div>
+                <div style={{ color: 'var(--text)', fontSize: 14, fontStyle: 'italic' }}>&ldquo;{seed.vibe}&rdquo;</div>
+              </div>
+            )}
+
+            {Array.isArray(seed.names) && seed.names.length > 0 && (
+              <div style={{ marginBottom: 16 }} data-testid="brief-names">
+                <div style={{ color: 'var(--primary)', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>TRENDING NAMES &amp; ENTITIES</div>
+                <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--text)', fontSize: 13, lineHeight: 1.8 }}>
+                  {seed.names.map((n, i) => <li key={i}>{n}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {seed.memeOfTheDay && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ color: 'var(--primary)', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>MEME OF THE DAY</div>
+                <div style={{ color: 'var(--text)', fontSize: 14 }}>{seed.memeOfTheDay}</div>
+              </div>
+            )}
+
+            {seed.crossover && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ color: 'var(--primary)', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>CROSSOVER (use if clean)</div>
+                <div style={{ color: '#ff88aa', fontSize: 14 }}>{seed.crossover}</div>
+              </div>
+            )}
+
+            {Array.isArray(seed.rawTitles) && seed.rawTitles.length > 0 && (
+              <div style={{ marginBottom: 16 }} data-testid="brief-raw">
+                <div style={{ color: 'var(--primary)', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>RAW FEED (top titles)</div>
+                <div style={{ color: 'var(--text-dim)', fontSize: 11, lineHeight: 1.7, fontFamily: 'monospace', maxHeight: 180, overflowY: 'auto' }}>
+                  {seed.rawTitles.map((t, i) => <div key={i}>{t}</div>)}
+                </div>
+              </div>
+            )}
+
+            {devMode && Array.isArray(personalHooks) && personalHooks.length > 0 && (
+              <div style={{ marginBottom: 16 }} data-testid="brief-hooks">
+                <div style={{ color: '#ffb000', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>🛠 PERSONAL HOOKS (dev only)</div>
+                <ul style={{ margin: 0, paddingLeft: 18, color: '#ffb000', fontSize: 12, lineHeight: 1.7 }}>
+                  {personalHooks.map((h, i) => <li key={i}>{h}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {devMode && liveDiss && liveDiss.query && Array.isArray(liveDiss.items) && liveDiss.items.length > 0 && (
+              <div style={{ marginBottom: 16 }} data-testid="brief-livediss">
+                <div style={{ color: '#00d4ff', fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>
+                  🛠 LIVE DISS FEED (dev only) — query: <span style={{ color: '#fff' }}>&ldquo;{liveDiss.query}&rdquo;</span>{liveDiss.cached ? ' · cached' : ''}
+                </div>
+                <ol style={{ margin: 0, paddingLeft: 18, color: '#cfe9f5', fontSize: 11, lineHeight: 1.7, fontFamily: 'monospace' }}>
+                  {liveDiss.items.map((it, i) => (
+                    <li key={i} style={{ marginBottom: 6 }}>
+                      <div>[r/{it.subreddit}, {(it.postScore || 0).toLocaleString()}] {it.postTitle}</div>
+                      {it.kind === 'comment' && it.body && (
+                        <div style={{ color: '#ffb000', marginLeft: 8 }}>↳ TOP ({it.commentScore?.toLocaleString() || 0}, u/{it.author}): {it.body}</div>
+                      )}
+                      {it.kind === 'selftext' && it.body && (
+                        <div style={{ color: '#888', marginLeft: 8 }}>↳ SELFTEXT: {it.body}</div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+
+            {!devMode && (
+              <p style={{ color: 'var(--text-dim)', fontSize: 10, marginTop: 16, fontStyle: 'italic' }}>
+                Add <code>?dev=1</code> to the URL to inspect ADAM&apos;s personal hooks.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <div style={{
           display: 'flex',
@@ -390,11 +500,18 @@ export default function AskAdamClient() {
             </div>
 
             {seed && (
-              <div className={styles.seedChip} data-testid="seed-chip">
+              <button
+                type="button"
+                className={styles.seedChip}
+                data-testid="seed-chip"
+                onClick={() => setDailyBriefOpen(true)}
+                style={{ cursor: 'pointer', font: 'inherit', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
                 <span className={styles.seedChip__icon}>🌶️</span>
                 <span className={styles.seedChip__label}>SEED:</span>
-                <span>{seed.memeOfTheDay || seed.headline || seed.topics?.[0] || 'today'}</span>
-              </div>
+                <span>{seed.memeOfTheDay || seed.vibe || seed.headline || seed.names?.[0] || 'today'}</span>
+                <span style={{ marginLeft: 8, opacity: 0.6, fontSize: 10 }}>ⓘ</span>
+              </button>
             )}
 
             <div className={styles.winBanner} data-testid="win-banner">

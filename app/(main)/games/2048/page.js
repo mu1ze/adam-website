@@ -117,6 +117,7 @@ export default function TwoZeroFourEightPage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showEndGameContent, setShowEndGameContent] = useState(false);
 
   const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
@@ -132,6 +133,7 @@ export default function TwoZeroFourEightPage() {
     board = addTile(board);
     stateRef.current = { board, score: 0, hasWon: false };
     setScore(0);
+    setShowEndGameContent(false);
     setGameState('PLAYING');
   };
 
@@ -148,6 +150,7 @@ export default function TwoZeroFourEightPage() {
     if (!state.hasWon && state.board.some(r => r.some(v => v >= 2048))) {
       state.hasWon = true;
       setGameState('WIN');
+      setShowEndGameContent(true);
       if (name) submitScore(name, state.score, deviceId).then(result => setFinalRank(result.rank));
     }
 
@@ -157,6 +160,7 @@ export default function TwoZeroFourEightPage() {
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
+    setShowEndGameContent(true);
     const state = stateRef.current;
     if (name) {
       const finalScore = state.score || score;
@@ -213,7 +217,7 @@ export default function TwoZeroFourEightPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, score]);
+  }, [gameState]);
 
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {
@@ -249,6 +253,7 @@ export default function TwoZeroFourEightPage() {
         LeaderboardUI={LeaderboardUI}
         scores={scores}
         newRank={newRank}
+        endGameContent={showEndGameContent ? <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} /> : null}
       >
         <div className="game-hud">
           <div className="hud-item"><div className="hud-label">SCORE</div><div className="hud-value" style={{ color: '#edc22e' }}>{score}</div></div>
@@ -278,7 +283,6 @@ export default function TwoZeroFourEightPage() {
                 <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
               )}
               <button className="game-overlay-btn" onClick={() => setGameState('PLAYING')}>CONTINUE</button>
-              <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 
@@ -291,7 +295,6 @@ export default function TwoZeroFourEightPage() {
                 <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
               )}
               <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-              <ScorecardImage gameId="2048" gameTitle="2048" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 

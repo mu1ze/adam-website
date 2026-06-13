@@ -26,7 +26,8 @@ export default function LiveActivityFeed() {
         const data = await res.json();
         if (data.success) {
           setActivities(data.scores);
-          setPlayerCount(data.scores.length > 0 ? Math.min(data.scores.length + Math.floor(Math.random() * 8), 30) : 0);
+          const uniquePlayers = new Set(data.scores.map(s => s.name)).size;
+          setPlayerCount(uniquePlayers);
         }
       } catch {}
     };

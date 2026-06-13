@@ -33,6 +33,7 @@ export default function PongPage() {
   const [score, setScore] = useState({ left: 0, right: 0, currentMatch: 0 });
   const [finalRank, setFinalRank] = useState(-1);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showEndGameContent, setShowEndGameContent] = useState(false);
 
   const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
@@ -60,11 +61,13 @@ export default function PongPage() {
       startTime: Date.now()
     };
     setScore({ left: 0, right: 0, currentMatch: 0 });
+    setShowEndGameContent(false);
     setGameState('PLAYING');
   };
 
   const handleGameOver = (finalScore) => {
     setGameState('GAMEOVER');
+    setShowEndGameContent(true);
     if (name) submitScore(name, finalScore, deviceId).then(result => setFinalRank(result.rank));
   };
 
@@ -249,6 +252,7 @@ export default function PongPage() {
         LeaderboardUI={LeaderboardUI}
         scores={scores}
         newRank={newRank}
+        endGameContent={showEndGameContent ? <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} /> : null}
       >
         <div className="game-hud">
           <div className="hud-item">
@@ -294,7 +298,6 @@ export default function PongPage() {
                 </div>
               )}
               <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-              <ScorecardImage gameId="pong" gameTitle="PONG" score={score.right} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 

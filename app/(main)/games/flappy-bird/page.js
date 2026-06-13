@@ -32,6 +32,7 @@ export default function FlappyBirdPage() {
   const [score, setScore] = useState(0);
   const [finalRank, setFinalRank] = useState(-1);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showEndGameContent, setShowEndGameContent] = useState(false);
 
   const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
 
@@ -45,6 +46,7 @@ export default function FlappyBirdPage() {
   const startGame = () => {
     stateRef.current = { birdY: GAME_HEIGHT / 2, birdVelocity: 0, pipes: [], score: 0 };
     setScore(0);
+    setShowEndGameContent(false);
     setGameState('PLAYING');
   };
 
@@ -55,6 +57,7 @@ export default function FlappyBirdPage() {
 
   const handleGameOver = () => {
     setGameState('GAMEOVER');
+    setShowEndGameContent(true);
     if (name) submitScore(name, score, deviceId).then(result => setFinalRank(result.rank));
   };
 
@@ -112,7 +115,7 @@ export default function FlappyBirdPage() {
 
     rafRef.current = requestAnimationFrame(update);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [gameState, score]);
+  }, [gameState]);
 
   const render = () => {
     const canvas = canvasRef.current;
@@ -211,6 +214,7 @@ export default function FlappyBirdPage() {
         LeaderboardUI={LeaderboardUI}
         scores={scores}
         newRank={newRank}
+        endGameContent={showEndGameContent ? <ScorecardImage gameId="flappy-bird" gameTitle="FLAPPY BIRD" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} /> : null}
       >
         <div className="game-hud">
           <div className="hud-item"><div className="hud-label">PIPES PASSED</div><div className="hud-value" style={{ color: 'var(--accent)' }}>{score}</div></div>
@@ -240,7 +244,6 @@ export default function FlappyBirdPage() {
                 <div style={{ color: 'var(--accent)', marginBottom: 20, fontSize: 18, animation: 'blink 1s infinite' }}>NEW HIGH SCORE! RANK #{finalRank + 1}</div>
               )}
               <button className="game-overlay-btn" onClick={startGame}>RESTART SIMULATION</button>
-              <ScorecardImage gameId="flappy-bird" gameTitle="FLAPPY BIRD" score={score} rank={finalRank} playerName={name} topScores={scores} scoreId={scoreId} challengeId={challengeId} />
             </div>
           )}
 

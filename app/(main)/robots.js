@@ -1,5 +1,5 @@
 export default function robots() {
-  const baseUrl = process.env.SITE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.SITE_URL || 'https://adam.dvlli.com';
   return {
     rules: [
       {

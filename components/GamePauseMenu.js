@@ -74,8 +74,8 @@ export default function GamePauseMenu({
 
 export function PauseButton({ onClick }) {
   return (
-    <span className="game-player-name game-pause-btn" onClick={onClick}>
+    <button className="game-pause-btn" onClick={onClick} aria-label="Pause">
       ⏸
-    </span>
+    </button>
   );
 }

@@ -1,6 +1,27 @@
 import client, { ensureSchema } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
 
+const SITE_URL = process.env.SITE_URL || 'https://adam.dvlli.com';
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  return {
+    title: `Scorecard #${id}`,
+    description: 'View this player scorecard on the ADAM OS leaderboard.',
+    openGraph: {
+      title: `Scorecard #${id} — ADAM OS`,
+      description: 'View this player scorecard on the ADAM OS leaderboard.',
+      images: [{ url: `${SITE_URL}/api/og?title=Scorecard`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Scorecard #${id} — ADAM OS`,
+      description: 'View this player scorecard on the ADAM OS leaderboard.',
+      images: [`${SITE_URL}/api/og?title=Scorecard`],
+    },
+  };
+}
+
 export default async function ScorecardPage({ params }) {
   const { id } = await params;
 
