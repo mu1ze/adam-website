@@ -20,6 +20,7 @@ const BULLET_HEIGHT = 15;
 
 export default function SpaceInvadersPage() {
   const canvasRef = useRef(null);
+  const pageRef = useRef(null);
   const rafRef = useRef(null);
   const { name, deviceId, showPrompt, changeName, promptComponent } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'space-invaders' });
@@ -32,7 +33,7 @@ export default function SpaceInvadersPage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showEndGameContent, setShowEndGameContent] = useState(false);
 
-  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState, pageRef);
 
   const stateRef = useRef({
     shipX: GAME_WIDTH / 2 - SHIP_WIDTH / 2,
@@ -246,7 +247,7 @@ export default function SpaceInvadersPage() {
   const handleCanvasTouchEnd = () => { stateRef.current.touchTargetX = null; };
 
   return (
-    <div className="game-page" data-theme="dark">
+    <div className="game-page" data-theme="dark" ref={pageRef}>
       {promptComponent}
 
       <GameLayout

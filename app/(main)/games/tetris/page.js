@@ -75,6 +75,7 @@ function clearLines(board) {
 
 export default function TetrisPage() {
   const canvasRef = useRef(null);
+  const pageRef = useRef(null);
   const rafRef = useRef(null);
   const { name, deviceId, showPrompt, changeName, promptComponent } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'tetris' });
@@ -87,7 +88,7 @@ export default function TetrisPage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showEndGameContent, setShowEndGameContent] = useState(false);
 
-  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState, pageRef);
 
   const stateRef = useRef({
     board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
@@ -286,7 +287,7 @@ export default function TetrisPage() {
   };
 
   return (
-    <div className="game-page" data-theme="dark">
+    <div className="game-page" data-theme="dark" ref={pageRef}>
       {promptComponent}
 
       <GameLayout

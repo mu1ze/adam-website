@@ -23,6 +23,7 @@ const BALL_SPEED_Y = 5;
 
 export default function PongPage() {
   const canvasRef = useRef(null);
+  const pageRef = useRef(null);
   const rafRef = useRef(null);
   const { name, deviceId, showPrompt, promptComponent, changeName } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: 'pong' });
@@ -35,7 +36,7 @@ export default function PongPage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showEndGameContent, setShowEndGameContent] = useState(false);
 
-  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState, pageRef);
 
   const stateRef = useRef({
     ball: { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2, vx: BALL_SPEED_X, vy: BALL_SPEED_Y },
@@ -236,7 +237,7 @@ export default function PongPage() {
   };
 
   return (
-    <div className="game-page" data-theme="dark">
+    <div className="game-page" data-theme="dark" ref={pageRef}>
       {promptComponent}
 
       <GameLayout

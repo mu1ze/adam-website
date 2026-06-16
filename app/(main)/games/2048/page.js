@@ -107,6 +107,7 @@ function hasMoves(board) {
 
 export default function TwoZeroFourEightPage() {
   const canvasRef = useRef(null);
+  const pageRef = useRef(null);
   const rafRef = useRef(null);
   const { name, deviceId, showPrompt, changeName, promptComponent } = usePlayerName();
   const { scores, submitScore, newRank, scoreId, challengeId, awards, LeaderboardUI } = Leaderboard({ gameId: '2048' });
@@ -119,7 +120,7 @@ export default function TwoZeroFourEightPage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showEndGameContent, setShowEndGameContent] = useState(false);
 
-  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState);
+  const { isMobile, handlePause, handleFullscreen } = useGameControls(canvasRef, gameStateRef, setGameState, pageRef);
 
   const stateRef = useRef({
     board: createBoard(),
@@ -237,7 +238,7 @@ export default function TwoZeroFourEightPage() {
   };
 
   return (
-    <div className="game-page" data-theme="dark">
+    <div className="game-page" data-theme="dark" ref={pageRef}>
       {promptComponent}
 
       <GameLayout

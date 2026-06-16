@@ -158,9 +158,15 @@
 
 .game-page:fullscreen .game-bottom,
 .game-page:fullscreen .leaderboard-toggle-btn,
-.game-page:fullscreen .game-controls-hint,
-.game-page:fullscreen .game-fullscreen-btn {
+.game-page:fullscreen .game-controls-hint {
   display: none;
+}
+
+/* Keep fullscreen button visible on mobile so users can exit */
+@media (max-width: 768px) {
+  .game-page:fullscreen .game-fullscreen-btn {
+    display: inline-flex !important;
+  }
 }
 
 .game-page:fullscreen .game-overlay {
@@ -184,8 +190,13 @@
 .game-page:-webkit-full-screen .game-canvas { border-radius: 0; border: none; width: 100% !important; height: 100% !important; max-width: 100% !important; object-fit: contain; }
 .game-page:-webkit-full-screen .game-bottom,
 .game-page:-webkit-full-screen .leaderboard-toggle-btn,
-.game-page:-webkit-full-screen .game-controls-hint,
-.game-page:-webkit-full-screen .game-fullscreen-btn { display: none; }
+.game-page:-webkit-full-screen .game-controls-hint { display: none; }
+
+@media (max-width: 768px) {
+  .game-page:-webkit-full-screen .game-fullscreen-btn {
+    display: inline-flex !important;
+  }
+}
 
 .game-card-body {
   padding: 20px 24px 24px;
@@ -740,8 +751,16 @@
   .game-title { font-size: 13px; letter-spacing: 2px; }
   .game-player-name { font-size: 10px; }
 
-  /* Hide fullscreen button on mobile — we ARE fullscreen */
-  .game-fullscreen-btn { display: none !important; }
+  /* Fullscreen button visible on mobile - enable native fullscreen */
+  .game-fullscreen-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+    font-size: 10px;
+  }
 
   /* HUD compact */
   .game-hud {
@@ -775,6 +794,19 @@
   .game-bottom {
     display: block;
     padding: 20px 16px 56px;
+  }
+
+  .mobile-fullscreen-hint {
+    display: flex !important;
+    justify-content: center;
+    margin-bottom: 16px;
+    padding-top: 8px;
+  }
+
+  .mobile-fullscreen-hint .control-hint {
+    color: var(--warning);
+    font-size: 11px;
+    animation: blink 2s infinite;
   }
 
   /* Overlay titles smaller */
@@ -983,15 +1015,32 @@
 }
 .game-pause-btn:hover { opacity: 0.7; }
 
-.game-fullscreen-btn,
-button.game-player-name {
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  padding: 0;
-}
+  .game-fullscreen-btn {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+  }
+
+  .game-fullscreen-btn:hover {
+    opacity: 0.7;
+  }
+
+  .game-fullscreen-btn:active {
+    background: var(--primary);
+    color: var(--bg);
+  }
+
+  button.game-player-name {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+  }
 
 @media (max-width: 768px) {
   .pause-panel {

@@ -169,7 +169,7 @@ nav a:hover { color: var(--primary); border-color: var(--primary); }
 
 @media (max-width: 768px) {
     /* Sidebar handles navigation on mobile — hide desktop header nav */
-    header > nav { display: none !important; }
+    #mainNav { display: none !important; }
     .hamburger { display: none !important; }
 }
 
