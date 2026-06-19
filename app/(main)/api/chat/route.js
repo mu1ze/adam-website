@@ -22,7 +22,7 @@ import {
   buildOneLiner,
 } from '@/lib/roastRoyale';
 import { getTrendingBundle, newSessionId, buildPersonalHooks, clearHooksForSession } from '@/lib/trendingCache';
-import { getLiveDissFeed, clearLiveDissCache } from '@/lib/liveDissSearch';
+import { getLiveDissFeed, clearLiveDissCache, buildTrendingFallbackLiveDiss } from '@/lib/liveDissSearch';
 import { award } from '@/lib/achievements';
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 min
@@ -210,6 +210,14 @@ export async function POST(req) {
         } catch {
           liveDiss = null;
         }
+      }
+
+      if ((!liveDiss || !Array.isArray(liveDiss.items) || liveDiss.items.length === 0) && trendingBundle) {
+        liveDiss = buildTrendingFallbackLiveDiss({
+          bundle: trendingBundle,
+          recentUserMessages: session.recentUser,
+          query: liveDiss?.query || '',
+        });
       }
 
       // Meter never recovers above ~10 once we've been in APEX (anti-cheese dampener on meter floor).
