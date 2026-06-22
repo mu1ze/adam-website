@@ -3,7 +3,7 @@ import { rateLimit } from '@/lib/rateLimit';
 import { getTrendingBundle } from '@/lib/trendingCache';
 
 export async function GET(request) {
-  const rl = rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'trending' });
+  const rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'trending' });
   if (rl) return rl;
 
   try {

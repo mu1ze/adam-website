@@ -71,6 +71,29 @@ export async function ensureSchema() {
           UNIQUE(name, achievement_id)
         )
       `);
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+          session_id TEXT PRIMARY KEY,
+          meter INTEGER DEFAULT 0,
+          cheese_count INTEGER DEFAULT 0,
+          peak_meter INTEGER DEFAULT 0,
+          recent_user TEXT,
+          won_clean INTEGER DEFAULT 1,
+          started_at INTEGER NOT NULL,
+          day_key TEXT NOT NULL,
+          difficulty INTEGER DEFAULT 1,
+          won_dates TEXT,
+          last_active_at INTEGER NOT NULL,
+          done INTEGER DEFAULT 0
+        )
+      `);
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS rate_limits (
+          key TEXT NOT NULL,
+          timestamp INTEGER NOT NULL,
+          PRIMARY KEY (key, timestamp)
+        )
+      `);
     })();
   }
   return schemaReady;

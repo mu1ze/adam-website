@@ -3,7 +3,7 @@ import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
 export async function GET(request) {
-  const rl = rateLimit(request, { limit: 60, windowMs: 60_000, keyPrefix: 'achievements' });
+  const rl = await rateLimit(request, { limit: 60, windowMs: 60_000, keyPrefix: 'achievements' });
   if (rl) return rl;
 
   const { searchParams } = new URL(request.url);

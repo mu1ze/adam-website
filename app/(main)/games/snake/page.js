@@ -168,6 +168,7 @@ export default function SnakePage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (showPrompt) return;
       const state = stateRef.current;
       if (e.key === 'ArrowUp' || e.key === 'w') {
         if (state.direction.y === 0) state.nextDirection = { x: 0, y: -1 };
@@ -190,7 +191,7 @@ export default function SnakePage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {

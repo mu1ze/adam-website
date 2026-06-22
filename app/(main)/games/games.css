@@ -144,16 +144,16 @@
 .game-page:fullscreen .game-canvas-wrapper {
   flex: 1;
   padding: 0;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
 }
 
 .game-page:fullscreen .game-canvas {
   border-radius: 0;
   border: none;
-  width: 100% !important;
   height: 100% !important;
+  width: auto !important;
   max-width: 100% !important;
-  object-fit: contain;
 }
 
 .game-page:fullscreen .game-bottom,
@@ -186,8 +186,8 @@
 }
 
 .game-page:-webkit-full-screen .game-top-bar { padding: 6px 14px; }
-.game-page:-webkit-full-screen .game-canvas-wrapper { flex: 1; padding: 0; align-items: stretch; }
-.game-page:-webkit-full-screen .game-canvas { border-radius: 0; border: none; width: 100% !important; height: 100% !important; max-width: 100% !important; object-fit: contain; }
+.game-page:-webkit-full-screen .game-canvas-wrapper { flex: 1; padding: 0; align-items: center; justify-content: center; }
+.game-page:-webkit-full-screen .game-canvas { border-radius: 0; border: none; height: 100% !important; width: auto !important; max-width: 100% !important; }
 .game-page:-webkit-full-screen .game-bottom,
 .game-page:-webkit-full-screen .leaderboard-toggle-btn,
 .game-page:-webkit-full-screen .game-controls-hint { display: none; }

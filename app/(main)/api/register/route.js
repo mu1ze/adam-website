@@ -3,7 +3,7 @@ import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request) {
-  const rl = rateLimit(request, { limit: 5, windowMs: 60_000, keyPrefix: 'register' });
+  const rl = await rateLimit(request, { limit: 5, windowMs: 60_000, keyPrefix: 'register' });
   if (rl) return rl;
 
   try {

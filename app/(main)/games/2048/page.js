@@ -209,16 +209,16 @@ export default function TwoZeroFourEightPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      e.preventDefault();
-      if (e.key === 'ArrowLeft') doMove('left');
-      else if (e.key === 'ArrowRight') doMove('right');
-      else if (e.key === 'ArrowUp') doMove('up');
-      else if (e.key === 'ArrowDown') doMove('down');
-      else if ((e.key === ' ' || e.key === 'r') && gameState !== 'PLAYING') startGame();
+      if (showPrompt) return;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); doMove('left'); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); doMove('right'); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); doMove('up'); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); doMove('down'); }
+      else if ((e.key === ' ' || e.key === 'r') && gameState !== 'PLAYING') { e.preventDefault(); startGame(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const touchStartRef = useRef(null);
   const handleTouchStart = (e) => {

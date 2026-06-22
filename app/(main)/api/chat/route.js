@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 import {
   HOSTILE_TRIGGERS,
@@ -25,17 +26,41 @@ import { getTrendingBundle, newSessionId, buildPersonalHooks, clearHooksForSessi
 import { getLiveDissFeed, clearLiveDissCache, buildTrendingFallbackLiveDiss } from '@/lib/liveDissSearch';
 import { award } from '@/lib/achievements';
 
-const SESSION_TTL_MS = 30 * 60 * 1000; // 30 min
-const sessions = new Map(); // sessionId -> { meter, cheeseCount, peakMeter, recentUser, wonClean, startedAt, dayKey, difficulty, wonDates, lastActiveAt }
+const SESSION_TTL_MS = 30 * 60 * 1000;
 
-function getOrCreateSession(sessionId, { dayKey, difficulty }) {
+async function getOrCreateSession(sessionId, { dayKey, difficulty }) {
   const now = Date.now();
-  const existing = sessionId && sessions.get(sessionId);
-  if (existing && (now - existing.lastActiveAt) < SESSION_TTL_MS) {
-    if (dayKey && existing.dayKey !== dayKey) existing.dayKey = dayKey;
-    existing.lastActiveAt = now;
-    return existing;
+
+  if (sessionId) {
+    const result = await client.execute({
+      sql: 'SELECT * FROM chat_sessions WHERE session_id = ? AND last_active_at > ?',
+      args: [sessionId, now - SESSION_TTL_MS],
+    });
+    if (result.rows.length > 0) {
+      const row = result.rows[0];
+      const session = {
+        id: row.session_id,
+        meter: Number(row.meter),
+        cheeseCount: Number(row.cheese_count),
+        peakMeter: Number(row.peak_meter),
+        recentUser: JSON.parse(row.recent_user || '[]'),
+        wonClean: Boolean(row.won_clean),
+        startedAt: Number(row.started_at),
+        dayKey: row.day_key,
+        difficulty: Number(row.difficulty),
+        wonDates: JSON.parse(row.won_dates || '[]'),
+        lastActiveAt: now,
+        done: Boolean(row.done),
+      };
+      if (dayKey && session.dayKey !== dayKey) session.dayKey = dayKey;
+      await client.execute({
+        sql: 'UPDATE chat_sessions SET last_active_at = ?, day_key = ? WHERE session_id = ?',
+        args: [now, session.dayKey, sessionId],
+      });
+      return session;
+    }
   }
+
   const id = sessionId || newSessionId();
   const fresh = {
     id,
@@ -51,19 +76,48 @@ function getOrCreateSession(sessionId, { dayKey, difficulty }) {
     lastActiveAt: now,
     done: false,
   };
-  sessions.set(id, fresh);
+  await client.execute({
+    sql: `INSERT INTO chat_sessions (session_id, meter, cheese_count, peak_meter, recent_user, won_clean, started_at, day_key, difficulty, won_dates, last_active_at, done)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, 0, 0, 0, '[]', 1, now, fresh.dayKey, fresh.difficulty, '[]', now, 0],
+  });
   return fresh;
 }
 
-function pruneSessions() {
+async function saveSession(session) {
+  await client.execute({
+    sql: `UPDATE chat_sessions SET meter = ?, cheese_count = ?, peak_meter = ?, recent_user = ?, won_clean = ?, day_key = ?, difficulty = ?, won_dates = ?, last_active_at = ?, done = ?
+          WHERE session_id = ?`,
+    args: [
+      session.meter,
+      session.cheeseCount,
+      session.peakMeter,
+      JSON.stringify(session.recentUser),
+      session.wonClean ? 1 : 0,
+      session.dayKey,
+      session.difficulty,
+      JSON.stringify(session.wonDates),
+      session.lastActiveAt,
+      session.done ? 1 : 0,
+      session.id,
+    ],
+  });
+}
+
+async function pruneSessions() {
   const now = Date.now();
-  for (const [k, v] of sessions) {
-    if (now - v.lastActiveAt > SESSION_TTL_MS) {
-      sessions.delete(k);
-      clearHooksForSession(k);
-      clearLiveDissCache(k);
-    }
+  const expired = await client.execute({
+    sql: 'SELECT session_id FROM chat_sessions WHERE last_active_at < ?',
+    args: [now - SESSION_TTL_MS],
+  });
+  for (const row of expired.rows) {
+    clearHooksForSession(row.session_id);
+    clearLiveDissCache(row.session_id);
   }
+  await client.execute({
+    sql: 'DELETE FROM chat_sessions WHERE last_active_at < ?',
+    args: [now - SESSION_TTL_MS],
+  });
 }
 
 async function callOrca({ apiKey, systemPrompt, messages, temperature = 0.7 }) {
@@ -96,10 +150,11 @@ function detectMoodShift(message, currentMood) {
 }
 
 export async function POST(req) {
-  const rl = rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
+  const rl = await rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
   if (rl) return rl;
 
-  pruneSessions();
+  await ensureSchema();
+  await pruneSessions();
 
   try {
     const body = await req.json();
@@ -155,7 +210,7 @@ export async function POST(req) {
         });
       }
 
-      const session = getOrCreateSession(incomingSessionId, { dayKey, difficulty });
+      const session = await getOrCreateSession(incomingSessionId, { dayKey, difficulty });
 
       const latestUserMsg = [...cappedMessages].reverse().find(m => m.role === 'user');
       if (!latestUserMsg) {
@@ -274,6 +329,7 @@ export async function POST(req) {
         };
         session.done = true;
         markWonToday({ dayKey, playerName: safePlayer });
+        await saveSession(session);
 
         // Award badges (server-internal, not exposed publicly).
         const awardResults = [];
@@ -321,6 +377,7 @@ export async function POST(req) {
       }
 
       // Non-win response.
+      await saveSession(session);
       return NextResponse.json({
         reply,
         mood: effectiveMood,

@@ -199,6 +199,7 @@ export default function PongPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (showPrompt) return;
       if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
         e.preventDefault();
         stateRef.current.keys[e.key] = true;
@@ -217,7 +218,7 @@ export default function PongPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const handleTouchStart = (e) => {
     if (gameState === 'PLAYING') e.preventDefault();

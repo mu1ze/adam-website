@@ -186,12 +186,13 @@ export default function FlappyBirdPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (showPrompt) return;
       if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); flap(); }
       if (e.key === 'r' && gameState !== 'PLAYING') startGame();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const handleTouch = (e) => {
     if (gameState === 'PLAYING') e.preventDefault();

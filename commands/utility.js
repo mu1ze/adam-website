@@ -26,6 +26,15 @@ export function handleCommand(ctx) {
       if (args.length > 0) {
         const newName = args.join(' ').substring(0, 16).toUpperCase();
         localStorage.setItem('adam_player_name', newName);
+        // Sync with server so the name persists beyond localStorage
+        const deviceId = localStorage.getItem('adam_device_id');
+        if (deviceId) {
+          fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName, deviceId }),
+          }).catch(() => {});
+        }
         addLine(`  Callsign updated: ${newName}`, 'success');
       } else {
         const current = localStorage.getItem('adam_player_name') || 'GUEST';

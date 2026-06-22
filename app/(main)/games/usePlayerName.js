@@ -36,6 +36,20 @@ export default function usePlayerName() {
     const stored = localStorage.getItem(NAME_KEY);
     if (stored) {
       setName(stored);
+      // Verify against server so name stays bound to this device
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: stored, deviceId: id }),
+      }).then(res => res.json()).then(data => {
+        if (data.success) {
+          setName(data.name || stored);
+        } else if (data.error === 'NAME_TAKEN') {
+          setName('');
+          setShowPrompt(true);
+          setError('Your previous callsign is registered to another device. Pick a new one.');
+        }
+      }).catch(() => {});
     } else {
       setShowPrompt(true);
     }
@@ -62,7 +76,11 @@ export default function usePlayerName() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error || 'Registration failed');
+        const messages = {
+          'NAME_TAKEN': 'Callsign already registered. Try another.',
+          'Name and device ID required': 'Name is required.',
+        };
+        setError(messages[data.error] || data.error || 'Registration failed');
         return;
       }
 

@@ -432,7 +432,9 @@ export default function AskAdamClient() {
         </div>
       )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <div className={`${styles.cyberContainer} ${isHostile ? styles.flickerEffect : ''}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {isHostile && <div className={styles.scanlines} />}
+        
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -453,7 +455,7 @@ export default function AskAdamClient() {
             background: currentAccent,
             animation: isHostile ? 'pulse 0.5s infinite' : 'pulse 2s infinite',
           }} />
-          <span style={{ fontWeight: 'bold' }}>
+          <span style={{ fontWeight: 'bold' }} className={isHostile ? styles.glitchText : ''}>
             MODE: {mode === 'roast-royale' ? '🔥 ROAST-ROYALE' : '● CLASSIC'}
           </span>
           <span style={{ flex: 1 }} />
@@ -492,7 +494,7 @@ export default function AskAdamClient() {
             <div className={styles.hostilityMeter} data-testid="hostility-meter">
               <span className={styles.hostilityMeter__label}>HOSTILITY</span>
               <div className={styles.hostilityMeter__bar}>
-                <div className={styles.hostilityMeter__fill} style={{ width: `${meter}%` }} data-testid="hostility-fill" />
+                <div className={`${styles.hostilityMeter__fill} ${styles.bossMeterFill}`} style={{ width: `${meter}%` }} data-testid="hostility-fill" />
               </div>
               <span className={styles.hostilityMeter__band} data-testid="hostility-band">
                 {meter}/100 · {session?.crackThreshold ? `crack≥${session.crackThreshold}` : '—'}
@@ -564,15 +566,21 @@ export default function AskAdamClient() {
             const isHostileReply = !isUser && isHostile;
             const parts = msg.content.split('```');
 
+            // Apply glassmorphic styles depending on bubble type
+            const bubbleClass = isUser 
+              ? (isHostile ? styles.glassmorphicUser : '')
+              : (isHostileReply ? styles.glassmorphicAdam : '');
+
             return (
               <div
                 key={idx}
+                className={bubbleClass}
                 style={{
                   alignSelf: isUser ? 'flex-end' : 'flex-start',
                   background: isUser
-                    ? (isHostile ? 'rgba(255, 34, 68, 0.1)' : 'rgba(0, 255, 136, 0.08)')
+                    ? (isHostile ? undefined : 'rgba(0, 255, 136, 0.08)')
                     : 'transparent',
-                  border: isUser ? `1px solid ${currentAccent}44` : 'none',
+                  border: isUser ? (isHostile ? undefined : `1px solid ${currentAccent}44`) : 'none',
                   color: isUser ? 'var(--text)' : isHostileReply ? hostileAccent : 'var(--primary)',
                   padding: isUser ? '10px 14px' : '4px 0',
                   borderRadius: isUser ? '12px 12px 4px 12px' : '0',
@@ -609,7 +617,7 @@ export default function AskAdamClient() {
               fontSize: '12px',
               padding: '4px 0',
             }}>
-              &gt; {isHostile ? 'Compiling roast protocols...' : thought}<span className="cursor-blink"></span>
+              &gt; {isHostile ? 'Initializing hostile protocol compilation...' : thought}<span className="cursor-blink"></span>
             </div>
           )}
         </div>
@@ -623,6 +631,8 @@ export default function AskAdamClient() {
             background: isHostile ? 'rgba(255, 34, 68, 0.04)' : 'var(--bg-secondary)',
             transition: 'all 0.5s ease',
             flexShrink: 0,
+            position: 'relative',
+            zIndex: 101,
           }}
         >
           <span style={{
@@ -640,7 +650,7 @@ export default function AskAdamClient() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isHostile ? (mode === 'roast-royale' ? "Push ADAM to the edge..." : "Say sorry or catch these hands...") : "Enter command..."}
+            placeholder={isHostile ? (mode === 'roast-royale' ? "Destroy ADAM's ego..." : "Try not to get insulted...") : "Enter command..."}
             style={{
               flex: 1,
               background: 'transparent',
@@ -675,6 +685,7 @@ export default function AskAdamClient() {
           </button>
         </form>
       </div>
+
     </>
   );
 }

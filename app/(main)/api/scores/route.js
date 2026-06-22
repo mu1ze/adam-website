@@ -20,7 +20,7 @@ const BADGE_CRITERIA = [
 ];
 
 export async function GET(request) {
-  const rl = rateLimit(request, { limit: 120, windowMs: 60_000, keyPrefix: 'scores-read' });
+  const rl = await rateLimit(request, { limit: 120, windowMs: 60_000, keyPrefix: 'scores-read' });
   if (rl) return rl;
 
   const { searchParams } = new URL(request.url);
@@ -71,7 +71,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const rl = rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'score' });
+  const rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'score' });
   if (rl) return rl;
 
   try {

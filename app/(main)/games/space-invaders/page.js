@@ -228,7 +228,7 @@ export default function SpaceInvadersPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const handleCanvasTouchStart = (e) => {
     e.preventDefault();

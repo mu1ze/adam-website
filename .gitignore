@@ -52,6 +52,7 @@ remotion/
 
 # Local Netlify folder
 .netlify
+.open-next/
 public/pagefind
 
 # Local Kilo agent data
@@ -62,3 +63,9 @@ playwright-output.txt
 package-lock.json
 package.json
 WinCon.md
+.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite
+.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-shm
+.wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-wal
+.wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite
+.wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite-shm
+.wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite-wal

@@ -232,6 +232,7 @@ export default function TetrisPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (showPrompt) return;
       const state = stateRef.current;
       if (!state.piece) return;
       e.preventDefault();
@@ -257,7 +258,7 @@ export default function TetrisPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, showPrompt]);
 
   const touchRef = useRef(null);
   const handleTouchStart = (e) => {

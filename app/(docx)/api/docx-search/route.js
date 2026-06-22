@@ -164,7 +164,7 @@ function rankWithVector(index, queryVector) {
 }
 
 export async function POST(req) {
-  const rl = rateLimit(req, { limit: 60, windowMs: 60_000, keyPrefix: 'docx-search' });
+  const rl = await rateLimit(req, { limit: 60, windowMs: 60_000, keyPrefix: 'docx-search' });
   if (rl) return rl;
 
   let body;
