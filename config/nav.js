@@ -4,6 +4,7 @@ export const navLinks = [
   { label: 'Plugins',       href: '/plugins',       icon: '🔌' },
   { label: 'Ask Adam',      href: '/ask-adam',      icon: '💬' },
   { label: 'Games',         href: '/games',         icon: '🎮' },
+  { label: 'Leaderboard',   href: '/games/leaderboard', icon: '🏆' },
   { label: 'Badges',        href: '/achievements',  icon: '🏅' },
   { label: 'Terminal',      href: '/terminal',      icon: '🖥️' },
   { label: 'Docs',          href: '/docx',          icon: '📐' },
