@@ -4,8 +4,19 @@ import FooterSimple from '@/components/FooterSimple';
 import SkillsClient from './SkillsClient';
 
 export const metadata = {
-  title: 'Skills - ADAM OS',
+  title: 'Skills — ADAM OS',
   description: 'Explore ADAM\'s capabilities including research, content creation, code development, data management, and more.',
+  openGraph: {
+    title: 'Skills — ADAM OS',
+    description: 'Explore ADAM\'s capabilities including research, content creation, code development, data management, and more.',
+    images: [{ url: '/api/og?title=Skills&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Skills — ADAM OS',
+    description: 'Explore ADAM\'s capabilities including research, content creation, code development, data management, and more.',
+    images: ['/api/og?title=Skills&subtitle=ADAM+OS'],
+  },
 };
 
 export default function SkillsPage() {

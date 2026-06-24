@@ -5,8 +5,19 @@ import DocxSearch from './_search';
 
 
 export const metadata = {
-  title: 'Documentation — ADAM v2.0',
+  title: 'Documentation — ADAM OS',
   description: 'Complete documentation for the ADAM Autonomous Digital Assistant Mind platform.',
+  openGraph: {
+    title: 'Documentation — ADAM OS',
+    description: 'Complete documentation for the ADAM Autonomous Digital Assistant Mind platform.',
+    images: [{ url: '/api/og?title=Documentation&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Documentation — ADAM OS',
+    description: 'Complete documentation for the ADAM Autonomous Digital Assistant Mind platform.',
+    images: ['/api/og?title=Documentation&subtitle=ADAM+OS'],
+  },
 };
 
 export default function DocxLayout({ children }) {

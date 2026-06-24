@@ -7,11 +7,18 @@ import LiveLeaderboard from '@/components/LiveLeaderboard';
 import LiveActivityFeed from '@/components/LiveActivityFeed';
 
 export const metadata = {
-  title: 'ADAM OS - Retro Terminal Arcade & AI Assistant',
+  title: 'ADAM OS — Retro Terminal Arcade & AI Assistant',
   description: 'Play Pong, Snake, and Space Invaders with global leaderboards. Explore the autonomous digital assistant mind in a cyberpunk terminal interface.',
   openGraph: {
-    title: 'ADAM OS - Retro Terminal Arcade & AI Assistant',
+    title: 'ADAM OS — Retro Terminal Arcade & AI Assistant',
     description: 'Play Pong, Snake, and Space Invaders with global leaderboards. Explore the autonomous digital assistant mind in a cyberpunk terminal interface.',
+    images: [{ url: '/api/og?title=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ADAM OS — Retro Terminal Arcade & AI Assistant',
+    description: 'Play Pong, Snake, and Space Invaders with global leaderboards. Explore the autonomous digital assistant mind in a cyberpunk terminal interface.',
+    images: ['/api/og?title=ADAM+OS'],
   },
 };
 

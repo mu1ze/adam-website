@@ -1,8 +1,19 @@
 import TerminalEmulator from '@/components/TerminalEmulator';
 
 export const metadata = {
-  title: 'ADAM Terminal',
+  title: 'Terminal — ADAM OS',
   description: 'Interactive terminal emulator for the ADAM AI assistant system.',
+  openGraph: {
+    title: 'Terminal — ADAM OS',
+    description: 'Interactive terminal emulator for the ADAM AI assistant system.',
+    images: [{ url: '/api/og?title=Terminal&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Terminal — ADAM OS',
+    description: 'Interactive terminal emulator for the ADAM AI assistant system.',
+    images: ['/api/og?title=Terminal&subtitle=ADAM+OS'],
+  },
 };
 
 export default function TerminalPage() {

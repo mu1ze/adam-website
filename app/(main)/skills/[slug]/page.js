@@ -12,13 +12,19 @@ export async function generateMetadata(props) {
   const skill = skills.find(s => s.slug === params.slug);
   if (!skill) return {};
   return { 
-    title: `${skill.title} - ADAM Skills`,
+    title: `${skill.title} — ADAM OS`,
     description: skill.description,
     openGraph: {
-      title: `${skill.title} - ADAM Skills`,
+      title: `${skill.title} — ADAM OS`,
       description: skill.description,
       images: [{ url: `/api/og?title=${encodeURIComponent(skill.title)}&description=${encodeURIComponent(skill.shortDescription || skill.description.substring(0, 120))}&subtitle=ADAM+Skill` }],
-    }
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${skill.title} — ADAM OS`,
+      description: skill.description,
+      images: [`/api/og?title=${encodeURIComponent(skill.title)}&description=${encodeURIComponent(skill.shortDescription || skill.description.substring(0, 120))}&subtitle=ADAM+Skill`],
+    },
   };
 }
 

@@ -2,8 +2,19 @@ import Link from 'next/link';
 import './games.css';
 
 export const metadata = {
-  title: 'ADAM Arcade - Pong, Snake & Space Invaders',
-  description: 'Play classic arcade games with global leaderboards. Compete worldwide in Pong, Snake, and Space Invaders with retro terminal aesthetics.',
+  title: 'Games — ADAM OS',
+  description: 'Play classic arcade games with global leaderboards. Compete worldwide in Pong, Snake, Tetris, and more with retro terminal aesthetics.',
+  openGraph: {
+    title: 'Games — ADAM OS',
+    description: 'Play classic arcade games with global leaderboards. Compete worldwide in Pong, Snake, Tetris, and more with retro terminal aesthetics.',
+    images: [{ url: '/api/og?title=Games&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Games — ADAM OS',
+    description: 'Play classic arcade games with global leaderboards. Compete worldwide in Pong, Snake, Tetris, and more with retro terminal aesthetics.',
+    images: ['/api/og?title=Games&subtitle=ADAM+OS'],
+  },
 };
 
 export default function GamesPage() {
@@ -28,6 +39,9 @@ export default function GamesPage() {
           Demonstrating pure Canvas DOM-free rendering with @chenglou/pretext.
           Every pixel of these games is constructed from cycling multilingual text characters.
         </p>
+        <Link href="/games/leaderboard" className="games-leaderboard-link">
+          &gt; VIEW LEADERBOARD
+        </Link>
       </header>
 
       <div className="games-grid">

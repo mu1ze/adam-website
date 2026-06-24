@@ -4,8 +4,19 @@ import FooterSimple from '@/components/FooterSimple';
 import { PluginConnectionDot } from '@/components/PluginConnectionButton';
 
 export const metadata = {
-  title: 'Plugins - ADAM OS',
+  title: 'Plugins — ADAM OS',
   description: 'Connect ADAM to GitHub, Gmail, Obsidian, Telegram, Notion, and other services for powerful automation.',
+  openGraph: {
+    title: 'Plugins — ADAM OS',
+    description: 'Connect ADAM to GitHub, Gmail, Obsidian, Telegram, Notion, and other services for powerful automation.',
+    images: [{ url: '/api/og?title=Plugins&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Plugins — ADAM OS',
+    description: 'Connect ADAM to GitHub, Gmail, Obsidian, Telegram, Notion, and other services for powerful automation.',
+    images: ['/api/og?title=Plugins&subtitle=ADAM+OS'],
+  },
 };
 
 export default function PluginsPage() {

@@ -6,8 +6,19 @@ import Link from 'next/link';
 import '@/app/(main)/games/games.css';
 
 export const metadata = {
-  title: 'ADAM - Documentation',
+  title: 'Documentation — ADAM OS',
   description: 'Interactive documentation showcasing DOM-free text rendering with PreText.',
+  openGraph: {
+    title: 'Documentation — ADAM OS',
+    description: 'Interactive documentation showcasing DOM-free text rendering with PreText.',
+    images: [{ url: '/api/og?title=Documentation&subtitle=ADAM+OS', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Documentation — ADAM OS',
+    description: 'Interactive documentation showcasing DOM-free text rendering with PreText.',
+    images: ['/api/og?title=Documentation&subtitle=ADAM+OS'],
+  },
 };
 
 export default function DocsPage() {

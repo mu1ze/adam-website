@@ -1,10 +1,12 @@
+const SITE_URL = process.env.SITE_URL || 'https://adam.dvlli.com';
+
 export default function GameStructuredData({ name, description, url }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
     name,
     description,
-    url,
+    url: `${SITE_URL}${url}`,
     applicationCategory: 'GameApplication',
     operatingSystem: 'Web',
     playMode: 'SinglePlayer',

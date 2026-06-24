@@ -10,6 +10,7 @@ export default function sitemap() {
     { url: '/skills', lastModified: today, changeFrequency: 'weekly', priority: 0.9 },
     { url: '/plugins', lastModified: today, changeFrequency: 'weekly', priority: 0.9 },
     { url: '/games', lastModified: today, changeFrequency: 'daily', priority: 0.9 },
+    { url: '/games/leaderboard', lastModified: today, changeFrequency: 'daily', priority: 0.8 },
     { url: '/games/pong', lastModified: today, changeFrequency: 'weekly', priority: 0.8 },
     { url: '/games/snake', lastModified: today, changeFrequency: 'weekly', priority: 0.8 },
     { url: '/games/space-invaders', lastModified: today, changeFrequency: 'weekly', priority: 0.8 },

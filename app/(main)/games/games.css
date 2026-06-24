@@ -56,6 +56,26 @@
   opacity: 0;
 }
 
+.games-leaderboard-link {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 8px 20px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: all var(--duration-fast);
+  animation: fadeIn 1s ease forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.games-leaderboard-link:hover {
+  background: var(--accent-bg);
+  box-shadow: var(--glow-sm);
+}
+
 /* ── Game Cards Grid ── */
 .games-grid {
   display: grid;
@@ -1144,5 +1164,209 @@
   .game-canvas,
   canvas {
     image-rendering: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEADERBOARD PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+.lb-page {
+  min-height: 100vh;
+  padding: 0 20px 60px;
+}
+
+.lb-header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+.lb-back {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12px;
+  transition: color var(--duration-fast);
+}
+
+.lb-back:hover {
+  color: var(--accent);
+}
+
+.lb-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.lb-title {
+  font-size: var(--font-size-3xl);
+  color: var(--accent);
+  font-weight: normal;
+}
+
+.lb-cursor {
+  color: var(--accent);
+  animation: blink 1s step-end infinite;
+}
+
+.lb-subtitle {
+  color: var(--text-dim);
+  font-size: var(--font-size-sm);
+  margin-top: 8px;
+}
+
+/* ── Filter Bar ── */
+.lb-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 900px;
+  margin: 24px auto 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.lb-filter-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Courier New', monospace;
+  font-size: var(--font-size-xs);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  border-radius: var(--radius-md);
+}
+
+.lb-filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lb-filter-btn-active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Content ── */
+.lb-content {
+  max-width: 900px;
+  margin: 32px auto 0;
+}
+
+/* ── Full Leaderboard Table ── */
+.lb-full-table {
+  width: 100%;
+}
+
+.lb-full-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 100px 120px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-dim);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+}
+
+.lb-full-header:has(~ .lb-full-row .lb-full-col-game) {
+  grid-template-columns: 60px 1fr 120px 100px 100px;
+}
+
+.lb-full-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 100px 120px;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  transition: background var(--duration-fast);
+}
+
+.lb-full-row:has(.lb-full-col-game) {
+  grid-template-columns: 60px 1fr 120px 100px 100px;
+}
+
+.lb-full-row:hover {
+  background: var(--accent-bg);
+}
+
+.lb-full-row-top {
+  background: rgba(0, 255, 136, 0.03);
+}
+
+.lb-full-col-rank {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.lb-full-col-player {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-full-col-game {
+  color: var(--text-dim);
+  font-size: var(--font-size-xs);
+}
+
+.lb-full-col-score {
+  color: var(--accent);
+  text-align: right;
+  font-weight: bold;
+}
+
+.lb-full-col-date {
+  color: var(--text-dim);
+  text-align: right;
+  font-size: var(--font-size-xs);
+}
+
+.lb-full-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Footer ── */
+.lb-footer {
+  max-width: 900px;
+  margin: 40px auto 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .lb-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .lb-full-header,
+  .lb-full-row {
+    grid-template-columns: 48px 1fr 80px;
+  }
+
+  .lb-full-header:has(~ .lb-full-row .lb-full-col-game) {
+    grid-template-columns: 48px 1fr 80px;
+  }
+
+  .lb-full-col-game,
+  .lb-full-col-date {
+    display: none;
+  }
+
+  .lb-filter-btn {
+    font-size: 10px;
+    padding: 5px 10px;
   }
 }

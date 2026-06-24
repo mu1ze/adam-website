@@ -9,8 +9,8 @@ export const viewport = {
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "ADAM OS - Autonomous Digital Assistant Mind",
-  description: "Next-generation terminal interface and neural hub for ADAM System. Built with cutting-edge cyber-systems.",
+  title: 'ADAM OS — Autonomous Digital Assistant Mind',
+  description: 'Next-generation terminal interface and neural hub for ADAM System. Built with cutting-edge cyber-systems.',
   icons: {
     icon: '/icon.svg',
     apple: '/icon.svg',
@@ -18,18 +18,15 @@ export const metadata = {
   openGraph: {
     type: 'website',
     siteName: 'ADAM OS',
-    title: 'ADAM OS - Autonomous Digital Assistant Mind',
+    title: 'ADAM OS — Autonomous Digital Assistant Mind',
     description: 'Next-generation terminal interface and neural hub for ADAM System.',
     images: [{ url: '/api/og', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ADAM OS - Autonomous Digital Assistant Mind',
+    title: 'ADAM OS — Autonomous Digital Assistant Mind',
     description: 'Next-generation terminal interface and neural hub for ADAM System.',
     images: ['/api/og'],
-  },
-  alternates: {
-    canonical: '/',
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
@@ -41,11 +38,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ADAM OS" />
-      </head>
       <body>
         <script
           dangerouslySetInnerHTML={{

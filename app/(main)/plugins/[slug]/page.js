@@ -11,13 +11,19 @@ export async function generateMetadata(props) {
   const plugin = plugins.find(p => p.slug === params.slug);
   if (!plugin) return {};
   return { 
-    title: `${plugin.title} - ADAM Plugins`,
+    title: `${plugin.title} — ADAM OS`,
     description: plugin.description,
     openGraph: {
-      title: `${plugin.title} - ADAM Plugins`,
+      title: `${plugin.title} — ADAM OS`,
       description: plugin.description,
       images: [{ url: `/api/og?title=${encodeURIComponent(plugin.title)}&description=${encodeURIComponent(plugin.tagline || plugin.description.substring(0, 120))}&subtitle=ADAM+Plugin` }],
-    }
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${plugin.title} — ADAM OS`,
+      description: plugin.description,
+      images: [`/api/og?title=${encodeURIComponent(plugin.title)}&description=${encodeURIComponent(plugin.tagline || plugin.description.substring(0, 120))}&subtitle=ADAM+Plugin`],
+    },
   };
 }
 
