@@ -1,5 +1,6 @@
 import client, { ensureSchema } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
+import '../games.css';
 import LeaderboardFilter from './LeaderboardFilter';
 import LeaderboardTable from './LeaderboardTable';
 
@@ -49,14 +50,14 @@ export default async function LeaderboardPage({ searchParams }) {
         sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 50',
         args: [game],
       });
-      scores = result.rows;
+      scores = result.rows.map((row) => ({ ...row }));
       title = `${GAME_NAMES[game]} LEADERBOARD`;
     } else {
       const result = await client.execute({
         sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50',
         args: [],
       });
-      scores = result.rows;
+      scores = result.rows.map((row) => ({ ...row }));
     }
   } catch (err) {
     console.error('Leaderboard query failed:', err?.message);

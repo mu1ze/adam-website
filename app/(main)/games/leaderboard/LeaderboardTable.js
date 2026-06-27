@@ -4,7 +4,7 @@ import { GAME_NAMES_COMPACT as GAME_NAMES } from '@/data/games';
 
 export default function LeaderboardTable({ scores, showGameColumn }) {
   return (
-    <div className="lb-full-table">
+    <div className={`lb-full-table ${showGameColumn ? 'lb-full-table--with-game' : ''}`}>
       <div className="lb-full-header">
         <span className="lb-full-col-rank">RNK</span>
         <span className="lb-full-col-player">PLAYER</span>

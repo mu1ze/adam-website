@@ -1274,7 +1274,7 @@
   letter-spacing: 0.05em;
 }
 
-.lb-full-header:has(~ .lb-full-row .lb-full-col-game) {
+.lb-full-table--with-game .lb-full-header {
   grid-template-columns: 60px 1fr 120px 100px 100px;
 }
 
@@ -1288,7 +1288,7 @@
   transition: background var(--duration-fast);
 }
 
-.lb-full-row:has(.lb-full-col-game) {
+.lb-full-table--with-game .lb-full-row {
   grid-template-columns: 60px 1fr 120px 100px 100px;
 }
 
@@ -1356,7 +1356,8 @@
     grid-template-columns: 48px 1fr 80px;
   }
 
-  .lb-full-header:has(~ .lb-full-row .lb-full-col-game) {
+  .lb-full-table--with-game .lb-full-header,
+  .lb-full-table--with-game .lb-full-row {
     grid-template-columns: 48px 1fr 80px;
   }
 
