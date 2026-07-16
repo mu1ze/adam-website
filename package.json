@@ -48,6 +48,9 @@
   "optionalDependencies": {
     "sharp": "^0.34.5"
   },
+  "overrides": {
+    "cloudflare": "4.4.1"
+  },
   "engines": {
     "node": ">=22.0.0"
   }
