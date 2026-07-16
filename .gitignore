@@ -71,3 +71,6 @@ WinCon.md
 
 promo/*
 scripts/*
+.wrangler/state/v3/kv/miniflare-KVNamespaceObject/metadata.sqlite
+.wrangler/state/v3/kv/miniflare-KVNamespaceObject/metadata.sqlite-shm
+.wrangler/state/v3/kv/miniflare-KVNamespaceObject/metadata.sqlite-wal

@@ -5,26 +5,25 @@
   "compatibility_date": "2025-04-01",
   "compatibility_flags": [
     "nodejs_compat",
-    "global_fetch_strictly_public",
+    "global_fetch_strictly_public"
   ],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS",
+    "binding": "ASSETS"
   },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "adam-website",
+      "service": "adam-website"
     },
   ],
   "images": {
-    "binding": "IMAGES",
+    "binding": "IMAGES"
   },
   "kv_namespaces": [
     {
       "binding": "RATE_LIMITS",
-      "id": "placeholder",
-      "preview_id": "placeholder"
+      "id": "414ea8fdbc9342c7ae0dfcc3dc1ab580"
     }
   ]
 }
