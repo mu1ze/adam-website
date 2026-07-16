@@ -1,6 +1,7 @@
 import { skills } from '@/data/skills';
 import { plugins } from '@/data/plugins';
 import { GAME_NAMES } from '@/data/games';
+import { HELP_TEXT_FULL, HELP_TEXT_COMPACT, NEOFETCH, ALL_BADGES } from '@/data/terminalStrings';
 
 export function getLineColor(type) {
   switch (type) {
@@ -14,7 +15,6 @@ export function getLineColor(type) {
 
 export function handleCommand(ctx) {
   const { command, args, addLine, connections, router, isMobile } = ctx;
-  const { HELP_TEXT_FULL, HELP_TEXT_COMPACT, NEOFETCH, ALL_BADGES } = require('@/data/terminalStrings');
 
   function getUptime() {
     const start = localStorage.getItem('adam_terminal_start');

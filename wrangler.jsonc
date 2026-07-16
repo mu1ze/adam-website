@@ -20,4 +20,11 @@
   "images": {
     "binding": "IMAGES",
   },
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMITS",
+      "id": "placeholder",
+      "preview_id": "placeholder"
+    }
+  ]
 }

@@ -28,6 +28,21 @@ import { award } from '@/lib/achievements';
 
 const SESSION_TTL_MS = 30 * 60 * 1000;
 
+function safeParse(raw, fallback) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function cors(response) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  return response;
+}
+
 async function getOrCreateSession(sessionId, { dayKey, difficulty }) {
   const now = Date.now();
 
@@ -43,12 +58,12 @@ async function getOrCreateSession(sessionId, { dayKey, difficulty }) {
         meter: Number(row.meter),
         cheeseCount: Number(row.cheese_count),
         peakMeter: Number(row.peak_meter),
-        recentUser: JSON.parse(row.recent_user || '[]'),
+        recentUser: safeParse(row.recent_user, []),
         wonClean: Boolean(row.won_clean),
         startedAt: Number(row.started_at),
         dayKey: row.day_key,
         difficulty: Number(row.difficulty),
-        wonDates: JSON.parse(row.won_dates || '[]'),
+        wonDates: safeParse(row.won_dates, []),
         lastActiveAt: now,
         done: Boolean(row.done),
       };
@@ -138,7 +153,6 @@ async function callOrca({ apiKey, systemPrompt, messages, temperature = 0.7 }) {
   return data.choices?.[0]?.message;
 }
 
-// Detect mood from user turn (used by classic mode; roast-royale ignores and stays hostile).
 function detectMoodShift(message, currentMood) {
   const lower = message.toLowerCase();
   if (currentMood === 'hostile') {
@@ -150,17 +164,15 @@ function detectMoodShift(message, currentMood) {
 }
 
 export async function POST(req) {
-  let rl;
   try {
-    rl = await rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
+    const rl = await rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
+    if (rl) return cors(rl);
+    await ensureSchema();
+    await pruneSessions();
   } catch (err) {
-    console.error('[chat] rateLimit failed:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[chat] pre-flight failed:', err);
+    return cors(NextResponse.json({ error: 'Internal server error' }, { status: 500 }));
   }
-  if (rl) return rl;
-
-  await ensureSchema();
-  await pruneSessions();
 
   try {
     const body = await req.json();
@@ -174,16 +186,15 @@ export async function POST(req) {
     } = body || {};
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'Messages required' }, { status: 400 });
+      return cors(NextResponse.json({ error: 'Messages required' }, { status: 400 }));
     }
     const cappedMessages = messages.slice(-20);
 
     const apiKey = process.env.ORCA_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'OrcaRouter API key not configured in .env' }, { status: 500 });
+      return cors(NextResponse.json({ error: 'OrcaRouter API key not configured in .env' }, { status: 500 }));
     }
 
-    // Always fetch trending (cached) so classic mode can use it for /search enrichment.
     let trendingBundle = null;
     try {
       trendingBundle = await getTrendingBundle();
@@ -191,43 +202,40 @@ export async function POST(req) {
       trendingBundle = null;
     }
 
-    // ====== ROAST ROYALE MODE ======
     if (mode === 'roast-royale') {
       const dayKey = trendingBundle?.dayKey || new Date().toISOString().slice(0, 10);
       const difficulty = trendingBundle?.difficulty || 1;
       const safePlayer = (playerName || 'anonymous').substring(0, 16);
 
       if (alreadyWonToday({ dayKey, playerName: safePlayer })) {
-        return NextResponse.json({
+        return cors(NextResponse.json({
           reply: { role: 'assistant', content: `> 🏆 You've already won today. Come back tomorrow for a fresh seed.` },
           mood: 'nice',
           already_won: true,
           dayKey,
-        });
+        }));
       }
 
       const remaining = cooldownRemainingMs({ dayKey, playerName: safePlayer });
       if (remaining > 0) {
-        return NextResponse.json({
+        return cors(NextResponse.json({
           reply: { role: 'assistant', content: `> 🧊 Cooldown active. Try again in ${Math.ceil(remaining / 1000)}s.` },
           mood: 'nice',
           cooldownMs: remaining,
           dayKey,
-        });
+        }));
       }
 
       const session = await getOrCreateSession(incomingSessionId, { dayKey, difficulty });
 
       const latestUserMsg = [...cappedMessages].reverse().find(m => m.role === 'user');
       if (!latestUserMsg) {
-        return NextResponse.json({ error: 'User message required' }, { status: 400 });
+        return cors(NextResponse.json({ error: 'User message required' }, { status: 400 }));
       }
 
-      // Track user turns for meter math.
       session.recentUser.push(latestUserMsg.content);
       if (session.recentUser.length > 6) session.recentUser = session.recentUser.slice(-6);
 
-      // Apply meter delta.
       const delta = computeMeterDelta({
         userMessage: latestUserMsg.content,
         recentUserMessages: session.recentUser.slice(0, -1),
@@ -237,19 +245,15 @@ export async function POST(req) {
       session.meter = newMeter;
       if (newMeter > session.peakMeter) session.peakMeter = newMeter;
 
-      // Track "clean" win (no slur).
       if (usesHostileTrigger(latestUserMsg.content)) session.wonClean = false;
 
-      // Determine mood for the prompt (royale always uses hostile system prompt, cooling if user just apologized).
       const mood = newMeter > 0 ? 'hostile' : 'hostile';
       const isCoolingTurn = delta < 0 && (isSincereApology(latestUserMsg.content) || isHalfApology(latestUserMsg.content));
       const effectiveMood = isCoolingTurn ? 'cooling' : 'hostile';
 
-      // Crack: meter at/above threshold for this difficulty.
       const threshold = crackThresholdFor(session.difficulty);
       const crackActive = newMeter >= threshold;
 
-      // Build personal hooks (cheap second LLM call, cached per session).
       const hookResult = await buildPersonalHooks({
         sessionId: session.id,
         userMessages: session.recentUser,
@@ -257,8 +261,6 @@ export async function POST(req) {
       });
       const hooks = hookResult?.hooks || [];
 
-      // Live diss matcher: extract a query from the user's recent self-disclosure,
-      // hit Reddit for fresh roast material. Skip when meter is low or mood is cooling.
       let liveDiss = null;
       if (effectiveMood === 'hostile' && newMeter >= 25) {
         try {
@@ -281,9 +283,6 @@ export async function POST(req) {
         });
       }
 
-      // Meter never recovers above ~10 once we've been in APEX (anti-cheese dampener on meter floor).
-      // We do NOT auto-decay the meter mid-session; the user has to actually apologize to move it.
-
       const systemPrompt = buildRoastRoyaleSystemPrompt({
         mood: effectiveMood,
         meter: newMeter,
@@ -302,7 +301,6 @@ export async function POST(req) {
 
       const replyText = reply?.content || '';
 
-      // Win check: apology marker in assistant reply, AND prior user turn was not an apology, AND crack is active.
       const prevUserContent = session.recentUser.length >= 2
         ? session.recentUser[session.recentUser.length - 2]
         : null;
@@ -315,7 +313,6 @@ export async function POST(req) {
         if (crackActive && !prevUserWasApology) {
           win = true;
         } else {
-          // Cheese: model apologized too early OR user just apologized.
           cheese_detected = true;
           session.cheeseCount = (session.cheeseCount || 0) + 1;
         }
@@ -337,7 +334,6 @@ export async function POST(req) {
         markWonToday({ dayKey, playerName: safePlayer });
         await saveSession(session);
 
-        // Award badges (server-internal, not exposed publicly).
         const awardResults = [];
         try {
           const a1 = await award({ name: safePlayer, id: 'adam_apology_won' });
@@ -352,7 +348,7 @@ export async function POST(req) {
           }
         } catch {}
 
-        return NextResponse.json({
+        return cors(NextResponse.json({
           reply,
           mood: 'apology',
           session: {
@@ -379,12 +375,11 @@ export async function POST(req) {
           win: true,
           winCard,
           awards: awardResults,
-        });
+        }));
       }
 
-      // Non-win response.
       await saveSession(session);
-      return NextResponse.json({
+      return cors(NextResponse.json({
         reply,
         mood: effectiveMood,
         session: {
@@ -410,10 +405,8 @@ export async function POST(req) {
         cheeseCount: session.cheeseCount,
         cheese_detected,
         band: bandFor(newMeter),
-      });
+      }));
     }
-
-    // ====== CLASSIC MODE ======
 
     const latestUserMsg = [...cappedMessages].reverse().find(m => m.role === 'user');
     const incomingMood = currentMood || 'nice';
@@ -422,7 +415,6 @@ export async function POST(req) {
 
     let systemPrompt = buildClassicSystemPrompt(nextMood, trendingBundle);
 
-    // Wire the latent webSearch flag: prepend a search-context block to the latest user turn.
     let messagesForModel = cappedMessages;
     if (webSearch && latestUserMsg) {
       const searchCtx = `Web search context (real-time, daily bundle):\n${JSON.stringify({
@@ -445,7 +437,7 @@ export async function POST(req) {
       temperature: nextMood === 'hostile' ? 0.95 : 0.7,
     });
 
-    return NextResponse.json({
+    return cors(NextResponse.json({
       reply,
       mood: nextMood,
       trending: trendingBundle
@@ -457,12 +449,16 @@ export async function POST(req) {
             rawTitles: trendingBundle.rawTitles,
           }
         : null,
-    });
+    }));
   } catch (error) {
-    console.error('Chat API Error:', error.message);
-    return NextResponse.json(
+    console.error('[chat] API Error:', error);
+    return cors(NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    );
+    ));
   }
+}
+
+export async function OPTIONS() {
+  return cors(new NextResponse(null, { status: 204 }));
 }
