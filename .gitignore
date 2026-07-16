@@ -60,8 +60,6 @@ public/pagefind
 
 playwright-report/index.html
 playwright-output.txt
-package-lock.json
-package.json
 WinCon.md
 .wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite
 .wrangler/state/v3/cache/miniflare-CacheObject/metadata.sqlite-shm
