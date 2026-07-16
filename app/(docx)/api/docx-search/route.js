@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { rateLimit } from '@/lib/rateLimit';
+import index from '@/data/docx-index.json';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 const EMBED_MODEL = 'openai/text-embedding-3-small';
 const EMBED_URL = 'https://api.orcarouter.ai/v1/embeddings';
@@ -13,33 +11,14 @@ const SNIPPET_CHARS = 220;
 const MIN_QUERY_LEN = 2;
 const MAX_QUERY_LEN = 500;
 
-let INDEX = null;
-let INDEX_LOAD_ERROR = null;
-let INDEX_LOAD_ERROR_AT = 0;
-const INDEX_RETRY_MS = 30_000;
-
-async function getIndex() {
-  if (INDEX) return INDEX;
-  if (INDEX_LOAD_ERROR && Date.now() - INDEX_LOAD_ERROR_AT < INDEX_RETRY_MS) {
-    throw INDEX_LOAD_ERROR;
+function getIndex() {
+  if (index.dim && index.chunks?.[0]?.vector?.length !== index.dim) {
+    throw new Error(
+      `index dim mismatch: ${index.chunks[0].vector.length} vs ${index.dim}. ` +
+      `Rebuild with \`npm run build:docx-index\`.`
+    );
   }
-  try {
-    const raw = await readFile(join(process.cwd(), 'data', 'docx-index.json'), 'utf8');
-    const parsed = JSON.parse(raw);
-    if (parsed.dim && parsed.chunks?.[0]?.vector?.length !== parsed.dim) {
-      throw new Error(
-        `index dim mismatch: ${parsed.chunks[0].vector.length} vs ${parsed.dim}. ` +
-        `Rebuild with \`npm run build:docx-index\`.`
-      );
-    }
-    INDEX = parsed;
-    INDEX_LOAD_ERROR = null;
-    return INDEX;
-  } catch (err) {
-    INDEX_LOAD_ERROR = err;
-    INDEX_LOAD_ERROR_AT = Date.now();
-    throw err;
-  }
+  return index;
 }
 
 async function embedQuery(q, apiKey) {

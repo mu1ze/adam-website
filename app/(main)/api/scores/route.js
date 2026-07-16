@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
@@ -121,7 +120,7 @@ export async function POST(request) {
     let id = null;
     let challengeId = null;
     if (makesCut) {
-      challengeId = crypto.randomBytes(4).toString('hex');
+      challengeId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
       const insertResult = await client.execute({
         sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
         args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
