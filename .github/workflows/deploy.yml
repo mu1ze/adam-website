@@ -20,7 +20,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and deploy
-        run: npm run deploy
+      - name: Build worker
+        run: npx opennextjs-cloudflare build
+
+      - name: Check build output
+        run: ls -la .open-next/.build && test -f .open-next/.build/open-next.config.edge.mjs
+
+      - name: Deploy to Cloudflare
+        run: npx opennextjs-cloudflare deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
