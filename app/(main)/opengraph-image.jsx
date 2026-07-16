@@ -6,7 +6,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default function Image() {
-  return new ImageResponse(
+  const image = new ImageResponse(
     (
       <div
         style={{
@@ -89,4 +89,12 @@ export default function Image() {
     ),
     { width: 1200, height: 630 }
   );
+
+  return new Response(image.body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+    },
+  });
 }

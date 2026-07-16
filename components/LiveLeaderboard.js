@@ -8,11 +8,11 @@ export default function LiveLeaderboard() {
 
   useEffect(() => {
     const fetchScores = () => {
-      fetch('/api/scores')
+      fetch('/api/live')
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            setScores(data.scores);
+            setScores(data.leaderboard || []);
             setLastUpdate(new Date().toLocaleTimeString());
           }
         })

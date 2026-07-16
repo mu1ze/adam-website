@@ -46,7 +46,7 @@ export async function GET(request) {
       const score = result.rows[0];
       const rankResult = await client.execute({ sql: 'SELECT COUNT(*) as rank FROM scores WHERE game = ? AND score > ?', args: [score.game, score.score] });
       const badgeResult = await client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [score.name] });
-      return cors(NextResponse.json({ success: true, score: { ...score, rank: rankResult.rows[0].rank, badges: badgeResult.rows.map(r => r.achievement_id) } }));
+      return cors(NextResponse.json({ success: true, score: { ...score, rank: rankResult.rows[0].rank, badges: badgeResult.rows.map(r => r.achievement_id) } }), 120);
     }
 
     if (challenge) {
@@ -54,13 +54,13 @@ export async function GET(request) {
       if (result.rows.length === 0) {
         return cors(NextResponse.json({ success: false, error: 'Challenge not found' }, { status: 404 }));
       }
-      return cors(NextResponse.json({ success: true, score: result.rows[0] }));
+      return cors(NextResponse.json({ success: true, score: result.rows[0] }), 60);
     }
 
     if (recent) {
       const limit = Math.min(parseInt(recent) || 10, 100);
       result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT ?', args: [limit] });
-      return cors(NextResponse.json({ success: true, scores: result.rows }));
+      return cors(NextResponse.json({ success: true, scores: result.rows }), 30);
     }
 
     if (game) {
@@ -69,7 +69,7 @@ export async function GET(request) {
       result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50', args: [] });
     }
     
-    return cors(NextResponse.json({ success: true, scores: result.rows }));
+    return cors(NextResponse.json({ success: true, scores: result.rows }), 60);
   } catch (error) {
     console.error('GET /api/scores failed:', error);
     return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
@@ -200,10 +200,13 @@ export async function POST(request) {
   }
 }
 
-function cors(response) {
+function cors(response, cacheTtl) {
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  if (cacheTtl) {
+    response.headers.set('Cache-Control', `public, max-age=${cacheTtl}, s-maxage=${cacheTtl}`);
+  }
   return response;
 }
 

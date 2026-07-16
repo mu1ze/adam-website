@@ -22,6 +22,8 @@ export async function generateMetadata({ params }) {
   };
 }
 
+export const revalidate = 300;
+
 export default async function ScorecardPage({ params }) {
   const { id } = await params;
 

@@ -35,6 +35,8 @@ export async function generateMetadata({ searchParams }) {
   };
 }
 
+export const revalidate = 60;
+
 export default async function LeaderboardPage({ searchParams }) {
   const params = await searchParams;
   const game = params?.game || null;

@@ -22,11 +22,11 @@ export default function LiveActivityFeed() {
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const res = await fetch('/api/scores?recent=12');
+        const res = await fetch('/api/live');
         const data = await res.json();
         if (data.success) {
-          setActivities(data.scores);
-          const uniquePlayers = new Set(data.scores.map(s => s.name)).size;
+          setActivities(data.activity || []);
+          const uniquePlayers = new Set((data.activity || []).map(s => s.name)).size;
           setPlayerCount(uniquePlayers);
         }
       } catch {}

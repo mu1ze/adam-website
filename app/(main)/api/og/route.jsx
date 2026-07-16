@@ -8,7 +8,7 @@ export async function GET(request) {
   const description = searchParams.get('description') || 'Autonomous Digital Assistant Mind';
   const subtitle = searchParams.get('subtitle') || '';
 
-  return new ImageResponse(
+  const image = new ImageResponse(
     (
       <div
         style={{
@@ -23,7 +23,6 @@ export async function GET(request) {
           padding: '60px',
         }}
       >
-        {/* Outer border */}
         <div
           style={{
             display: 'flex',
@@ -38,7 +37,6 @@ export async function GET(request) {
             gap: '20px',
           }}
         >
-          {/* ADAM ASCII */}
           <div
             style={{
               display: 'flex',
@@ -53,7 +51,6 @@ export async function GET(request) {
             {'   █████╗ ██████╗  █████╗ ███╗   ███╗\n  ██╔══██╗██╔══██╗██╔══██╗████╗ ████║\n  ███████║██║  ██║███████║██╔████╔██║\n  ██╔══██║██║  ██║██╔══██║██║╚██╔╝██║\n  ██║  ██║██████╔╝██║  ██║██║ ╚═╝ ██║'}
           </div>
 
-          {/* Title */}
           <div
             style={{
               display: 'flex',
@@ -68,7 +65,6 @@ export async function GET(request) {
             {'> '}{title}
           </div>
 
-          {/* Subtitle */}
           {subtitle && (
             <div
               style={{
@@ -83,7 +79,6 @@ export async function GET(request) {
             </div>
           )}
 
-          {/* Description */}
           <div
             style={{
               display: 'flex',
@@ -97,7 +92,6 @@ export async function GET(request) {
             {description}
           </div>
 
-          {/* Footer */}
           <div
             style={{
               display: 'flex',
@@ -118,4 +112,14 @@ export async function GET(request) {
       height: 630,
     }
   );
+
+  const response = new Response(image.body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+    },
+  });
+
+  return response;
 }
