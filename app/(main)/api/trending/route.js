@@ -3,8 +3,13 @@ import { rateLimit } from '@/lib/rateLimit';
 import { getTrendingBundle } from '@/lib/trendingCache';
 
 export async function GET(request) {
-  const rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'trending' });
-  if (rl) return rl;
+  try {
+    const rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'trending' });
+    if (rl) return rl;
+  } catch (err) {
+    console.error('[trending] rateLimit failed:', err);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  }
 
   try {
     const bundle = await getTrendingBundle();

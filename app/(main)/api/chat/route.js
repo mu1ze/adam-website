@@ -150,7 +150,13 @@ function detectMoodShift(message, currentMood) {
 }
 
 export async function POST(req) {
-  const rl = await rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
+  let rl;
+  try {
+    rl = await rateLimit(req, { limit: 10, windowMs: 60_000, keyPrefix: 'chat' });
+  } catch (err) {
+    console.error('[chat] rateLimit failed:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
   if (rl) return rl;
 
   await ensureSchema();

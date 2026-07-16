@@ -19,8 +19,14 @@ const BADGE_CRITERIA = [
 ];
 
 export async function GET(request) {
-  const rl = await rateLimit(request, { limit: 120, windowMs: 60_000, keyPrefix: 'scores-read' });
-  if (rl) return rl;
+  let rl;
+  try {
+    rl = await rateLimit(request, { limit: 120, windowMs: 60_000, keyPrefix: 'scores-read' });
+  } catch (err) {
+    console.error('[scores] rateLimit failed:', err);
+    return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
+  }
+  if (rl) return cors(rl);
 
   const { searchParams } = new URL(request.url);
   const game = searchParams.get('game');
@@ -65,13 +71,20 @@ export async function GET(request) {
     
     return cors(NextResponse.json({ success: true, scores: result.rows }));
   } catch (error) {
+    console.error('GET /api/scores failed:', error);
     return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
   }
 }
 
 export async function POST(request) {
-  const rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'score' });
-  if (rl) return rl;
+  let rl;
+  try {
+    rl = await rateLimit(request, { limit: 30, windowMs: 60_000, keyPrefix: 'score' });
+  } catch (err) {
+    console.error('[scores] rateLimit failed:', err);
+    return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
+  }
+  if (rl) return cors(rl);
 
   try {
     await ensureSchema();
@@ -182,7 +195,7 @@ export async function POST(request) {
       awards: awards.length > 0 ? awards : undefined,
     }));
   } catch (error) {
-    console.error('POST /api/scores failed:', error?.message);
+    console.error('POST /api/scores failed:', error);
     return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
   }
 }
