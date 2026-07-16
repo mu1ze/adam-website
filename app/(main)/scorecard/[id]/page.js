@@ -1,4 +1,4 @@
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
 
 const SITE_URL = process.env.SITE_URL || 'https://adam.dvlli.com';
@@ -32,12 +32,13 @@ export default async function ScorecardPage({ params }) {
   let topScores = [];
 
   try {
+    await checkHealth();
     await ensureSchema();
 
-    const result = await client.execute({
+    const result = await query(db => db.execute({
       sql: 'SELECT * FROM scores WHERE id = ?',
       args: [id],
-    });
+    }));
 
     if (result.rows.length === 0) {
       return (
@@ -50,16 +51,16 @@ export default async function ScorecardPage({ params }) {
 
     score = result.rows[0];
 
-    const rankResult = await client.execute({
+    const rankResult = await query(db => db.execute({
       sql: 'SELECT COUNT(*) as rank FROM scores WHERE game = ? AND score > ?',
       args: [score.game, score.score],
-    });
+    }));
     rank = rankResult.rows[0].rank;
 
-    const topResult = await client.execute({
+    const topResult = await query(db => db.execute({
       sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 5',
       args: [score.game],
-    });
+    }));
     topScores = topResult.rows;
   } catch (err) {
     return (

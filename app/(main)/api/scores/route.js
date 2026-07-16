@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 import { getQueryCache, setQueryCache, invalidateQueryCache } from '@/lib/queryCache';
 
@@ -36,22 +36,23 @@ export async function GET(request) {
   const recent = searchParams.get('recent');
 
   try {
+    await checkHealth();
     await ensureSchema();
     let result;
 
     if (id) {
-      result = await client.execute({ sql: 'SELECT * FROM scores WHERE id = ?', args: [id] });
+      result = await query(db => db.execute({ sql: 'SELECT * FROM scores WHERE id = ?', args: [id] }));
       if (result.rows.length === 0) {
         return cors(NextResponse.json({ success: false, error: 'Score not found' }, { status: 404 }));
       }
       const score = result.rows[0];
-      const rankResult = await client.execute({ sql: 'SELECT COUNT(*) as rank FROM scores WHERE game = ? AND score > ?', args: [score.game, score.score] });
-      const badgeResult = await client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [score.name] });
+      const rankResult = await query(db => db.execute({ sql: 'SELECT COUNT(*) as rank FROM scores WHERE game = ? AND score > ?', args: [score.game, score.score] }));
+      const badgeResult = await query(db => db.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [score.name] }));
       return cors(NextResponse.json({ success: true, score: { ...score, rank: rankResult.rows[0].rank, badges: badgeResult.rows.map(r => r.achievement_id) } }), 120);
     }
 
     if (challenge) {
-      result = await client.execute({ sql: 'SELECT * FROM scores WHERE challenge_id = ?', args: [challenge] });
+      result = await query(db => db.execute({ sql: 'SELECT * FROM scores WHERE challenge_id = ?', args: [challenge] }));
       if (result.rows.length === 0) {
         return cors(NextResponse.json({ success: false, error: 'Challenge not found' }, { status: 404 }));
       }
@@ -60,7 +61,7 @@ export async function GET(request) {
 
     if (recent) {
       const limit = Math.min(parseInt(recent) || 10, 100);
-      result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT ?', args: [limit] });
+      result = await query(db => db.execute({ sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT ?', args: [limit] }));
       return cors(NextResponse.json({ success: true, scores: result.rows }), 30);
     }
 
@@ -70,7 +71,7 @@ export async function GET(request) {
       if (cached) {
         return cors(NextResponse.json({ success: true, scores: cached }), 60);
       }
-      result = await client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] });
+      result = await query(db => db.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] }));
       setQueryCache(cacheKey, result.rows, 30_000);
     } else {
       const cacheKey = 'scores:global';
@@ -78,7 +79,7 @@ export async function GET(request) {
       if (cached) {
         return cors(NextResponse.json({ success: true, scores: cached }), 60);
       }
-      result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50', args: [] });
+      result = await query(db => db.execute({ sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50', args: [] }));
       setQueryCache(cacheKey, result.rows, 30_000);
     }
     
@@ -100,6 +101,7 @@ export async function POST(request) {
   if (rl) return cors(rl);
 
   try {
+    await checkHealth();
     await ensureSchema();
     const { game, name, score, deviceId } = await request.json();
     
@@ -116,11 +118,11 @@ export async function POST(request) {
 
     // Verify device identity — prevent score impersonation.
     // INSERT OR IGNORE handles auto-registration in one shot.
-    await client.execute({
+    await query(db => db.execute({
       sql: 'INSERT OR IGNORE INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?)',
       args: [sanitizedName, deviceId, dateStr],
-    });
-    const playerResult = await client.execute({ sql: 'SELECT device_id FROM players WHERE name = ?', args: [sanitizedName] });
+    }));
+    const playerResult = await query(db => db.execute({ sql: 'SELECT device_id FROM players WHERE name = ?', args: [sanitizedName] }));
     if (playerResult.rows.length > 0 && playerResult.rows[0].device_id && playerResult.rows[0].device_id !== deviceId) {
       return cors(NextResponse.json({ success: false, error: 'IDENTITY_MISMATCH' }, { status: 403 }));
     }
@@ -128,10 +130,10 @@ export async function POST(request) {
     // Pre-check: only persist the score if it makes this player's top 5 for
     // the game. Keeps the `scores` table small and prevents one player from
     // occupying the entire leaderboard.
-    const existingResult = await client.execute({
+    const existingResult = await query(db => db.execute({
       sql: 'SELECT id, score FROM scores WHERE game = ? AND name = ? ORDER BY score DESC LIMIT ?',
       args: [game, sanitizedName, MAX_SCORES_PER_PLAYER_PER_GAME],
-    });
+    }));
     const existing = existingResult.rows;
     const fifthBest = existing.length === MAX_SCORES_PER_PLAYER_PER_GAME
       ? Number(existing[existing.length - 1].score)
@@ -143,31 +145,31 @@ export async function POST(request) {
     let challengeId = null;
     if (makesCut) {
       challengeId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
-      await client.execute({
+      await query(db => db.execute({
         sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
         args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
-      });
+      }));
 
-      const keepResult = await client.execute({
+      const keepResult = await query(db => db.execute({
         sql: 'SELECT id FROM scores WHERE game = ? AND name = ? ORDER BY score DESC, id DESC LIMIT ?',
         args: [game, sanitizedName, MAX_SCORES_PER_PLAYER_PER_GAME],
-      });
+      }));
       const keepIds = keepResult.rows.map(r => Number(r.id));
       if (keepIds.length > 0) {
         const placeholders = keepIds.map(() => '?').join(',');
-        await client.execute({
+        await query(db => db.execute({
           sql: `DELETE FROM scores WHERE game = ? AND name = ? AND id NOT IN (${placeholders})`,
           args: [game, sanitizedName, ...keepIds],
-        });
+        }));
       }
     }
 
-    const [rankResult, topScoresResult, totalResult, existingBadgesResult] = await Promise.all([
-      client.execute({ sql: 'SELECT COUNT(*) as higher FROM scores WHERE game = ? AND score > ?', args: [game, score] }),
-      client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] }),
-      client.execute({ sql: 'SELECT COUNT(*) as cnt FROM scores WHERE name = ?', args: [sanitizedName] }),
-      client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [sanitizedName] }),
-    ]);
+    const [rankResult, topScoresResult, totalResult, existingBadgesResult] = await query(db => Promise.all([
+      db.execute({ sql: 'SELECT COUNT(*) as higher FROM scores WHERE game = ? AND score > ?', args: [game, score] }),
+      db.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] }),
+      db.execute({ sql: 'SELECT COUNT(*) as cnt FROM scores WHERE name = ?', args: [sanitizedName] }),
+      db.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [sanitizedName] }),
+    ]));
 
     const rank = Number(rankResult.rows[0].higher);
     const topScores = topScoresResult.rows;
@@ -183,10 +185,10 @@ export async function POST(request) {
       }
     }
     if (badgeInserts.length > 0) {
-      await client.execute({
+      await query(db => db.execute({
         sql: `INSERT OR IGNORE INTO achievements (name, achievement_id, game, date) VALUES ${badgeInserts.map(() => '(?, ?, ?, ?)').join(', ')}`,
         args: badgeInserts.flat(),
-      });
+      }));
     }
 
     invalidateQueryCache('scores:');

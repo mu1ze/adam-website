@@ -1,4 +1,4 @@
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
 import { getQueryCache, setQueryCache } from '@/lib/queryCache';
 import '../games.css';
@@ -46,6 +46,7 @@ export default async function LeaderboardPage({ searchParams }) {
   let title = 'GLOBAL LEADERBOARD';
 
   try {
+    await checkHealth();
     await ensureSchema();
 
     const cacheKey = `lb:${game || 'global'}`;
@@ -55,17 +56,17 @@ export default async function LeaderboardPage({ searchParams }) {
       title = cached.title;
     } else {
       if (game && GAME_NAMES[game]) {
-        const result = await client.execute({
+        const result = await query(db => db.execute({
           sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 50',
           args: [game],
-        });
+        }));
         scores = result.rows.map((row) => ({ ...row }));
         title = `${GAME_NAMES[game]} LEADERBOARD`;
       } else {
-        const result = await client.execute({
+        const result = await query(db => db.execute({
           sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50',
           args: [],
-        });
+        }));
         scores = result.rows.map((row) => ({ ...row }));
       }
       setQueryCache(cacheKey, { scores, title }, 30_000);

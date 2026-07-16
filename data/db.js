@@ -137,6 +137,22 @@ export async function ensureSchema() {
   return schemaReady;
 }
 
+export async function query(fn) {
+  if (!(await checkHealth())) {
+    throw new Error('Database unavailable');
+  }
+  try {
+    return await fn(getClient());
+  } catch (err) {
+    console.error('[db] query failed, resetting client and retrying:', err.message);
+    resetClient();
+    if (!(await checkHealth())) {
+      throw new Error('Database unavailable after reset');
+    }
+    return await fn(getClient());
+  }
+}
+
 export async function withHealthyClient(fn) {
   if (!(await checkHealth())) {
     throw new Error('Database connection unavailable');

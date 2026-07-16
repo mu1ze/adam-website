@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
 function cors(response, cacheTtl) {
@@ -22,17 +22,18 @@ export async function GET(request) {
   }
 
   try {
+    await checkHealth();
     await ensureSchema();
 
-    const leaderboardResult = await client.execute({
+    const leaderboardResult = await query(db => db.execute({
       sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50',
       args: [],
-    });
+    }));
 
-    const recentResult = await client.execute({
+    const recentResult = await query(db => db.execute({
       sql: 'SELECT * FROM scores ORDER BY id DESC LIMIT 12',
       args: [],
-    });
+    }));
 
     return cors(NextResponse.json({
       success: true,

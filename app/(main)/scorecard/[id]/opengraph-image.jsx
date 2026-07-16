@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import client, { ensureSchema } from '@/data/db';
+import { query, checkHealth, ensureSchema } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
 
 export const runtime = 'edge';
@@ -11,11 +11,12 @@ export default async function Image({ params }) {
   const { id } = await params;
 
   try {
+    await checkHealth();
     await ensureSchema();
-    const result = await client.execute({
+    const result = await query(db => db.execute({
       sql: 'SELECT * FROM scores WHERE id = ?',
       args: [id],
-    });
+    }));
 
     if (result.rows.length === 0) throw new Error('Not found');
     const score = result.rows[0];

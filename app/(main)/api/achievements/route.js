@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
 function cors(response) {
@@ -26,11 +26,12 @@ export async function GET(request) {
   }
 
   try {
+    await checkHealth();
     await ensureSchema();
-    const result = await client.execute({
+    const result = await query(db => db.execute({
       sql: 'SELECT achievement_id, game, date FROM achievements WHERE name = ? ORDER BY date DESC',
       args: [name.substring(0, 16)],
-    });
+    }));
 
     const earned = result.rows.map(r => r.achievement_id);
     const byGame = result.rows.map(r => ({ id: r.achievement_id, game: r.game, date: r.date }));

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import client, { ensureSchema } from '@/data/db';
+import { ensureSchema, query, checkHealth } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
 
 function cors(response) {
@@ -19,6 +19,7 @@ export async function POST(request) {
   }
 
   try {
+    await checkHealth();
     await ensureSchema();
     const { name, deviceId } = await request.json();
 
@@ -28,7 +29,7 @@ export async function POST(request) {
 
     const sanitizedName = name.trim().substring(0, 16);
 
-    const existing = await client.execute({ sql: 'SELECT name, device_id FROM players WHERE name = ?', args: [sanitizedName] });
+    const existing = await query(db => db.execute({ sql: 'SELECT name, device_id FROM players WHERE name = ?', args: [sanitizedName] }));
     if (existing.rows.length > 0) {
       const row = existing.rows[0];
       if (row.device_id !== deviceId) {
@@ -36,10 +37,10 @@ export async function POST(request) {
       }
     }
 
-    await client.execute({
+    await query(db => db.execute({
       sql: 'INSERT INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?) ON CONFLICT(name) DO UPDATE SET device_id = excluded.device_id',
       args: [sanitizedName, deviceId, new Date().toISOString()],
-    });
+    }));
 
     return cors(NextResponse.json({ success: true, name: sanitizedName }));
   } catch (error) {
