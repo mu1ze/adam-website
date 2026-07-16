@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import client, { ensureSchema } from '@/data/db';
 import { rateLimit } from '@/lib/rateLimit';
+import { getQueryCache, setQueryCache, invalidateQueryCache } from '@/lib/queryCache';
 
 const MAX_SCORES_PER_PLAYER_PER_GAME = 5;
 
@@ -64,9 +65,21 @@ export async function GET(request) {
     }
 
     if (game) {
+      const cacheKey = `scores:game:${game}`;
+      const cached = getQueryCache(cacheKey);
+      if (cached) {
+        return cors(NextResponse.json({ success: true, scores: cached }), 60);
+      }
       result = await client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] });
+      setQueryCache(cacheKey, result.rows, 30_000);
     } else {
+      const cacheKey = 'scores:global';
+      const cached = getQueryCache(cacheKey);
+      if (cached) {
+        return cors(NextResponse.json({ success: true, scores: cached }), 60);
+      }
       result = await client.execute({ sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50', args: [] });
+      setQueryCache(cacheKey, result.rows, 30_000);
     }
     
     return cors(NextResponse.json({ success: true, scores: result.rows }), 60);
@@ -101,19 +114,15 @@ export async function POST(request) {
     const sanitizedName = name.substring(0, 16);
     const dateStr = new Date().toISOString().split('T')[0];
 
-    // Verify device identity — prevent score impersonation
+    // Verify device identity — prevent score impersonation.
+    // INSERT OR IGNORE handles auto-registration in one shot.
+    await client.execute({
+      sql: 'INSERT OR IGNORE INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?)',
+      args: [sanitizedName, deviceId, dateStr],
+    });
     const playerResult = await client.execute({ sql: 'SELECT device_id FROM players WHERE name = ?', args: [sanitizedName] });
-    if (playerResult.rows.length > 0) {
-      if (playerResult.rows[0].device_id !== deviceId) {
-        return cors(NextResponse.json({ success: false, error: 'IDENTITY_MISMATCH' }, { status: 403 }));
-      }
-    } else {
-      // Auto-register on first score (device picks up the name).
-      // password_hash is NOT NULL in the legacy schema; pass '' explicitly.
-      await client.execute({
-        sql: 'INSERT INTO players (name, password_hash, device_id, created_at) VALUES (?, \'\', ?, ?)',
-        args: [sanitizedName, deviceId, new Date().toISOString()],
-      });
+    if (playerResult.rows.length > 0 && playerResult.rows[0].device_id && playerResult.rows[0].device_id !== deviceId) {
+      return cors(NextResponse.json({ success: false, error: 'IDENTITY_MISMATCH' }, { status: 403 }));
     }
 
     // Pre-check: only persist the score if it makes this player's top 5 for
@@ -134,14 +143,11 @@ export async function POST(request) {
     let challengeId = null;
     if (makesCut) {
       challengeId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
-      const insertResult = await client.execute({
+      await client.execute({
         sql: 'INSERT INTO scores (game, name, score, date, challenge_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
         args: [game, sanitizedName, score, dateStr, challengeId, new Date().toISOString()],
       });
-      id = Number(insertResult.lastInsertRowid);
 
-      // Trim: keep only the top MAX_SCORES_PER_PLAYER_PER_GAME for this
-      // (game, name). Oldest non-qualifying rows go.
       const keepResult = await client.execute({
         sql: 'SELECT id FROM scores WHERE game = ? AND name = ? ORDER BY score DESC, id DESC LIMIT ?',
         args: [game, sanitizedName, MAX_SCORES_PER_PLAYER_PER_GAME],
@@ -156,34 +162,35 @@ export async function POST(request) {
       }
     }
 
-    // Global rank (0-based): number of scores in this game strictly greater
-    // than the submitted one. Accurate at any depth, not just top 10.
-    const rankResult = await client.execute({
-      sql: 'SELECT COUNT(*) as higher FROM scores WHERE game = ? AND score > ?',
-      args: [game, score],
-    });
+    const [rankResult, topScoresResult, totalResult, existingBadgesResult] = await Promise.all([
+      client.execute({ sql: 'SELECT COUNT(*) as higher FROM scores WHERE game = ? AND score > ?', args: [game, score] }),
+      client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] }),
+      client.execute({ sql: 'SELECT COUNT(*) as cnt FROM scores WHERE name = ?', args: [sanitizedName] }),
+      client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [sanitizedName] }),
+    ]);
+
     const rank = Number(rankResult.rows[0].higher);
-
-    const topScoresResult = await client.execute({ sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 10', args: [game] });
     const topScores = topScoresResult.rows;
-
-    // Achievement detection (uses the now-capped score count as a proxy for
-    // total plays per player — acceptable, and a natural side effect of the cap).
-    const totalResult = await client.execute({ sql: 'SELECT COUNT(*) as cnt FROM scores WHERE name = ?', args: [sanitizedName] });
-    const totalPlays = totalResult.rows[0].cnt;
-    const existingBadges = await client.execute({ sql: 'SELECT achievement_id FROM achievements WHERE name = ?', args: [sanitizedName] });
-    const existingIds = new Set(existingBadges.rows.map(r => r.achievement_id));
+    const totalPlays = Number(totalResult.rows[0].cnt);
+    const existingIds = new Set(existingBadgesResult.rows.map(r => r.achievement_id));
 
     const awards = [];
+    const badgeInserts = [];
     for (const badge of BADGE_CRITERIA) {
       if (!existingIds.has(badge.id) && badge.check(game, score, totalPlays, existingIds)) {
         awards.push(badge.id);
-        await client.execute({
-          sql: 'INSERT OR IGNORE INTO achievements (name, achievement_id, game, date) VALUES (?, ?, ?, ?)',
-          args: [sanitizedName, badge.id, game, dateStr],
-        });
+        badgeInserts.push([sanitizedName, badge.id, game, dateStr]);
       }
     }
+    if (badgeInserts.length > 0) {
+      await client.execute({
+        sql: `INSERT OR IGNORE INTO achievements (name, achievement_id, game, date) VALUES ${badgeInserts.map(() => '(?, ?, ?, ?)').join(', ')}`,
+        args: badgeInserts.flat(),
+      });
+    }
+
+    invalidateQueryCache('scores:');
+    invalidateQueryCache('lb:');
 
     return cors(NextResponse.json({
       success: true,

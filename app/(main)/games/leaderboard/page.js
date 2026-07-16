@@ -1,5 +1,6 @@
 import client, { ensureSchema } from '@/data/db';
 import { GAME_NAMES } from '@/data/games';
+import { getQueryCache, setQueryCache } from '@/lib/queryCache';
 import '../games.css';
 import LeaderboardFilter from './LeaderboardFilter';
 import LeaderboardTable from './LeaderboardTable';
@@ -47,19 +48,27 @@ export default async function LeaderboardPage({ searchParams }) {
   try {
     await ensureSchema();
 
-    if (game && GAME_NAMES[game]) {
-      const result = await client.execute({
-        sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 50',
-        args: [game],
-      });
-      scores = result.rows.map((row) => ({ ...row }));
-      title = `${GAME_NAMES[game]} LEADERBOARD`;
+    const cacheKey = `lb:${game || 'global'}`;
+    const cached = getQueryCache(cacheKey);
+    if (cached) {
+      scores = cached.scores;
+      title = cached.title;
     } else {
-      const result = await client.execute({
-        sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50',
-        args: [],
-      });
-      scores = result.rows.map((row) => ({ ...row }));
+      if (game && GAME_NAMES[game]) {
+        const result = await client.execute({
+          sql: 'SELECT * FROM scores WHERE game = ? ORDER BY score DESC LIMIT 50',
+          args: [game],
+        });
+        scores = result.rows.map((row) => ({ ...row }));
+        title = `${GAME_NAMES[game]} LEADERBOARD`;
+      } else {
+        const result = await client.execute({
+          sql: 'SELECT * FROM scores ORDER BY score DESC LIMIT 50',
+          args: [],
+        });
+        scores = result.rows.map((row) => ({ ...row }));
+      }
+      setQueryCache(cacheKey, { scores, title }, 30_000);
     }
   } catch (err) {
     console.error('Leaderboard query failed:', err?.message);

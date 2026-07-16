@@ -2,6 +2,8 @@ import { createClient } from '@libsql/client';
 
 let client = null;
 let schemaReady = null;
+let lastHealthCheck = 0;
+const HEALTH_CHECK_INTERVAL_MS = 60_000;
 
 function createDbClient() {
   const url = process.env.TURSO_DATABASE_URL;
@@ -20,6 +22,25 @@ function getClient() {
 function resetClient() {
   client = null;
   schemaReady = null;
+  lastHealthCheck = 0;
+}
+
+async function checkHealth() {
+  const db = getClient();
+  if (!db) return false;
+  const now = Date.now();
+  if (now - lastHealthCheck < HEALTH_CHECK_INTERVAL_MS) {
+    return true;
+  }
+  try {
+    await db.execute({ sql: 'SELECT 1', args: [] });
+    lastHealthCheck = now;
+    return true;
+  } catch (err) {
+    console.error('[db] health check failed, resetting client:', err.message);
+    resetClient();
+    return false;
+  }
 }
 
 const lazyClient = new Proxy({}, {
@@ -116,5 +137,12 @@ export async function ensureSchema() {
   return schemaReady;
 }
 
-export { resetClient };
+export async function withHealthyClient(fn) {
+  if (!(await checkHealth())) {
+    throw new Error('Database connection unavailable');
+  }
+  return fn(getClient());
+}
+
+export { resetClient, checkHealth };
 export default lazyClient;
