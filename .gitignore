@@ -69,3 +69,7 @@ WinCon.md
 .wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite
 .wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite-shm
 .wrangler/state/v3/images/miniflare-images-KVNamespaceObject/metadata.sqlite-wal
+
+
+promo/*
+scripts/*
