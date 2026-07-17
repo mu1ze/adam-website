@@ -25,5 +25,11 @@
       "binding": "RATE_LIMITS",
       "id": "414ea8fdbc9342c7ae0dfcc3dc1ab580"
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }
