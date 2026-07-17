@@ -39,7 +39,9 @@ async function checkHealth() {
   } catch (err) {
     console.error('[db] health check failed, resetting client:', err.message);
     resetClient();
-    return false;
+    const error = new Error('Database unavailable: ' + err.message);
+    error.originalError = err;
+    throw error;
   }
 }
 

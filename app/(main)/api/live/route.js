@@ -42,7 +42,7 @@ export async function GET(request) {
     }), 15);
   } catch (error) {
     console.error('[live] GET failed:', error);
-    return cors(NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 }));
+    return cors(NextResponse.json({ success: false, error: 'Internal server error', details: error.message }, { status: 500 }));
   }
 }
 
